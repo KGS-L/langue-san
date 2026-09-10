@@ -11,13 +11,14 @@ return new class extends Migration {
             $table->id();
             $table->foreignId('collection_session_id')->nullable()->constrained()->nullOnDelete();
             $table->foreignId('prompt_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('contributor_profile_id')->constrained()->cascadeOnDelete();
             $table->foreignId('locality_id')->nullable()->constrained()->nullOnDelete();
             $table->mediumText('san_text')->nullable();
             $table->string('status', 30)->default('pending')->index();
             $table->timestamp('submitted_at')->nullable()->index();
             $table->timestamps();
             $table->index(['prompt_id', 'status']);
+            $table->index(['contributor_profile_id', 'prompt_id']);
         });
 
         Schema::create('recordings', function (Blueprint $table) {
