@@ -15,9 +15,9 @@
 </head>
 <body>
 @php
-    $contributeUrl = auth()->check()
-        ? (auth()->user()->isStaff() ? route('admin.dashboard') : route('contributor.home'))
-        : route('register');
+    $contributeUrl = auth()->check() && auth()->user()->isStaff()
+        ? route('admin.dashboard')
+        : route('contributor.home');
 @endphp
 
 <nav class="navbar navbar-expand-lg san-navbar fixed-top">
@@ -55,7 +55,7 @@
                     <a class="btn btn-san-outline btn-lg" href="#fonctionnement">Voir comment ça marche</a>
                 </div>
                 <div class="d-flex flex-wrap gap-3 mt-4 text-secondary small">
-                    <span><i class="bi bi-check-circle-fill me-1 text-success"></i> Session courte</span>
+                    <span><i class="bi bi-check-circle-fill me-1 text-success"></i> Aucun compte obligatoire</span>
                     <span><i class="bi bi-check-circle-fill me-1 text-success"></i> Texte ou audio</span>
                     <span><i class="bi bi-check-circle-fill me-1 text-success"></i> Contribution validée humainement</span>
                 </div>
@@ -95,9 +95,9 @@
 
 <section id="fonctionnement" class="section-san section-soft">
     <div class="container">
-        <div class="text-center mx-auto mb-5" style="max-width:720px"><div class="section-kicker">Simple et rapide</div><h2 class="section-title display-6 mt-2">Comment contribuer ?</h2><p class="section-copy">Pas besoin de connaître le nom technique de votre variété de San. Nous vous demandons des informations concrètes comme la localité où vous avez appris ou principalement parlé la langue.</p></div>
+        <div class="text-center mx-auto mb-5" style="max-width:720px"><div class="section-kicker">Simple et rapide</div><h2 class="section-title display-6 mt-2">Comment contribuer ?</h2><p class="section-copy">Pas besoin de créer un compte ni de connaître le nom technique de votre variété de San. Nous vous demandons des informations concrètes comme la localité où vous avez appris ou principalement parlé la langue.</p></div>
         <div class="row g-4">
-            <div class="col-md-3"><div class="step-card"><div class="step-number mb-3">1</div><h3 class="h5 fw-bold">Créer votre profil</h3><p class="section-copy mb-0">Quelques informations minimales pour contextualiser vos réponses.</p></div></div>
+            <div class="col-md-3"><div class="step-card"><div class="step-number mb-3">1</div><h3 class="h5 fw-bold">Donner votre contexte</h3><p class="section-copy mb-0">Quelques informations minimales pour contextualiser vos réponses, sans inscription obligatoire.</p></div></div>
             <div class="col-md-3"><div class="step-card"><div class="step-number mb-3">2</div><h3 class="h5 fw-bold">Choisir un thème</h3><p class="section-copy mb-0">Salutations, présentation, famille, nombres, marché et autres sujets.</p></div></div>
             <div class="col-md-3"><div class="step-card"><div class="step-number mb-3">3</div><h3 class="h5 fw-bold">Répondre à 10 questions</h3><p class="section-copy mb-0">Écrivez en San, enregistrez votre voix, ou utilisez les deux.</p></div></div>
             <div class="col-md-3"><div class="step-card"><div class="step-number mb-3">4</div><h3 class="h5 fw-bold">Validation</h3><p class="section-copy mb-0">Des personnes compétentes relisent, transcrivent et valident les contributions.</p></div></div>
@@ -128,7 +128,7 @@
 </section>
 
 <section class="section-san pt-0">
-    <div class="container"><div class="cta-san text-center"><img src="{{ asset('assets/img/langue-san-logo.svg') }}" width="64" height="64" alt="" class="mb-3"><h2 class="section-title display-6">Prêt à partager quelques mots ?</h2><p class="section-copy mx-auto" style="max-width:650px">Une session contient environ 10 questions. Vous pouvez commencer par les salutations, la présentation ou le thème de votre choix.</p><a class="btn btn-san-primary btn-lg mt-2" href="{{ $contributeUrl }}">Commencer maintenant <i class="bi bi-arrow-right ms-1"></i></a></div></div>
+    <div class="container"><div class="cta-san text-center"><img src="{{ asset('assets/img/langue-san-logo.svg') }}" width="64" height="64" alt="" class="mb-3"><h2 class="section-title display-6">Prêt à partager quelques mots ?</h2><p class="section-copy mx-auto" style="max-width:650px">Une session contient environ 10 questions. Vous pouvez participer sans compte et créer un compte plus tard si vous souhaitez retrouver vos statistiques et vos contributions.</p><a class="btn btn-san-primary btn-lg mt-2" href="{{ $contributeUrl }}">Commencer maintenant <i class="bi bi-arrow-right ms-1"></i></a></div></div>
 </section>
 
 <footer class="san-footer"><div class="container d-flex flex-column flex-md-row justify-content-between gap-2"><div class="d-flex align-items-center gap-2"><img src="{{ asset('assets/img/langue-san-logo.svg') }}" width="30" height="30" alt=""><strong class="text-dark">Langue SAN</strong><span>— projet open source</span></div><div>Collecter · Valider · Transmettre</div></div></footer>
