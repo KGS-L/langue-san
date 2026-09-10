@@ -1,0 +1,24 @@
+{
+  "id": "SAN-000001",
+  "prompt": {
+    "french": "Bonjour",
+    "type": "word",
+    "category": "salutations"
+  },
+  "response": {
+    "san_text": null,
+    "audio_available": true,
+    "dialect_declared": "unknown",
+    "locality_declared": "EXEMPLE_LOCALITE"
+  },
+  "validation": {
+    "dialect_validated": null,
+    "transcription": null,
+    "validation_level": 0,
+    "status": "pending"
+  },
+  "provenance": {
+    "source": "community_contribution",
+    "consent_version": "v0-draft"
+  }
+}

@@ -1,0 +1,38 @@
+name: Proposition d'amélioration
+description: Proposer une fonctionnalité ou amélioration du projet
+title: "[Feature]: "
+labels: []
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problème ou besoin
+      description: Quel problème souhaitez-vous résoudre ?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposition
+      description: Décrivez la solution ou l'amélioration souhaitée.
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Partie du projet
+      options:
+        - Collecteur Laravel
+        - Données / corpus
+        - Audio
+        - Linguistique
+        - Machine Learning
+        - Documentation
+        - Autre
+    validations:
+      required: true
+  - type: textarea
+    id: privacy
+    attributes:
+      label: Données, confidentialité ou licence
+      description: Signalez tout impact éventuel sur des données personnelles, audios ou contenus tiers.
