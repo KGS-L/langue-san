@@ -14,6 +14,8 @@ Permettre à un contributeur de répondre rapidement à une petite session de mo
 
 Le contributeur ne doit pas avoir besoin de connaître les appellations linguistiques techniques comme Maka, Matya ou Maya. Le parcours public recueille plutôt la **localité ou zone où la personne a appris/parlé le San** (par exemple Toma, Tougan ou une autre localité). La variété linguistique est ensuite confirmée dans le workflow de validation interne.
 
+> Important : les correspondances entre localités et variétés linguistiques sont gérées comme des données internes administrables et doivent être confirmées par des personnes compétentes. Elles ne sont pas codées en dur dans le parcours public.
+
 ## Parcours public MVP
 
 ```text
