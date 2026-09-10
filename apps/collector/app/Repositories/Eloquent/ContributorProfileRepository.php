@@ -29,6 +29,13 @@ class ContributorProfileRepository implements ContributorProfileRepositoryInterf
         return $this->model->newQuery()->create($data);
     }
 
+    public function update(ContributorProfile $profile, array $data): ContributorProfile
+    {
+        $profile->update($data);
+
+        return $profile->refresh();
+    }
+
     public function touchLastSeen(ContributorProfile $profile): void
     {
         $profile->forceFill(['last_seen_at' => now()])->save();
