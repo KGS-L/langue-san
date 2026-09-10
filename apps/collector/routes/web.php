@@ -6,6 +6,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 Route::view('/', 'public.home')->name('home');
+Route::view('/confidentialite', 'public.privacy')->name('privacy');
+Route::view('/politique-de-contribution', 'public.contribution-policy')->name('contribution-policy');
+Route::view('/gouvernance-des-donnees', 'public.data-governance')->name('data-governance');
 
 Route::middleware('guest')->group(function () {
     Route::get('/register', [RegisterController::class, 'create'])->name('register');
