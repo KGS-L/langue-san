@@ -131,7 +131,7 @@
     <div class="container"><div class="cta-san text-center"><img src="{{ asset('assets/img/langue-san-logo.svg') }}" width="64" height="64" alt="" class="mb-3"><h2 class="section-title display-6">Prêt à partager quelques mots ?</h2><p class="section-copy mx-auto" style="max-width:650px">Une session contient environ 10 questions. Vous pouvez participer sans compte et créer un compte plus tard si vous souhaitez retrouver vos statistiques et vos contributions.</p><a class="btn btn-san-primary btn-lg mt-2" href="{{ $contributeUrl }}">Commencer maintenant <i class="bi bi-arrow-right ms-1"></i></a></div></div>
 </section>
 
-<footer class="san-footer"><div class="container d-flex flex-column flex-md-row justify-content-between gap-2"><div class="d-flex align-items-center gap-2"><img src="{{ asset('assets/img/langue-san-logo.svg') }}" width="30" height="30" alt=""><strong class="text-dark">Langue SAN</strong><span>— projet open source</span></div><div>Collecter · Valider · Transmettre</div></div></footer>
+@include('public.partials.footer')
 
 <script src="{{ asset('assets/vendor/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
 </body>
