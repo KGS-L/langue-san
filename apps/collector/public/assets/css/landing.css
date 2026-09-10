@@ -55,7 +55,10 @@ a { text-decoration: none; }
 .trust-item i { color:var(--san-gold); margin-top:.15rem; }
 
 .cta-san { background:linear-gradient(135deg,#f8f5ee,#fff); border:1px solid rgba(211,168,74,.22); border-radius:1.6rem; padding:clamp(2rem,5vw,4rem); }
-.san-footer { border-top:1px solid #e8edf4; padding:2rem 0; color:#64748b; font-size:.92rem; }
+.san-footer { border-top:1px solid #e8edf4; color:#64748b; font-size:.92rem; background:#fff; }
+.san-footer a { color:#64748b; }
+.san-footer a:hover { color:var(--san-navy); }
+.san-footer hr { border-color:#e8edf4; opacity:1; }
 
 @media (max-width: 991.98px) {
     .hero-san { padding-top:7rem; }
