@@ -1,0 +1,4 @@
+code,category,type,french_text,context,difficulty,priority,target_contributions,is_active
+SAL-W-001,Salutations,word,Bonjour,Salutation générale,1,10,3,1
+SAL-S-001,Salutations,sentence,Comment vas-tu ?,Formule courante,2,10,3,1
+FAM-W-001,Famille,word,Père,,1,10,3,1
