@@ -20,10 +20,13 @@ return new class extends Migration {
 
         Schema::create('prompts', function (Blueprint $table) {
             $table->id();
+            $table->string('code', 30)->unique();
             $table->foreignId('category_id')->constrained()->cascadeOnDelete();
             $table->text('french_text');
+            $table->text('context')->nullable();
             $table->string('type', 30)->index();
             $table->unsignedTinyInteger('difficulty')->default(1)->index();
+            $table->unsignedSmallInteger('priority')->default(10)->index();
             $table->unsignedSmallInteger('target_contributions')->default(3);
             $table->boolean('is_active')->default(true)->index();
             $table->timestamps();
@@ -31,7 +34,7 @@ return new class extends Migration {
 
         Schema::create('collection_sessions', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('contributor_profile_id')->constrained()->cascadeOnDelete();
             $table->foreignId('category_id')->constrained()->cascadeOnDelete();
             $table->string('status', 30)->default('started')->index();
             $table->timestamp('started_at')->nullable();
