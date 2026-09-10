@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" role="img" aria-labelledby="title desc">
+  <title id="title">Langue SAN</title>
+  <desc id="desc">Symbole de dialogue et de transmission linguistique</desc>
+  <rect width="96" height="96" rx="26" fill="#172640"/>
+  <path d="M23 24h50a9 9 0 0 1 9 9v27a9 9 0 0 1-9 9H48L31 81v-12h-8a9 9 0 0 1-9-9V33a9 9 0 0 1 9-9Z" fill="#fff"/>
+  <path d="M34 42c0-5 3.8-9 9-9h2v8h-2c-1.4 0-2 .7-2 2v2h7v13H34V42Zm20 0c0-5 3.8-9 9-9h2v8h-2c-1.4 0-2 .7-2 2v2h7v13H54V42Z" fill="#D3A84A"/>
+  <path d="M31 69h42a9 9 0 0 0 9-9v-4c-10 7-21 11-34 11-6 0-11-.6-17-1.8V69Z" fill="#F4EFE3" opacity=".55"/>
+</svg>

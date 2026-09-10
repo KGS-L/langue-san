@@ -1,6 +1,4 @@
-{{-- NiceAdmin assets are stored in public/assets/ --}}
-<link href="{{ asset('assets/img/favicon.png') }}" rel="icon">
-<link href="{{ asset('assets/img/apple-touch-icon.png') }}" rel="apple-touch-icon">
+<link href="{{ asset('assets/img/langue-san-logo.svg') }}" rel="icon" type="image/svg+xml">
 
 <link href="https://fonts.googleapis.com" rel="preconnect">
 <link href="https://fonts.gstatic.com" rel="preconnect" crossorigin>
@@ -13,5 +11,4 @@
 <link href="{{ asset('assets/vendor/quill/quill.bubble.css') }}" rel="stylesheet">
 <link href="{{ asset('assets/vendor/remixicon/remixicon.css') }}" rel="stylesheet">
 <link href="{{ asset('assets/vendor/simple-datatables/style.css') }}" rel="stylesheet">
-
 <link href="{{ asset('assets/css/style.css') }}" rel="stylesheet">
