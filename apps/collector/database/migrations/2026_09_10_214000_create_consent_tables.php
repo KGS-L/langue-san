@@ -25,7 +25,10 @@ return new class extends Migration {
             $table->timestamp('accepted_at');
             $table->string('ip_hash', 64)->nullable();
             $table->timestamps();
-            $table->unique(['contributor_profile_id', 'consent_version_id']);
+            $table->unique(
+                ['contributor_profile_id', 'consent_version_id'],
+                'contrib_consent_profile_version_unique'
+            );
         });
     }
 
