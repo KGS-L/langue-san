@@ -15,19 +15,36 @@ class DatasetExportService
 
         return response()->streamDownload(function () {
             $out = fopen('php://output', 'w');
-            fputcsv($out, ['id', 'variety', 'french', 'san', 'type', 'category', 'locality', 'validation_level']);
+            fputcsv($out, [
+                'id',
+                'prompt_code',
+                'variety',
+                'french',
+                'context',
+                'san',
+                'type',
+                'category',
+                'locality',
+                'validation_level',
+            ]);
 
             Contribution::query()
                 ->where('status', ContributionStatus::APPROVED->value)
                 ->whereNotNull('san_text')
-                ->whereHas('user.consents.consentVersion', fn ($q) => $q->where('allow_training', true))
-                ->with(['prompt.category', 'locality', 'validations.variety'])
+                ->whereHas(
+                    'contributorProfile.consents.consentVersion',
+                    fn ($query) => $query->where('allow_training', true),
+                )
+                ->with(['prompt.category', 'locality', 'validations.variety', 'contributorProfile.consents.consentVersion'])
                 ->orderBy('id')
                 ->chunkById(500, function ($items) use ($out) {
                     foreach ($items as $item) {
                         $lastValidation = $item->validations->last();
                         $variety = $lastValidation?->variety?->name;
-                        if (!$variety) continue;
+
+                        if (! $variety) {
+                            continue;
+                        }
 
                         $san = $lastValidation?->decision === ValidationDecision::CORRECT
                             ? $lastValidation->san_text_corrected
@@ -35,8 +52,10 @@ class DatasetExportService
 
                         fputcsv($out, [
                             $item->id,
+                            $item->prompt->code,
                             $variety,
                             $item->prompt->french_text,
+                            $item->prompt->context,
                             $san,
                             $item->prompt->type->value,
                             $item->prompt->category->name,
