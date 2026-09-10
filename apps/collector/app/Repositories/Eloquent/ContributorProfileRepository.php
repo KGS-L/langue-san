@@ -74,12 +74,18 @@ class ContributorProfileRepository implements ContributorProfileRepositoryInterf
                 );
             }
 
+            $guestTokenHash = $guest->guest_token_hash;
+            if ($guestTokenHash && ! $accountProfile->guest_token_hash) {
+                // Release the unique value before assigning it to the account profile.
+                $guest->forceFill(['guest_token_hash' => null])->save();
+            }
+
             $accountProfile->fill([
                 'locality_id' => $accountProfile->locality_id ?? $guest->locality_id,
                 'locality_other' => $accountProfile->locality_other ?? $guest->locality_other,
                 'fluency_level' => $accountProfile->fluency_level ?? $guest->fluency_level,
                 'can_write_san' => $accountProfile->can_write_san ?? $guest->can_write_san,
-                'guest_token_hash' => $accountProfile->guest_token_hash ?? $guest->guest_token_hash,
+                'guest_token_hash' => $accountProfile->guest_token_hash ?? $guestTokenHash,
                 'last_seen_at' => now(),
             ])->save();
 
