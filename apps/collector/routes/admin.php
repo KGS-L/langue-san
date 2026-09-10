@@ -18,6 +18,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:admin,moderato
     Route::resource('categories', CategoryController::class)->except('show');
     Route::resource('localities', LocalityController::class)->except('show');
     Route::resource('varieties', VarietyController::class)->except('show');
+    Route::post('prompts/import', [PromptController::class, 'import'])->name('prompts.import');
     Route::resource('prompts', PromptController::class)->except('show');
     Route::resource('contributions', ContributionController::class)->only(['index', 'show']);
     Route::post('contributions/{contribution}/transcribe', [ContributionController::class, 'transcribe'])->name('contributions.transcribe');
