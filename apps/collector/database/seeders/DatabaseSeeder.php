@@ -11,6 +11,7 @@ class DatabaseSeeder extends Seeder
         $this->call([
             LinguisticReferenceSeeder::class,
             CategorySeeder::class,
+            PromptSeeder::class,
             AdminUserSeeder::class,
         ]);
     }
