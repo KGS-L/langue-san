@@ -1,24 +1,30 @@
 {
-  "id": "SAN-000001",
+  "id": "CONTRIB-000001",
+  "contributor": {
+    "public_code": "SAN-01EXAMPLE",
+    "has_account": false,
+    "locality_declared": "EXEMPLE_LOCALITE"
+  },
   "prompt": {
+    "code": "SAL-W-001",
     "french": "Bonjour",
+    "context": "Salutation générale",
     "type": "word",
     "category": "salutations"
   },
   "response": {
     "san_text": null,
-    "audio_available": true,
-    "dialect_declared": "unknown",
-    "locality_declared": "EXEMPLE_LOCALITE"
+    "audio_available": true
   },
   "validation": {
-    "dialect_validated": null,
+    "variety_validated": null,
     "transcription": null,
     "validation_level": 0,
     "status": "pending"
   },
   "provenance": {
     "source": "community_contribution",
-    "consent_version": "v0-draft"
+    "consent_version": "v0-draft",
+    "allow_training": false
   }
 }
