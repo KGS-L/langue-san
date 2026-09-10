@@ -19,6 +19,11 @@ class ContributionRepository implements ContributionRepositoryInterface
             ->paginate($perPage);
     }
 
+    public function create(array $data): Contribution
+    {
+        return $this->model->newQuery()->create($data);
+    }
+
     public function update(Contribution $contribution, array $data): Contribution
     {
         $contribution->update($data);

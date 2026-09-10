@@ -5,8 +5,8 @@ namespace App\Repositories\Eloquent;
 use App\Contracts\Repositories\CategoryRepositoryInterface;
 use App\Models\Category;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Str;
 
 class CategoryRepository implements CategoryRepositoryInterface
 {
@@ -28,14 +28,15 @@ class CategoryRepository implements CategoryRepositoryInterface
             ->get();
     }
 
-    public function findBySlugOrName(string $value): ?Category
+    public function activeWithPromptCount(): Collection
     {
-        $slug = Str::slug($value);
-
         return $this->model->newQuery()
-            ->where('slug', $slug)
-            ->orWhere('name', $value)
-            ->first();
+            ->where('is_active', true)
+            ->withCount([
+                'prompts as active_prompts_count' => fn (Builder $query) => $query->where('is_active', true),
+            ])
+            ->orderBy('display_order')
+            ->get();
     }
 
     public function create(array $data): Category { return $this->model->newQuery()->create($data); }

@@ -67,7 +67,7 @@ class ContributorContextController extends Controller
         $profiles->updateContext($identity->profile, $request->validated());
 
         return redirect()
-            ->route('contributor.home')
-            ->with('success', 'Votre contexte linguistique a été enregistré. Vous pourrez maintenant choisir un thème.');
+            ->route('contributor.themes.index')
+            ->with('success', 'Votre contexte linguistique a été enregistré. Choisissez maintenant un thème.');
     }
 }

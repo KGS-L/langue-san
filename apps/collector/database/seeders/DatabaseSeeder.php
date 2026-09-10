@@ -12,6 +12,7 @@ class DatabaseSeeder extends Seeder
             LinguisticReferenceSeeder::class,
             CategorySeeder::class,
             PromptSeeder::class,
+            ConsentVersionSeeder::class,
             AdminUserSeeder::class,
         ]);
     }

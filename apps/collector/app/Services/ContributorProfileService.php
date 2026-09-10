@@ -25,4 +25,13 @@ class ContributorProfileService
             'last_seen_at' => now(),
         ]);
     }
+
+    public function hasCompleteContext(ContributorProfile $profile): bool
+    {
+        $hasLocality = $profile->locality_id !== null || filled($profile->locality_other);
+
+        return $hasLocality
+            && filled($profile->fluency_level)
+            && $profile->can_write_san !== null;
+    }
 }
