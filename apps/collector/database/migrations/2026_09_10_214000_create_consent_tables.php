@@ -18,20 +18,20 @@ return new class extends Migration {
             $table->timestamps();
         });
 
-        Schema::create('user_consents', function (Blueprint $table) {
+        Schema::create('contributor_consents', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('contributor_profile_id')->constrained()->cascadeOnDelete();
             $table->foreignId('consent_version_id')->constrained()->restrictOnDelete();
             $table->timestamp('accepted_at');
             $table->string('ip_hash', 64)->nullable();
             $table->timestamps();
-            $table->unique(['user_id', 'consent_version_id']);
+            $table->unique(['contributor_profile_id', 'consent_version_id']);
         });
     }
 
     public function down(): void
     {
-        Schema::dropIfExists('user_consents');
+        Schema::dropIfExists('contributor_consents');
         Schema::dropIfExists('consent_versions');
     }
 };
