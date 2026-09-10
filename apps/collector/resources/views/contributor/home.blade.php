@@ -29,6 +29,10 @@
 <main class="container py-5">
     <div class="row justify-content-center">
         <div class="col-lg-8">
+            @if(session('success'))
+                <div class="alert alert-success"><i class="bi bi-check-circle me-1"></i>{{ session('success') }}</div>
+            @endif
+
             <div class="card border-0 shadow-sm">
                 <div class="card-body p-4 p-md-5">
                     <div class="d-flex flex-wrap justify-content-between gap-3 align-items-start mb-4">
@@ -52,12 +56,12 @@
                     </div>
 
                     <div class="d-flex flex-column flex-sm-row gap-2 mt-4">
-                        <button class="btn btn-primary btn-lg" disabled><i class="bi bi-arrow-right-circle me-1"></i> Commencer le questionnaire</button>
+                        <a href="{{ route('contributor.context.edit') }}" class="btn btn-primary btn-lg"><i class="bi bi-arrow-right-circle me-1"></i> Commencer le questionnaire</a>
                         @guest
                             <a href="{{ route('register') }}" class="btn btn-outline-primary btn-lg">Créer un compte (facultatif)</a>
                         @endguest
                     </div>
-                    <p class="small text-muted mt-2 mb-0">Le parcours de collecte sera branché sur ce bouton à l’étape suivante. Le compte restera facultatif.</p>
+                    <p class="small text-muted mt-2 mb-0">Le questionnaire commence par votre contexte linguistique. Aucun compte n’est nécessaire pour cette étape.</p>
                 </div>
             </div>
 
