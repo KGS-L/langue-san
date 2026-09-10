@@ -3,7 +3,16 @@
 @section('content')
 <div class="pagetitle"><h1>Contribution #{{ $contribution->id }}</h1></div>
 <section class="section"><div class="row">
-<div class="col-lg-7"><div class="card"><div class="card-body"><h5 class="card-title">Donnée collectée</h5><dl class="row"><dt class="col-sm-3">Français</dt><dd class="col-sm-9">{{ $contribution->prompt->french_text }}</dd><dt class="col-sm-3">Catégorie</dt><dd class="col-sm-9">{{ $contribution->prompt->category->name }}</dd><dt class="col-sm-3">Contributeur</dt><dd class="col-sm-9">{{ $contribution->user->name }}</dd><dt class="col-sm-3">Localité</dt><dd class="col-sm-9">{{ $contribution->locality?->name ?? 'Non renseignée' }}</dd><dt class="col-sm-3">Statut</dt><dd class="col-sm-9">{{ $contribution->status->value }}</dd></dl>
+<div class="col-lg-7"><div class="card"><div class="card-body"><h5 class="card-title">Donnée collectée</h5>
+@php($profile = $contribution->contributorProfile)
+<dl class="row">
+    <dt class="col-sm-3">Français</dt><dd class="col-sm-9">{{ $contribution->prompt->french_text }}</dd>
+    @if($contribution->prompt->context)<dt class="col-sm-3">Contexte</dt><dd class="col-sm-9">{{ $contribution->prompt->context }}</dd>@endif
+    <dt class="col-sm-3">Catégorie</dt><dd class="col-sm-9">{{ $contribution->prompt->category->name }}</dd>
+    <dt class="col-sm-3">Contributeur</dt><dd class="col-sm-9">{{ $profile?->user?->name ?? $profile?->public_code ?? 'Anonyme' }} @if(!$profile?->user_id)<span class="badge bg-light text-dark ms-1">Sans compte</span>@endif</dd>
+    <dt class="col-sm-3">Localité</dt><dd class="col-sm-9">{{ $contribution->locality?->name ?? 'Non renseignée' }}</dd>
+    <dt class="col-sm-3">Statut</dt><dd class="col-sm-9">{{ $contribution->status->value }}</dd>
+</dl>
 @if($contribution->recording)<div class="mb-4"><label class="form-label fw-bold">Audio</label><audio class="w-100" controls src="{{ route('admin.recordings.show',$contribution->recording) }}"></audio></div>@endif
 <form method="POST" action="{{ route('admin.contributions.transcribe',$contribution) }}">@csrf<label class="form-label fw-bold">Transcription San</label><textarea name="san_text" class="form-control" rows="5" required>{{ old('san_text',$contribution->san_text) }}</textarea><button class="btn btn-primary mt-3"><i class="bi bi-save"></i> Enregistrer la transcription</button></form></div></div></div>
 <div class="col-lg-5"><div class="card"><div class="card-body"><h5 class="card-title">Validation linguistique</h5>@if($contribution->validations->count())<div class="mb-4">@foreach($contribution->validations as $validation)<div class="border rounded p-2 mb-2"><strong>{{ $validation->validator->name }}</strong><br><span class="badge bg-secondary">{{ $validation->decision->value }}</span> {{ $validation->variety?->name ?? '' }}@if($validation->san_text_corrected)<div class="mt-2"><small>Correction :</small><br>{{ $validation->san_text_corrected }}</div>@endif</div>@endforeach</div>@endif
