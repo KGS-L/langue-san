@@ -1,6 +1,3 @@
 @extends('admin.layouts.app')
-@section('title', 'Exports dataset')
-@section('content')
-<div class="pagetitle"><h1>Exports dataset</h1></div>
-<section class="section"><div class="card"><div class="card-body"><h5 class="card-title">Exports</h5><p>Préparer plus tard les exports CSV/JSONL à partir des seules données approuvées et autorisées.</p></div></div></section>
-@endsection
+@section('title','Export dataset')
+@section('content')<div class="pagetitle"><h1>Export dataset</h1></div><section class="section"><div class="card"><div class="card-body"><h5 class="card-title">Corpus approuvé</h5><p>Seules les contributions <strong>approved</strong>, associées à une variété validée et couvertes par un consentement autorisant l'entraînement peuvent être exportées.</p>@if(auth()->user()->isAdmin())<a class="btn btn-primary" href="{{ route('admin.exports.download') }}"><i class="bi bi-filetype-csv"></i> Télécharger le CSV</a>@else<div class="alert alert-warning mb-0">L'export est réservé à un administrateur.</div>@endif</div></div></section>@endsection

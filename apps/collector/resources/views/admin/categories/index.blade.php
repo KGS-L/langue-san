@@ -1,6 +1,6 @@
 @extends('admin.layouts.app')
-@section('title', 'Catégories')
+@section('title','Catégories')
 @section('content')
-<div class="pagetitle"><h1>Catégories</h1></div>
-<section class="section"><div class="card"><div class="card-body"><h5 class="card-title">Gestion des catégories</h5><p>Salutations, Présentation, Famille, Nombres, etc.</p></div></div></section>
+<div class="pagetitle d-flex justify-content-between align-items-center"><h1>Catégories</h1><a href="{{ route('admin.categories.create') }}" class="btn btn-primary"><i class="bi bi-plus-lg"></i> Ajouter</a></div>
+<section class="section"><div class="card"><div class="card-body"><h5 class="card-title">Thèmes de collecte</h5><div class="table-responsive"><table class="table align-middle"><thead><tr><th>Ordre</th><th>Nom</th><th>Prompts</th><th>Actif</th><th></th></tr></thead><tbody>@forelse($categories as $category)<tr><td>{{ $category->display_order }}</td><td>@if($category->icon)<i class="{{ $category->icon }} me-2"></i>@endif{{ $category->name }}</td><td>{{ $category->prompts_count }}</td><td>{!! $category->is_active ? '<span class="badge bg-success">Oui</span>' : '<span class="badge bg-secondary">Non</span>' !!}</td><td class="text-end"><a class="btn btn-sm btn-outline-primary" href="{{ route('admin.categories.edit',$category) }}"><i class="bi bi-pencil"></i></a> @can('delete',$category)<form class="d-inline" method="POST" action="{{ route('admin.categories.destroy',$category) }}" onsubmit="return confirm('Supprimer cette catégorie ?')">@csrf @method('DELETE')<button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button></form>@endcan</td></tr>@empty<tr><td colspan="5" class="text-center text-muted">Aucune catégorie.</td></tr>@endforelse</tbody></table></div>{{ $categories->links() }}</div></div></section>
 @endsection

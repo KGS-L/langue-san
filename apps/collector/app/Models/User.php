@@ -33,6 +33,7 @@ class User extends Authenticatable
     public function contributions(): HasMany { return $this->hasMany(Contribution::class); }
     public function validations(): HasMany { return $this->hasMany(Validation::class, 'validator_id'); }
     public function collectionSessions(): HasMany { return $this->hasMany(CollectionSession::class); }
+    public function consents(): HasMany { return $this->hasMany(UserConsent::class); }
 
     public function isAdmin(): bool { return $this->role === UserRole::ADMIN; }
     public function isModerator(): bool { return $this->role === UserRole::MODERATOR; }

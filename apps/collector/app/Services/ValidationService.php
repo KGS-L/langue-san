@@ -21,7 +21,12 @@ class ValidationService
     public function validate(Contribution $contribution, User $validator, array $data): Validation
     {
         return DB::transaction(function () use ($contribution, $validator, $data) {
-            $validation = $this->validations->create([...$data, 'contribution_id' => $contribution->id, 'validator_id' => $validator->id]);
+            $validation = $this->validations->create([
+                ...$data,
+                'contribution_id' => $contribution->id,
+                'validator_id' => $validator->id,
+            ]);
+
             $all = $this->validations->forContribution($contribution);
 
             if ($all->count() === 1) {
@@ -30,14 +35,28 @@ class ValidationService
                 $latestTwo = $all->take(-2);
                 $allRejected = $latestTwo->every(fn ($item) => $item->decision === ValidationDecision::REJECT);
                 $allAccepted = $latestTwo->every(fn ($item) => in_array($item->decision, [ValidationDecision::APPROVE, ValidationDecision::CORRECT], true));
-                $sameVariety = $latestTwo->pluck('variety_id')->filter()->unique()->count() === 1 && $latestTwo->every(fn ($item) => filled($item->variety_id));
+                $sameVariety = $latestTwo->pluck('variety_id')->filter()->unique()->count() === 1
+                    && $latestTwo->every(fn ($item) => filled($item->variety_id));
+
+                $effectiveTexts = $latestTwo->map(function ($item) use ($contribution) {
+                    $text = $item->decision === ValidationDecision::CORRECT
+                        ? $item->san_text_corrected
+                        : $contribution->san_text;
+
+                    return trim(preg_replace('/\s+/u', ' ', (string) $text));
+                });
+
+                $sameText = $effectiveTexts->filter()->count() === 2 && $effectiveTexts->unique()->count() === 1;
 
                 $status = $allRejected
                     ? ContributionStatus::REJECTED
-                    : (($allAccepted && $sameVariety) ? ContributionStatus::APPROVED : ContributionStatus::VALIDATED_TWICE);
+                    : (($allAccepted && $sameVariety && $sameText)
+                        ? ContributionStatus::APPROVED
+                        : ContributionStatus::VALIDATED_TWICE);
             }
 
             $this->contributions->update($contribution, ['status' => $status]);
+
             return $validation;
         });
     }
