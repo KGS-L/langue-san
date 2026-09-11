@@ -4,14 +4,15 @@ Cette roadmap décrit la direction actuelle du projet. Elle évoluera selon les 
 
 ## Phase 0 — Cadrage
 
-- [ ] choisir la première variété prioritaire pour le pilote terrain ;
-- [ ] définir la communauté pilote ;
-- [x] documenter le processus initial de consentement ;
+- [x] définir la stratégie multi-variétés : Maka, Matya et Maya restent toutes les trois dans le périmètre ;
+- [ ] identifier les communautés / relais terrain permettant d'obtenir une couverture utile des différentes variétés ;
+- [x] documenter et versionner le consentement ;
+- [x] définir les durées de conservation des audios et la procédure de retrait/correction ;
 - [x] définir le schéma de données du collecteur ;
 - [ ] constituer un petit groupe de validateurs réels ;
 - [ ] inventorier complètement les ressources existantes et leurs licences.
 
-Le formulaire public demande la localité plutôt qu'un nom technique de variété. Le référentiel peut proposer une variété interne (par exemple Toma → Maka, Tougan → Matya) avec sa provenance, mais seul un validateur humain confirme la variété finale.
+Le projet ne cible pas une variété unique à l'avance. La quantité et la qualité des données réellement collectées et validées détermineront les corpus et expérimentations ML possibles. Le formulaire public demande la localité plutôt qu'un nom technique de variété. Le référentiel peut proposer une variété interne (par exemple Toma → Maka, Tougan → Matya) avec sa provenance, mais seul un validateur humain confirme la variété finale.
 
 ## Phase 1 — Collecteur Laravel
 
@@ -31,6 +32,9 @@ Le formulaire public demande la localité plutôt qu'un nom technique de variét
 - [x] export CSV versionné des données approuvées ;
 - [x] rôles spécialisés transcripteur / validateur ;
 - [x] espace contributeur et historique ;
+- [x] demandes de correction, suppression d'audio, retrait et anonymisation ;
+- [x] exclusion immédiate des contributions retirées des exports ;
+- [x] purge automatique des audios selon la politique de conservation ;
 - [x] CI PHPUnit sur GitHub Actions.
 
 ## Phase 1B — Parole naturelle San → San
@@ -79,7 +83,8 @@ La consigne française qui déclenche le récit est une métadonnée. Elle ne do
 - [ ] 2 à 4 validateurs compétents ;
 - [ ] premiers concepts couverts par au moins 3 locuteurs lorsque possible ;
 - [ ] premiers récits naturels transcrits, segmentés et traduits ;
-- [ ] vérifier le fonctionnement réel du workflow de validation et des désaccords.
+- [ ] vérifier le fonctionnement réel du workflow de validation et des désaccords ;
+- [ ] mesurer séparément la couverture Maka / Matya / Maya obtenue sur le terrain.
 
 ### v0.2 — Couverture 500 prompts
 
@@ -95,6 +100,7 @@ La consigne française qui déclenche le récit est une métadonnée. Elle ne do
 - [ ] au moins 200 phrases simples validées ;
 - [ ] volume significatif de segments provenant de récits naturels ;
 - [x] séparation stricte train / validation / test dans l'export ;
+- [x] retrait d'une source répercuté sur les futurs exports ;
 - [ ] premières statistiques de qualité du corpus ;
 - [ ] data card et licence du dataset définies avant publication.
 
@@ -104,6 +110,7 @@ La consigne française qui déclenche le récit est une métadonnée. Elle ne do
 - [ ] notebook Google Colab reproductible ;
 - [ ] baseline dictionnaire / mémoire de traduction ;
 - [ ] tester un modèle multilingue ou byte-level adapté au contexte ;
+- [ ] décider des expériences par variété à partir de la couverture réellement validée ;
 - [ ] évaluer avec métriques automatiques ;
 - [ ] organiser l'évaluation humaine ;
 - [ ] documenter les erreurs par catégorie et variété.
@@ -111,7 +118,7 @@ La consigne française qui déclenche le récit est une métadonnée. Elle ne do
 ## Phase 4 — Premier traducteur expérimental
 
 - [ ] Français → San sur un domaine limité ;
-- [ ] affichage clair de la variété cible ;
+- [ ] affichage clair de la variété cible lorsqu'elle est connue ;
 - [ ] niveau de confiance ou avertissement ;
 - [ ] fonction de signalement / correction ;
 - [ ] historique des versions du modèle ;
@@ -137,4 +144,4 @@ La consigne française qui déclenche le récit est une métadonnée. Elle ne do
 
 ## Principe de passage entre phases
 
-Nous n'avançons pas vers un modèle plus complexe simplement parce qu'un objectif de quantité est atteint. La qualité, la naturalité du San, la cohérence des variétés, la validation humaine et le droit d'usage des données restent des critères de passage.
+Nous n'avançons pas vers un modèle plus complexe simplement parce qu'un objectif de quantité est atteint. La qualité, la naturalité du San, la cohérence des variétés, la validation humaine, le consentement et le droit d'usage des données restent des critères de passage.
