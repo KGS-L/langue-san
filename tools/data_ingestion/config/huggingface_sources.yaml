@@ -143,11 +143,13 @@ sources:
     target_iso_codes: ["sbd"]
     expected_configs: ["sbd_Latn"]
     license: "source_specific_or_other"
-    decision: "inspect_rights_and_subset"
-    priority: "medium"
+    decision: "harvest_local_restricted"
+    priority: "high"
     notes:
-      - "Texte biblique brut; domaine religieux très biaisé."
-      - "Licence de contenu à clarifier avant toute réutilisation."
+      - "7 919 lignes sbd détectées."
+      - "Récolte locale autorisée dans data/raw pour inventaire et recherche technique."
+      - "Le contenu reste rights_review_required : ne pas republier ou redistribuer tant que les droits amont ne sont pas clarifiés."
+      - "Texte biblique brut; domaine religieux très biaisé, à garder séparé des corpus généraux."
 
   - repo_id: "pei39/Taxi1500-RawData-test"
     canonical: false
