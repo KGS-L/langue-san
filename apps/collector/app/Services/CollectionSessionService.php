@@ -7,9 +7,11 @@ use App\Enums\CollectionSessionStatus;
 use App\Enums\SessionPromptStatus;
 use App\Models\CollectionSession;
 use App\Models\ContributorProfile;
+use App\Models\Prompt;
 use App\Models\SessionPrompt;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Collection;
 use Illuminate\Validation\ValidationException;
 
 class CollectionSessionService
@@ -29,20 +31,12 @@ class CollectionSessionService
             ]);
         }
 
-        return DB::transaction(function () use ($profile, $categoryId, $prompts) {
-            $this->sessions->abandonOpenForContributor($profile->id);
+        return $this->createSession($profile, $categoryId, $prompts);
+    }
 
-            $session = $this->sessions->create([
-                'contributor_profile_id' => $profile->id,
-                'category_id' => $categoryId,
-                'status' => CollectionSessionStatus::STARTED->value,
-                'started_at' => now(),
-            ]);
-
-            $this->sessions->addPrompts($session, $prompts);
-
-            return $session->load('category');
-        });
+    public function startWithPrompt(ContributorProfile $profile, Prompt $prompt): CollectionSession
+    {
+        return $this->createSession($profile, $prompt->category_id, collect([$prompt]));
     }
 
     public function activeForContributor(ContributorProfile $profile): ?CollectionSession
@@ -116,5 +110,23 @@ class CollectionSessionService
         }
 
         return $session;
+    }
+
+    private function createSession(ContributorProfile $profile, int $categoryId, Collection $prompts): CollectionSession
+    {
+        return DB::transaction(function () use ($profile, $categoryId, $prompts) {
+            $this->sessions->abandonOpenForContributor($profile->id);
+
+            $session = $this->sessions->create([
+                'contributor_profile_id' => $profile->id,
+                'category_id' => $categoryId,
+                'status' => CollectionSessionStatus::STARTED->value,
+                'started_at' => now(),
+            ]);
+
+            $this->sessions->addPrompts($session, $prompts);
+
+            return $session->load('category');
+        });
     }
 }
