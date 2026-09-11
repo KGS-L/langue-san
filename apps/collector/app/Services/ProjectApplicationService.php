@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Contracts\Repositories\ProjectApplicationRepositoryInterface;
 use App\Contracts\Repositories\ProjectMembershipRepositoryInterface;
 use App\Enums\ProjectApplicationStatus;
+use App\Enums\UserRole;
 use App\Mail\ProjectApplicationDecisionMail;
 use App\Models\ProjectApplication;
 use App\Models\User;
@@ -94,5 +95,37 @@ class ProjectApplicationService
         ));
 
         return $updated;
+    }
+
+    public function updateSpecializedAccess(ProjectApplication $application, User $actor, array $roles): User
+    {
+        if (! $actor->isAdmin()) {
+            abort(403);
+        }
+
+        $application->loadMissing(['user.projectMembership']);
+        $user = $application->user;
+
+        if ($application->status !== ProjectApplicationStatus::APPROVED || ! $user->projectMembership?->is_active) {
+            throw ValidationException::withMessages([
+                'roles' => 'Les accès spécialisés ne peuvent être attribués qu’à un membre du projet dont la candidature est acceptée.',
+            ]);
+        }
+
+        if ($user->isStaff()) {
+            throw ValidationException::withMessages([
+                'roles' => 'Les comptes administrateur et modérateur sont gérés séparément.',
+            ]);
+        }
+
+        $allowed = [UserRole::TRANSCRIBER->value, UserRole::VALIDATOR->value];
+        $selected = array_values(array_intersect($allowed, $roles));
+
+        $user->syncRoles([
+            UserRole::CONTRIBUTOR->value,
+            ...$selected,
+        ]);
+
+        return $user->refresh();
     }
 }
