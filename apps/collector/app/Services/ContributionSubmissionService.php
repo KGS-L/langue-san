@@ -71,7 +71,7 @@ class ContributionSubmissionService
                         'path' => $storedPath,
                         'mime_type' => $audio->getMimeType(),
                         'size_bytes' => $audio->getSize(),
-                        'duration_ms' => null,
+                        'duration_ms' => isset($data['audio_duration_ms']) ? (int) $data['audio_duration_ms'] : null,
                         'quality_status' => 'pending',
                     ]);
                 }
