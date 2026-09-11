@@ -25,7 +25,6 @@ class User extends Authenticatable
         'email',
         'email_verified_at',
         'password',
-        'role',
         'status',
     ];
 
@@ -36,7 +35,6 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
-            'role' => UserRole::class,
             'status' => UserStatus::class,
         ];
     }
@@ -77,25 +75,10 @@ class User extends Authenticatable
         );
     }
 
-    public function isAdmin(): bool
-    {
-        return $this->hasRole(UserRole::ADMIN->value) || $this->role === UserRole::ADMIN;
-    }
-
-    public function isModerator(): bool
-    {
-        return $this->hasRole(UserRole::MODERATOR->value) || $this->role === UserRole::MODERATOR;
-    }
-
-    public function isContributor(): bool
-    {
-        return $this->hasRole(UserRole::CONTRIBUTOR->value) || $this->role === UserRole::CONTRIBUTOR;
-    }
-
-    public function isStaff(): bool
-    {
-        return $this->isAdmin() || $this->isModerator();
-    }
+    public function isAdmin(): bool { return $this->hasRole(UserRole::ADMIN->value); }
+    public function isModerator(): bool { return $this->hasRole(UserRole::MODERATOR->value); }
+    public function isContributor(): bool { return $this->hasRole(UserRole::CONTRIBUTOR->value); }
+    public function isStaff(): bool { return $this->hasAnyRole([UserRole::ADMIN->value, UserRole::MODERATOR->value]); }
 
     public function needsContributorOnboarding(): bool
     {
