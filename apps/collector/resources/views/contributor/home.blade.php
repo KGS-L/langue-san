@@ -29,7 +29,7 @@
 
 <main class="container py-5">
     <div class="row justify-content-center">
-        <div class="col-lg-8">
+        <div class="col-lg-9">
             @if(session('success'))
                 <div class="alert alert-success"><i class="bi bi-check-circle me-1"></i>{{ session('success') }}</div>
             @endif
@@ -38,21 +38,38 @@
                 <div class="card-body p-4 p-md-5">
                     <span class="badge text-bg-success mb-2">Aucun compte obligatoire</span>
                     <h1 class="h2 mb-2">Contribuer à Langue SAN</h1>
-                    <p class="text-muted mb-4">Partagez quelques mots ou phrases en San. Votre voix est recommandée, mais vous pouvez également écrire vos réponses.</p>
+                    <p class="text-muted mb-4">Nous collectons deux formes complémentaires de données : des traductions ciblées et de la parole naturelle en San.</p>
 
-                    <div class="row g-3 my-2">
-                        <div class="col-md-4"><div class="border rounded p-3 h-100"><i class="bi bi-geo-alt fs-4"></i><h2 class="h6 mt-2">1. Votre contexte</h2><p class="small text-muted mb-0">Localité et quelques informations sur votre pratique du San.</p></div></div>
-                        <div class="col-md-4"><div class="border rounded p-3 h-100"><i class="bi bi-grid fs-4"></i><h2 class="h6 mt-2">2. Votre thème</h2><p class="small text-muted mb-0">Salutations, famille, nombres, marché, etc.</p></div></div>
-                        <div class="col-md-4"><div class="border rounded p-3 h-100"><i class="bi bi-mic-fill fs-4"></i><h2 class="h6 mt-2">3. Vos réponses</h2><p class="small text-muted mb-0">Enregistrez votre voix et, si vous le souhaitez, ajoutez aussi le texte.</p></div></div>
+                    <div class="row g-4">
+                        <div class="col-md-6">
+                            <div class="border rounded-4 p-4 h-100 bg-white">
+                                <div class="d-flex align-items-center gap-2 mb-2"><i class="bi bi-translate fs-3"></i><span class="badge bg-light text-dark border">Français → San</span></div>
+                                <h2 class="h4">Traduire des mots et phrases</h2>
+                                <p class="text-muted">Une session courte de 10 questions : généralement 7 mots ou expressions et 3 phrases du quotidien.</p>
+                                <a href="{{ route('contributor.context.edit', ['next' => 'translation']) }}" class="btn btn-primary w-100">Commencer une session</a>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="border rounded-4 p-4 h-100 bg-white">
+                                <div class="d-flex align-items-center gap-2 mb-2"><i class="bi bi-mic-fill fs-3"></i><span class="badge bg-light text-dark border">San → San</span></div>
+                                <h2 class="h4">Parler naturellement en San</h2>
+                                <p class="text-muted">Choisissez un sujet et racontez librement pendant environ 2 à 5 minutes : histoire, tradition, souvenir, activité ou récit.</p>
+                                <a href="{{ route('contributor.natural-speech.index') }}" class="btn btn-outline-primary w-100">Choisir un sujet</a>
+                            </div>
+                        </div>
                     </div>
 
-                    <div class="d-flex flex-column flex-sm-row gap-2 mt-4">
-                        <a href="{{ route('contributor.context.edit') }}" class="btn btn-primary btn-lg"><i class="bi bi-arrow-right-circle me-1"></i> Commencer le questionnaire</a>
-                        @guest
-                            <a href="{{ route('contributor.auth.show') }}" class="btn btn-outline-primary btn-lg">Créer ou retrouver mon compte</a>
-                        @endguest
+                    <div class="alert alert-light border mt-4 mb-0">
+                        <strong>Pourquoi les deux ?</strong>
+                        <span class="text-muted">Les traductions donnent des paires français–San contrôlées. Les récits naturels permettent aussi de documenter la façon dont le San s’organise spontanément, sans calquer systématiquement la structure du français.</span>
                     </div>
-                    <p class="small text-muted mt-2 mb-0">Vous pouvez commencer sans compte. Si vous vous connectez plus tard depuis ce navigateur, vos contributions déjà enregistrées seront rattachées automatiquement à votre compte.</p>
+
+                    @guest
+                        <div class="d-flex flex-column flex-sm-row gap-2 mt-4">
+                            <a href="{{ route('contributor.auth.show') }}" class="btn btn-outline-primary">Créer ou retrouver mon compte</a>
+                        </div>
+                    @endguest
+                    <p class="small text-muted mt-3 mb-0">Vous pouvez commencer sans compte. Si vous vous connectez plus tard depuis ce navigateur, vos contributions déjà enregistrées seront rattachées automatiquement à votre compte.</p>
                 </div>
             </div>
 
@@ -60,7 +77,7 @@
                 <div class="card border-0 shadow-sm mt-4">
                     <div class="card-body p-4">
                         <h2 class="h5">Pourquoi créer un compte ?</h2>
-                        <p class="text-muted mb-3">Pour retrouver vos contributions, vos futures statistiques et reprendre plus facilement vos participations sur d’autres visites.</p>
+                        <p class="text-muted mb-3">Pour retrouver vos contributions, vos statistiques et reprendre plus facilement vos participations lors de prochaines visites.</p>
                         <a href="{{ route('contributor.auth.show') }}" class="btn btn-outline-primary">Mon compte</a>
                     </div>
                 </div>
