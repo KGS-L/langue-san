@@ -2,6 +2,13 @@
 
 namespace Database\Seeders;
 
+use Database\Seeders\AdminUserSeeder;
+use Database\Seeders\CategorySeeder;
+use Database\Seeders\ConsentVersionSeeder;
+use Database\Seeders\DemoContributorSeeder;
+use Database\Seeders\LinguisticReferenceSeeder;
+use Database\Seeders\PromptSeeder;
+use Database\Seeders\RolePermissionSeeder;
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
@@ -15,6 +22,7 @@ class DatabaseSeeder extends Seeder
             ConsentVersionSeeder::class,
             RolePermissionSeeder::class,
             AdminUserSeeder::class,
+            DemoContributorSeeder::class,
         ]);
     }
 }

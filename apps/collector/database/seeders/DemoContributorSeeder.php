@@ -29,12 +29,13 @@ class DemoContributorSeeder extends Seeder
             'Adama', 'Aïssata', 'Aminata', 'Awa', 'Bintou',
             'Boureima', 'Daouda', 'Fatimata', 'Habibou', 'Hamidou',
             'Idrissa', 'Issa', 'Kadidia', 'Karim', 'Mariam',
-            'Moussa', 'Oumar', 'Salimata', 'Seydou', 'Souleymane',
+            'Moussa', 'Oumar', 'Salimata', 'Seydou', 'Souleymane', 'Ali',
+            'Kevin', 'Yannick', 'Sophie', 'Marie', 'Jean', 'Luc', 'Paul', 'Claire',
         ];
 
         // Noms utilisés ici uniquement comme données de démonstration plausibles.
         // Ils ne correspondent pas à de vraies personnes enregistrées dans le projet.
-        $surnames = ['SO', 'SOW', 'KI', 'KY', 'TOE'];
+        $surnames = ['SO', 'SOW', 'KI', 'KY', 'TOE', 'PARE'];
 
         $professions = [
             ProfessionType::STUDENT,
