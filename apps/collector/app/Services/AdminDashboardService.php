@@ -32,9 +32,9 @@ class AdminDashboardService
 
         $underCoveredPrompts = Prompt::query()
             ->where('is_active', true)
+            ->has('contributions', '<', 3)
             ->with('category')
             ->withCount('contributions')
-            ->having('contributions_count', '<', 3)
             ->orderBy('contributions_count')
             ->orderByDesc('priority')
             ->limit(8)
