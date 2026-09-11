@@ -33,7 +33,7 @@ class ContributorNaturalSpeechController extends Controller
 
         if (! $profiles->hasCompleteContext($identity->profile)) {
             $response = redirect()
-                ->route('contributor.context.edit')
+                ->route('contributor.context.edit', ['next' => 'natural-speech'])
                 ->with('warning', 'Complétez d’abord votre contexte linguistique.');
 
             return $this->withGuestCookie($response, $identity->guestToken, $identity->shouldSetCookie);
@@ -66,7 +66,7 @@ class ContributorNaturalSpeechController extends Controller
         );
 
         if (! $profiles->hasCompleteContext($identity->profile)) {
-            return redirect()->route('contributor.context.edit');
+            return redirect()->route('contributor.context.edit', ['next' => 'natural-speech']);
         }
 
         $consents->acceptCurrent($identity->profile, $request->ip());
