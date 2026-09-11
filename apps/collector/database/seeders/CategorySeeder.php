@@ -22,6 +22,20 @@ class CategorySeeder extends Seeder
             ['Déplacements', 'bi bi-signpost'],
             ['École', 'bi bi-book'],
             ['Travail', 'bi bi-briefcase'],
+            ['Corps / santé', 'bi bi-heart-pulse'],
+            ['Vêtements / apparence', 'bi bi-person-standing-dress'],
+            ['Agriculture / champs', 'bi bi-flower2'],
+            ['Élevage / animaux', 'bi bi-egg'],
+            ['Nature / environnement', 'bi bi-tree'],
+            ['Météo / saisons', 'bi bi-cloud-sun'],
+            ['Village / communauté', 'bi bi-houses'],
+            ['Cérémonies / traditions', 'bi bi-music-note-beamed'],
+            ['Émotions / états', 'bi bi-emoji-smile'],
+            ['Actions quotidiennes', 'bi bi-arrow-repeat'],
+            ['Directions / lieux', 'bi bi-compass'],
+            ['Administration / services', 'bi bi-building'],
+            ['Technologie / communication', 'bi bi-phone'],
+            ['Relations / conversation', 'bi bi-chat-dots'],
         ];
 
         foreach ($categories as $order => [$name, $icon]) {
