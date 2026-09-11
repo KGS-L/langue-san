@@ -18,7 +18,7 @@
         <div class="d-flex gap-2 align-items-center">
             @auth
                 <span class="small text-muted d-none d-md-inline">{{ auth()->user()->name }}</span>
-                <form method="POST" action="{{ route('logout') }}">@csrf<button class="btn btn-outline-secondary btn-sm">Déconnexion</button></form>
+                <form method="POST" action="{{ route('contributor.logout') }}">@csrf<button class="btn btn-outline-secondary btn-sm">Déconnexion</button></form>
             @else
                 <a href="{{ route('contributor.auth.show') }}" class="btn btn-outline-secondary btn-sm">Mon compte</a>
             @endauth
