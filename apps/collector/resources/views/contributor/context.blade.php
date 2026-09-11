@@ -34,8 +34,8 @@
 
             <div class="card border-0 shadow-sm">
                 <div class="card-body p-4 p-md-5">
-                    <h1 class="h3 mb-2">Votre contexte linguistique</h1>
-                    <p class="text-muted mb-2">Ces informations servent à interpréter correctement vos réponses. Nous ne vous demandons pas de choisir vous-même un nom technique de variété.</p>
+                    <h1 class="h3 mb-2">Parlez-nous un peu de votre pratique du San</h1>
+                    <p class="text-muted mb-2">Ces quelques informations nous aident à mieux comprendre et vérifier vos réponses.</p>
                     <p class="small text-muted mb-4"><span class="text-danger fw-bold">*</span> Champ obligatoire</p>
 
                     @if($errors->any())
@@ -75,7 +75,7 @@
                             @error('locality_choice')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
-                            <div class="form-text">La localité aide les validateurs à ne pas mélanger des usages différents.</div>
+                            <div class="form-text">Cette information nous aide à mieux comprendre les différences de vocabulaire et de prononciation.</div>
                         </div>
 
                         <div id="locality_other_wrapper" class="col-12 {{ $selectedLocality === 'other' ? '' : 'd-none' }}">
