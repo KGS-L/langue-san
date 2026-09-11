@@ -14,6 +14,7 @@ class DatabaseSeeder extends Seeder
             PromptSeeder::class,
             ConsentVersionSeeder::class,
             AdminUserSeeder::class,
+            RolePermissionSeeder::class,
         ]);
     }
 }
