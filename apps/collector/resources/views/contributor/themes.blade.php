@@ -14,7 +14,7 @@
         <a class="navbar-brand fw-bold d-flex align-items-center gap-2" href="{{ route('home') }}">
             <img src="{{ asset('assets/img/langue-san-logo.svg') }}" width="34" height="34" alt="Logo Langue SAN"> Langue SAN
         </a>
-        <a href="{{ route('contributor.context.edit') }}" class="btn btn-outline-secondary btn-sm">Modifier mon contexte</a>
+        <a href="{{ route('contributor.context.edit') }}" class="btn btn-outline-secondary btn-sm">Modifier mes informations</a>
     </div>
 </nav>
 
@@ -40,7 +40,7 @@
             <div class="card border-0 shadow-sm">
                 <div class="card-body p-4 p-md-5">
                     <h1 class="h3 mb-2">Choisissez un thème</h1>
-                    <p class="text-muted mb-4">Nous vous proposerons jusqu’à 10 questions : en priorité 7 mots ou concepts et 3 phrases qui ont encore besoin de contributions.</p>
+                    <p class="text-muted mb-4">Nous vous proposerons jusqu’à 10 questions, avec surtout des mots simples et quelques phrases qui ont encore besoin de réponses.</p>
 
                     <form method="POST" action="{{ route('contributor.themes.store') }}">
                         @csrf
@@ -52,7 +52,7 @@
                                         <span class="fs-4"><i class="{{ $category->icon ?: 'bi bi-chat-square-text' }}"></i></span>
                                         <span>
                                             <strong class="d-block">{{ $category->name }}</strong>
-                                            <small class="text-muted">{{ $category->active_prompts_count }} prompt(s) disponible(s)</small>
+                                            <small class="text-muted">{{ $category->active_prompts_count }} question(s) disponible(s)</small>
                                         </span>
                                     </label>
                                 </div>
@@ -63,12 +63,12 @@
                             <div class="d-flex align-items-start gap-2">
                                 <i class="bi bi-shield-check fs-4 text-success"></i>
                                 <div class="flex-grow-1">
-                                    <h2 class="h6 fw-bold mb-2">Consentement à la collecte <span class="text-danger">*</span></h2>
+                                    <h2 class="h6 fw-bold mb-2">Avant de commencer <span class="text-danger">*</span></h2>
                                     @if($consentVersion)
                                         <p class="small text-muted mb-3">{{ $consentVersion->content }}</p>
                                         <div class="form-check">
                                             <input class="form-check-input" type="checkbox" name="consent" value="1" id="consent" @checked(old('consent', $hasAcceptedConsent)) required>
-                                            <label class="form-check-label" for="consent">J’ai lu et j’accepte ce consentement (version {{ $consentVersion->version }}).</label>
+                                            <label class="form-check-label" for="consent">J’ai lu et j’accepte l’utilisation de mes réponses dans les conditions indiquées ci-dessus.</label>
                                         </div>
                                         <div class="small mt-2">
                                             <a href="{{ route('privacy') }}" target="_blank">Confidentialité</a>
@@ -76,7 +76,7 @@
                                             <a href="{{ route('data-governance') }}" target="_blank">Gouvernance des données</a>
                                         </div>
                                     @else
-                                        <div class="alert alert-danger mb-0">Aucune version active du consentement n’est configurée. La collecte ne peut pas démarrer.</div>
+                                        <div class="alert alert-warning mb-0">Le questionnaire est temporairement indisponible. Veuillez réessayer un peu plus tard.</div>
                                     @endif
                                 </div>
                             </div>
