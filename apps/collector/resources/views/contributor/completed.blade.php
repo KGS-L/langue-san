@@ -26,9 +26,10 @@
                         <div class="col-4"><div class="border rounded p-3"><strong class="fs-4 d-block">{{ $progress['total'] }}</strong><small class="text-muted">questions</small></div></div>
                     </div>
 
-                    <div class="d-grid gap-2 d-sm-flex justify-content-sm-center">
-                        <a href="{{ route('contributor.themes.index') }}" class="btn btn-primary btn-lg">Contribuer à un autre thème</a>
-                        <a href="{{ route('home') }}" class="btn btn-light btn-lg">Retour à l’accueil</a>
+                    <div class="d-grid gap-2 d-sm-flex justify-content-sm-center flex-wrap">
+                        <a href="{{ route('contributor.themes.index') }}" class="btn btn-primary btn-lg">Traduire d’autres mots / phrases</a>
+                        <a href="{{ route('contributor.natural-speech.index') }}" class="btn btn-outline-primary btn-lg">Faire un récit en San</a>
+                        <a href="{{ route('home') }}" class="btn btn-light btn-lg">Accueil</a>
                     </div>
 
                     @guest
