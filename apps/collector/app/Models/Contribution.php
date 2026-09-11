@@ -19,6 +19,7 @@ class Contribution extends Model
         'submitted_san_text',
         'status',
         'submitted_at',
+        'withdrawn_at',
     ];
 
     protected function casts(): array
@@ -26,6 +27,7 @@ class Contribution extends Model
         return [
             'status' => ContributionStatus::class,
             'submitted_at' => 'datetime',
+            'withdrawn_at' => 'datetime',
         ];
     }
 
@@ -36,4 +38,7 @@ class Contribution extends Model
     public function recording(): HasOne { return $this->hasOne(Recording::class); }
     public function validations(): HasMany { return $this->hasMany(Validation::class); }
     public function segments(): HasMany { return $this->hasMany(ContributionSegment::class)->orderBy('position'); }
+    public function dataRequests(): HasMany { return $this->hasMany(DataRequest::class); }
+
+    public function isWithdrawn(): bool { return $this->withdrawn_at !== null; }
 }
