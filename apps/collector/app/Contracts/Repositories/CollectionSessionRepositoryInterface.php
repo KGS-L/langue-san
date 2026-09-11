@@ -12,6 +12,7 @@ interface CollectionSessionRepositoryInterface
     public function create(array $data): CollectionSession;
     public function addPrompts(CollectionSession $session, Collection $prompts): void;
     public function abandonOpenForContributor(int $contributorProfileId): void;
+    public function findOpenForContributor(int $contributorProfileId): ?CollectionSession;
     public function findForContributor(int $sessionId, int $contributorProfileId): ?CollectionSession;
     public function findSessionPrompt(int $sessionPromptId, int $sessionId): ?SessionPrompt;
     public function nextPending(CollectionSession $session): ?SessionPrompt;
