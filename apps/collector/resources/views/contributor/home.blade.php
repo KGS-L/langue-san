@@ -20,7 +20,7 @@
                 <span class="small text-muted d-none d-md-inline">{{ auth()->user()->name }}</span>
                 <form method="POST" action="{{ route('logout') }}">@csrf<button class="btn btn-outline-secondary btn-sm">Déconnexion</button></form>
             @else
-                <a href="{{ route('login') }}" class="btn btn-outline-secondary btn-sm">Se connecter</a>
+                <a href="{{ route('contributor.auth.show') }}" class="btn btn-outline-secondary btn-sm">Mon compte</a>
             @endauth
         </div>
     </div>
@@ -35,46 +35,41 @@
 
             <div class="card border-0 shadow-sm">
                 <div class="card-body p-4 p-md-5">
-                    <div class="d-flex flex-wrap justify-content-between gap-3 align-items-start mb-4">
-                        <div>
-                            <span class="badge text-bg-success mb-2">Aucun compte obligatoire</span>
-                            <h1 class="h2 mb-2">Contribuer à Langue SAN</h1>
-                            <p class="text-muted mb-0">Vous pouvez répondre au questionnaire directement. Votre progression est associée à un identifiant anonyme enregistré dans ce navigateur.</p>
-                        </div>
-                        <span class="badge bg-light text-dark border">{{ $profile->public_code }}</span>
-                    </div>
+                    <span class="badge text-bg-success mb-2">Aucun compte obligatoire</span>
+                    <h1 class="h2 mb-2">Contribuer à Langue SAN</h1>
+                    <p class="text-muted mb-4">Partagez quelques mots ou phrases en San. Votre voix est recommandée, mais vous pouvez également écrire vos réponses.</p>
 
                     <div class="row g-3 my-2">
                         <div class="col-md-4"><div class="border rounded p-3 h-100"><i class="bi bi-geo-alt fs-4"></i><h2 class="h6 mt-2">1. Votre contexte</h2><p class="small text-muted mb-0">Localité et quelques informations sur votre pratique du San.</p></div></div>
                         <div class="col-md-4"><div class="border rounded p-3 h-100"><i class="bi bi-grid fs-4"></i><h2 class="h6 mt-2">2. Votre thème</h2><p class="small text-muted mb-0">Salutations, famille, nombres, marché, etc.</p></div></div>
-                        <div class="col-md-4"><div class="border rounded p-3 h-100"><i class="bi bi-mic fs-4"></i><h2 class="h6 mt-2">3. Vos réponses</h2><p class="small text-muted mb-0">10 questions, en texte, en audio ou les deux.</p></div></div>
+                        <div class="col-md-4"><div class="border rounded p-3 h-100"><i class="bi bi-mic-fill fs-4"></i><h2 class="h6 mt-2">3. Vos réponses</h2><p class="small text-muted mb-0">Enregistrez votre voix et, si vous le souhaitez, ajoutez aussi le texte.</p></div></div>
                     </div>
 
                     <div class="d-flex flex-column flex-sm-row gap-2 mt-4">
                         <a href="{{ route('contributor.context.edit') }}" class="btn btn-primary btn-lg"><i class="bi bi-arrow-right-circle me-1"></i> Commencer le questionnaire</a>
                         @guest
-                            <a href="{{ route('register') }}" class="btn btn-outline-primary btn-lg">Créer un compte (facultatif)</a>
+                            <a href="{{ route('contributor.auth.show') }}" class="btn btn-outline-primary btn-lg">Créer ou retrouver mon compte</a>
                         @endguest
                     </div>
-                    <p class="small text-muted mt-2 mb-0">Le questionnaire commence par quelques informations simples sur votre pratique du San. Aucun compte n’est nécessaire.</p>
+                    <p class="small text-muted mt-2 mb-0">Vous pouvez commencer sans compte. Si vous vous connectez plus tard depuis ce navigateur, vos contributions déjà enregistrées seront rattachées automatiquement à votre compte.</p>
                 </div>
             </div>
 
             @guest
-            <div class="card border-0 shadow-sm mt-4">
-                <div class="card-body p-4">
-                    <h2 class="h5">Pourquoi créer un compte ?</h2>
-                    <p class="text-muted mb-3">Ce n’est pas nécessaire pour contribuer. Un compte servira surtout à retrouver vos statistiques, vos contributions et continuer plus facilement lors de prochaines visites.</p>
-                    <div class="d-flex gap-2"><a href="{{ route('register') }}" class="btn btn-outline-primary">Créer mon compte</a><a href="{{ route('login') }}" class="btn btn-light">J’ai déjà un compte</a></div>
+                <div class="card border-0 shadow-sm mt-4">
+                    <div class="card-body p-4">
+                        <h2 class="h5">Pourquoi créer un compte ?</h2>
+                        <p class="text-muted mb-3">Pour retrouver vos contributions, vos futures statistiques et reprendre plus facilement vos participations sur d’autres visites.</p>
+                        <a href="{{ route('contributor.auth.show') }}" class="btn btn-outline-primary">Mon compte</a>
+                    </div>
                 </div>
-            </div>
             @else
-            <div class="card border-0 shadow-sm mt-4">
-                <div class="card-body p-4">
-                    <h2 class="h5">Votre compte est lié à vos contributions</h2>
-                    <p class="text-muted mb-0">Les futures statistiques et l’historique utiliseront le profil <strong>{{ $profile->public_code }}</strong>.</p>
+                <div class="card border-0 shadow-sm mt-4">
+                    <div class="card-body p-4">
+                        <h2 class="h5">Vos contributions sont liées à votre compte</h2>
+                        <p class="text-muted mb-0">Les réponses que vous envoyez maintenant seront conservées dans votre historique.</p>
+                    </div>
                 </div>
-            </div>
             @endguest
         </div>
     </div>
