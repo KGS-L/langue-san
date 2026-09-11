@@ -32,9 +32,12 @@ class RolePermissionSeeder extends Seeder
 
         $admin = Role::findOrCreate(UserRole::ADMIN->value, 'web');
         $moderator = Role::findOrCreate(UserRole::MODERATOR->value, 'web');
-        Role::findOrCreate(UserRole::CONTRIBUTOR->value, 'web');
+        $contributor = Role::findOrCreate(UserRole::CONTRIBUTOR->value, 'web');
+        $transcriber = Role::findOrCreate(UserRole::TRANSCRIBER->value, 'web');
+        $validator = Role::findOrCreate(UserRole::VALIDATOR->value, 'web');
 
         $admin->syncPermissions($permissions);
+
         $moderator->syncPermissions([
             'access admin',
             'manage reference data',
@@ -44,6 +47,21 @@ class RolePermissionSeeder extends Seeder
             'validate contributions',
             'review project applications',
         ]);
+
+        $transcriber->syncPermissions([
+            'access admin',
+            'view contributions',
+            'transcribe contributions',
+        ]);
+
+        $validator->syncPermissions([
+            'access admin',
+            'view contributions',
+            'validate contributions',
+        ]);
+
+        // A contributor account has no back-office permission by default.
+        $contributor->syncPermissions([]);
 
         app(PermissionRegistrar::class)->forgetCachedPermissions();
     }
