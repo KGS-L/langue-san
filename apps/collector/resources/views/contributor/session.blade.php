@@ -41,7 +41,7 @@
         <a class="navbar-brand fw-bold d-flex align-items-center gap-2" href="{{ route('home') }}">
             <img src="{{ asset('assets/img/langue-san-logo.svg') }}" width="34" height="34" alt="Logo Langue SAN"> Langue SAN
         </a>
-        <span class="badge bg-light text-dark border">{{ $profile->public_code }}</span>
+        <span class="small text-muted">Votre contribution</span>
     </div>
 </nav>
 
