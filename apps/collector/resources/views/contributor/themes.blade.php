@@ -7,6 +7,39 @@
     <link rel="icon" type="image/svg+xml" href="{{ asset('assets/img/langue-san-logo.svg') }}">
     <link href="{{ asset('assets/vendor/bootstrap/css/bootstrap.min.css') }}" rel="stylesheet">
     <link href="{{ asset('assets/vendor/bootstrap-icons/bootstrap-icons.css') }}" rel="stylesheet">
+    <style>
+        .theme-option {
+            cursor: pointer;
+            border: 2px solid #e9ecef !important;
+            transition: border-color .18s ease, background-color .18s ease, box-shadow .18s ease, transform .18s ease;
+        }
+        .theme-option:hover {
+            border-color: #9ec5fe !important;
+            transform: translateY(-1px);
+        }
+        .theme-check {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: inline-grid;
+            place-items: center;
+            border: 2px solid #ced4da;
+            color: transparent;
+            background: #fff;
+            flex: 0 0 auto;
+            transition: all .18s ease;
+        }
+        .btn-check:checked + .theme-option {
+            border-color: #0d6efd !important;
+            background: #eef5ff !important;
+            box-shadow: 0 0 0 .18rem rgba(13, 110, 253, .10);
+        }
+        .btn-check:checked + .theme-option .theme-check {
+            border-color: #0d6efd;
+            background: #0d6efd;
+            color: #fff;
+        }
+    </style>
 </head>
 <body class="bg-light">
 <nav class="navbar bg-white border-bottom">
@@ -40,7 +73,7 @@
             <div class="card border-0 shadow-sm">
                 <div class="card-body p-4 p-md-5">
                     <h1 class="h3 mb-2">Choisissez un thème</h1>
-                    <p class="text-muted mb-4">Nous vous proposerons jusqu’à 10 questions, avec surtout des mots simples et quelques phrases qui ont encore besoin de réponses.</p>
+                    <p class="text-muted mb-4">Touchez simplement le thème qui vous intéresse. Nous vous proposerons ensuite jusqu’à 10 questions.</p>
 
                     <form method="POST" action="{{ route('contributor.themes.store') }}">
                         @csrf
@@ -48,12 +81,13 @@
                             @foreach($categories as $category)
                                 <div class="col-md-6">
                                     <input class="btn-check" type="radio" name="category_id" id="category_{{ $category->id }}" value="{{ $category->id }}" @checked((string) old('category_id') === (string) $category->id) required>
-                                    <label class="border rounded-3 p-3 w-100 h-100 d-flex gap-3 align-items-start bg-white" for="category_{{ $category->id }}" style="cursor:pointer">
+                                    <label class="theme-option rounded-3 p-3 w-100 h-100 d-flex gap-3 align-items-center bg-white" for="category_{{ $category->id }}">
                                         <span class="fs-4"><i class="{{ $category->icon ?: 'bi bi-chat-square-text' }}"></i></span>
-                                        <span>
+                                        <span class="flex-grow-1">
                                             <strong class="d-block">{{ $category->name }}</strong>
                                             <small class="text-muted">{{ $category->active_prompts_count }} question(s) disponible(s)</small>
                                         </span>
+                                        <span class="theme-check" aria-hidden="true"><i class="bi bi-check-lg"></i></span>
                                     </label>
                                 </div>
                             @endforeach
