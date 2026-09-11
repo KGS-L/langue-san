@@ -30,12 +30,13 @@ tools/data_ingestion/
 │   ├── __init__.py
 │   └── normalize.py
 ├── tests/
+│   ├── test_asjp.py
 │   └── test_config.py
 ├── README.md
 └── requirements.txt
 ```
 
-## Pipeline prévu
+## Pipeline
 
 ```text
 Source externe
@@ -53,6 +54,50 @@ validation linguistique si nécessaire
 dataset exploitable
 ```
 
-## Première source
+## ASJP — première source active
 
-La première intégration cible ASJP, qui fournit des listes lexicales structurées. Le collecteur ASJP sera développé avant d'ajouter d'autres sources.
+L'intégration initiale utilise **ASJP v21 (2025)** sous forme CLDF. Au lieu de scraper les pages HTML, le collecteur télécharge les tables structurées publiées par le projet ASJP, puis extrait uniquement les entrées correspondant aux codes ISO du projet :
+
+- `sbd` — San Maka / Southern Samo San ;
+- `stj` — San Matya ;
+- `sym` — San Maya.
+
+La ressource est conservée comme **référence lexicale externe** et reste `external_unverified` tant qu'elle n'a pas été contrôlée par notre processus linguistique.
+
+### Installation
+
+Depuis la racine du dépôt :
+
+```bash
+python -m venv .venv
+source .venv/bin/activate
+pip install -r tools/data_ingestion/requirements.txt
+```
+
+### Collecte ASJP
+
+```bash
+python tools/data_ingestion/collectors/asjp.py
+```
+
+Pour ne récupérer qu'une ou plusieurs variétés :
+
+```bash
+python tools/data_ingestion/collectors/asjp.py --iso sbd stj
+```
+
+La sortie est créée sous :
+
+```text
+data/raw/asjp/asjp_v21_san_wordlists.json
+```
+
+Ce fichier ne doit pas être commité.
+
+### Tests
+
+```bash
+pytest tools/data_ingestion/tests
+```
+
+Les tests unitaires n'ont pas besoin d'Internet : ils valident la sélection des codes ISO, la conservation de la provenance et le parsing du schéma CLDF attendu.
