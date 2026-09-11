@@ -183,6 +183,7 @@ class DatasetExportService
     private function translationEligibleQuery()
     {
         return Contribution::query()
+            ->whereNull('withdrawn_at')
             ->where('status', ContributionStatus::APPROVED->value)
             ->whereNotNull('san_text')
             ->whereHas('prompt', fn ($query) => $query->whereIn('type', [PromptType::WORD->value, PromptType::SENTENCE->value]))
@@ -200,6 +201,7 @@ class DatasetExportService
             ->whereNotNull('french_translation')
             ->whereHas('contribution', function ($query) {
                 $query
+                    ->whereNull('withdrawn_at')
                     ->where('status', ContributionStatus::APPROVED->value)
                     ->whereHas('prompt', fn ($query) => $query->where('type', PromptType::NARRATIVE->value))
                     ->whereHas('validations', fn ($query) => $query->whereNotNull('variety_id'))
