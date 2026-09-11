@@ -24,6 +24,7 @@ class RolePermissionSeeder extends Seeder
             'validate contributions',
             'export dataset',
             'review project applications',
+            'review data requests',
         ];
 
         foreach ($permissions as $permission) {
