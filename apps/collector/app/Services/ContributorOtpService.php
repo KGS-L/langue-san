@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Mail\ContributorOtpMail;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
@@ -34,12 +35,7 @@ class ContributorOtpService
             'attempts' => 0,
         ], now()->addMinutes(self::TTL_MINUTES));
 
-        Mail::raw(
-            "Votre code Langue SAN est : {$code}\n\nCe code est valable pendant ".self::TTL_MINUTES." minutes.\nSi vous n’êtes pas à l’origine de cette demande, ignorez simplement ce message.",
-            function ($message) use ($email): void {
-                $message->to($email)->subject('Votre code de connexion Langue SAN');
-            },
-        );
+        Mail::to($email)->send(new ContributorOtpMail($code, self::TTL_MINUTES));
     }
 
     public function verify(string $email, string $code): bool
