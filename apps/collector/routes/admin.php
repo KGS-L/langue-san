@@ -8,8 +8,10 @@ use App\Http\Controllers\Admin\LocalityController;
 use App\Http\Controllers\Admin\ProjectApplicationController;
 use App\Http\Controllers\Admin\PromptController;
 use App\Http\Controllers\Admin\RecordingController;
+use App\Http\Controllers\Admin\TranscriptionQueueController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\ValidationController;
+use App\Http\Controllers\Admin\ValidationQueueController;
 use App\Http\Controllers\Admin\VarietyController;
 use Illuminate\Support\Facades\Route;
 
@@ -21,6 +23,10 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:admin,moderato
     Route::resource('varieties', VarietyController::class)->except('show');
     Route::post('prompts/import', [PromptController::class, 'import'])->name('prompts.import');
     Route::resource('prompts', PromptController::class)->except('show');
+
+    Route::get('transcriptions', TranscriptionQueueController::class)->name('transcriptions.index');
+    Route::get('validations', ValidationQueueController::class)->name('validations.index');
+
     Route::resource('contributions', ContributionController::class)->only(['index', 'show']);
     Route::post('contributions/{contribution}/transcribe', [ContributionController::class, 'transcribe'])->name('contributions.transcribe');
     Route::post('contributions/{contribution}/validations', [ValidationController::class, 'store'])->name('contributions.validations.store');
