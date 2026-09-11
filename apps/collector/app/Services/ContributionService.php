@@ -29,6 +29,12 @@ class ContributionService
 
     public function transcribe(Contribution $contribution, string $sanText): Contribution
     {
+        if ($contribution->withdrawn_at) {
+            throw ValidationException::withMessages([
+                'san_text' => 'Cette contribution a été retirée par son contributeur et ne peut plus être traitée.',
+            ]);
+        }
+
         if (! $contribution->status->canBeTranscribed()) {
             throw ValidationException::withMessages([
                 'san_text' => 'Cette contribution a déjà commencé son cycle de validation et sa transcription ne peut plus être modifiée ici.',
