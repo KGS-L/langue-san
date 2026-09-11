@@ -12,6 +12,12 @@
         <li class="nav-item"><a class="nav-link {{ request()->routeIs('admin.categories.*') ? '' : 'collapsed' }}" href="{{ route('admin.categories.index') }}"><i class="bi bi-tags"></i><span>Catégories</span></a></li>
         <li class="nav-item"><a class="nav-link {{ request()->routeIs('admin.prompts.*') ? '' : 'collapsed' }}" href="{{ route('admin.prompts.index') }}"><i class="bi bi-card-text"></i><span>Prompts</span></a></li>
         <li class="nav-item"><a class="nav-link {{ request()->routeIs('admin.contributions.*') ? '' : 'collapsed' }}" href="{{ route('admin.contributions.index') }}"><i class="bi bi-mic"></i><span>Contributions</span></a></li>
+        @can('transcribe contributions')
+            <li class="nav-item"><a class="nav-link {{ request()->routeIs('admin.transcriptions.*') ? '' : 'collapsed' }}" href="{{ route('admin.transcriptions.index') }}"><i class="bi bi-headphones"></i><span>À transcrire</span></a></li>
+        @endcan
+        @can('validate contributions')
+            <li class="nav-item"><a class="nav-link {{ request()->routeIs('admin.validations.*') ? '' : 'collapsed' }}" href="{{ route('admin.validations.index') }}"><i class="bi bi-patch-check"></i><span>À valider</span></a></li>
+        @endcan
 
         <li class="nav-heading">Référentiel linguistique</li>
         <li class="nav-item"><a class="nav-link {{ request()->routeIs('admin.localities.*') ? '' : 'collapsed' }}" href="{{ route('admin.localities.index') }}"><i class="bi bi-geo-alt"></i><span>Localités</span></a></li>
