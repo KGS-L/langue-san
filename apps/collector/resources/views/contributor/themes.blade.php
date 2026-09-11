@@ -7,6 +7,7 @@
     <link rel="icon" type="image/svg+xml" href="{{ asset('assets/img/langue-san-logo.svg') }}">
     <link href="{{ asset('assets/vendor/bootstrap/css/bootstrap.min.css') }}" rel="stylesheet">
     <link href="{{ asset('assets/vendor/bootstrap-icons/bootstrap-icons.css') }}" rel="stylesheet">
+    <link href="{{ asset('assets/css/public-theme.css') }}" rel="stylesheet">
     <style>
         .theme-option {
             cursor: pointer;
@@ -14,7 +15,7 @@
             transition: border-color .18s ease, background-color .18s ease, box-shadow .18s ease, transform .18s ease;
         }
         .theme-option:hover {
-            border-color: #9ec5fe !important;
+            border-color: rgba(23, 38, 64, .32) !important;
             transform: translateY(-1px);
         }
         .theme-check {
@@ -30,13 +31,13 @@
             transition: all .18s ease;
         }
         .btn-check:checked + .theme-option {
-            border-color: #0d6efd !important;
-            background: #eef5ff !important;
-            box-shadow: 0 0 0 .18rem rgba(13, 110, 253, .10);
+            border-color: #172640 !important;
+            background: #f8f5ee !important;
+            box-shadow: 0 0 0 .18rem rgba(23, 38, 64, .10);
         }
         .btn-check:checked + .theme-option .theme-check {
-            border-color: #0d6efd;
-            background: #0d6efd;
+            border-color: #172640;
+            background: #172640;
             color: #fff;
         }
     </style>
