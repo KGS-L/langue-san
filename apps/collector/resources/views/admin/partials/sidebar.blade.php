@@ -10,6 +10,9 @@
             @can('review project applications')
                 <li class="nav-item"><a class="nav-link {{ request()->routeIs('admin.project-applications.*') ? '' : 'collapsed' }}" href="{{ route('admin.project-applications.index') }}"><i class="bi bi-person-plus"></i><span>Candidatures projet</span></a></li>
             @endcan
+            @can('review data requests')
+                <li class="nav-item"><a class="nav-link {{ request()->routeIs('admin.data-requests.*') ? '' : 'collapsed' }}" href="{{ route('admin.data-requests.index') }}"><i class="bi bi-shield-lock"></i><span>Demandes de données</span></a></li>
+            @endcan
         @endif
 
         @if(auth()->user()->can('manage prompts') || auth()->user()->can('view contributions'))
