@@ -5,9 +5,12 @@ namespace App\Services;
 use App\Contracts\Repositories\UserRepositoryInterface;
 use App\Enums\UserRole;
 use App\Enums\UserStatus;
+use App\Mail\ModeratorInvitationMail;
 use App\Models\User;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
@@ -22,13 +25,18 @@ class UserService
 
     public function createContributor(array $data): User
     {
-        return DB::transaction(fn () => $this->users->create([
-            'name' => $data['name'],
-            'email' => Str::lower($data['email']),
-            'password' => $data['password'],
-            'role' => UserRole::CONTRIBUTOR,
-            'status' => UserStatus::ACTIVE,
-        ]));
+        return DB::transaction(function () use ($data): User {
+            $user = $this->users->create([
+                'name' => $data['name'],
+                'email' => Str::lower($data['email']),
+                'password' => $data['password'],
+                'role' => UserRole::CONTRIBUTOR,
+                'status' => UserStatus::ACTIVE,
+            ]);
+            $user->syncRoles([UserRole::CONTRIBUTOR->value]);
+
+            return $user;
+        });
     }
 
     public function findOrCreatePasswordlessContributor(string $email, ?string $name = null): User
@@ -59,7 +67,10 @@ class UserService
                     $updates['name'] = $name;
                 }
 
-                return $updates ? $this->users->update($user, $updates) : $user;
+                $user = $updates ? $this->users->update($user, $updates) : $user;
+                $user->syncRoles([UserRole::CONTRIBUTOR->value]);
+
+                return $user;
             }
 
             $displayName = trim((string) $name);
@@ -69,7 +80,7 @@ class UserService
                 $displayName = $displayName !== '' ? $displayName : 'Contributeur';
             }
 
-            return $this->users->create([
+            $user = $this->users->create([
                 'name' => $displayName,
                 'email' => $email,
                 'email_verified_at' => now(),
@@ -77,7 +88,46 @@ class UserService
                 'role' => UserRole::CONTRIBUTOR,
                 'status' => UserStatus::ACTIVE,
             ]);
+            $user->syncRoles([UserRole::CONTRIBUTOR->value]);
+
+            return $user;
         });
+    }
+
+    public function inviteModerator(array $data): User
+    {
+        $user = DB::transaction(function () use ($data): User {
+            $user = $this->users->create([
+                'name' => $data['name'],
+                'email' => Str::lower(trim($data['email'])),
+                'password' => Str::random(64),
+                'role' => UserRole::MODERATOR,
+                'status' => $data['status'] ?? UserStatus::ACTIVE,
+            ]);
+            $user->syncRoles([UserRole::MODERATOR->value]);
+
+            return $user;
+        });
+
+        $token = Password::broker()->createToken($user);
+        $setupUrl = route('password.reset', ['token' => $token, 'email' => $user->email]);
+        Mail::to($user->email)->send(new ModeratorInvitationMail($user->name, $setupUrl));
+
+        return $user;
+    }
+
+    public function updateModerator(User $user, array $data): User
+    {
+        if (! $user->isModerator()) {
+            throw ValidationException::withMessages([
+                'user' => 'Seuls les comptes modérateurs sont modifiables depuis cet écran.',
+            ]);
+        }
+
+        $updated = $this->users->update($user, Arr::only($data, ['name', 'email', 'status']));
+        $updated->syncRoles([UserRole::MODERATOR->value]);
+
+        return $updated;
     }
 
     public function create(array $data): User
