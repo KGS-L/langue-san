@@ -6,7 +6,7 @@
                     <img src="{{ asset('assets/img/langue-san-logo.svg') }}" width="38" height="38" alt="Logo Langue SAN">
                     <span>Langue SAN</span>
                 </a>
-                <p class="mb-2">Un projet ouvert pour documenter, valider et transmettre le San dans le numérique.</p>
+                <p class="mb-2">Un projet ouvert pour préserver les voix, documenter le San et préparer de futurs outils de traduction et d’apprentissage.</p>
                 <small>Collecter · Valider · Transmettre</small>
             </div>
 
@@ -17,6 +17,9 @@
                     <a href="{{ route('home') }}#fonctionnement">Comment contribuer</a>
                     <a href="{{ route('home') }}#themes">Thèmes</a>
                     <a href="{{ route('contributor.home') }}">Contribuer</a>
+                    @guest
+                        <a href="{{ route('contributor.auth.show') }}">Mon compte</a>
+                    @endguest
                 </div>
             </div>
 
@@ -36,6 +39,9 @@
                     <a href="https://github.com/KGS-L/langue-san/blob/main/CODE_OF_CONDUCT.md" target="_blank" rel="noopener noreferrer">Code de conduite</a>
                     <a href="https://github.com/KGS-L/langue-san/blob/main/CONTRIBUTING.md" target="_blank" rel="noopener noreferrer">Contribuer au code / projet</a>
                     <a href="https://github.com/KGS-L/langue-san/blob/main/LICENSE" target="_blank" rel="noopener noreferrer">Licence du code</a>
+                    @guest
+                        <a href="{{ route('login') }}" class="mt-1"><i class="bi bi-shield-lock me-1"></i>Accès équipe</a>
+                    @endguest
                 </div>
             </div>
         </div>
