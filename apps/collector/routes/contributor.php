@@ -8,6 +8,7 @@ use App\Http\Controllers\Contributor\ContributorNaturalSpeechController;
 use App\Http\Controllers\Contributor\ContributorProfileController;
 use App\Http\Controllers\Contributor\ContributorSessionController;
 use App\Http\Controllers\Contributor\ContributorThemeController;
+use App\Http\Controllers\Contributor\DataRequestController;
 use App\Http\Controllers\Contributor\ProjectApplicationController;
 use Illuminate\Support\Facades\Route;
 
@@ -34,6 +35,8 @@ Route::middleware(['auth', 'role:contributor'])->group(function () {
     Route::middleware('profile.complete')->group(function () {
         Route::get('/mon-espace', ContributorDashboardController::class)->name('contributor.dashboard');
         Route::get('/mes-contributions', ContributorHistoryController::class)->name('contributor.history');
+        Route::get('/mes-donnees', [DataRequestController::class, 'index'])->name('contributor.data-requests.index');
+        Route::post('/mes-donnees', [DataRequestController::class, 'store'])->name('contributor.data-requests.store');
         Route::post('/rejoindre-le-projet', [ProjectApplicationController::class, 'store'])->name('project.join.store');
     });
 });
