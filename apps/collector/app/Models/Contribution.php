@@ -35,4 +35,5 @@ class Contribution extends Model
     public function locality(): BelongsTo { return $this->belongsTo(Locality::class); }
     public function recording(): HasOne { return $this->hasOne(Recording::class); }
     public function validations(): HasMany { return $this->hasMany(Validation::class); }
+    public function segments(): HasMany { return $this->hasMany(ContributionSegment::class)->orderBy('position'); }
 }
