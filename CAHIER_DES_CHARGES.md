@@ -1,314 +1,182 @@
 # Cahier des charges — Langue SAN
 
 **Projet :** Langue SAN  
-**Version :** 0.3  
+**Version :** 0.4  
 **Date de mise à jour :** 11 septembre 2026  
 **Statut :** collecteur MVP avancé — préparation du pilote terrain  
 **Dépôt :** `KGS-L/langue-san`
 
 ---
 
-## 1. Objet du document
+## 1. Objet
 
-Ce document définit le périmètre fonctionnel, technique, linguistique et de gouvernance du projet **Langue SAN**.
+Ce document définit le périmètre fonctionnel, technique, linguistique et de gouvernance du projet **Langue SAN**. Il sert de référence commune pour le collecteur web, le back-office, la constitution des corpus, la future partie Machine Learning, le futur traducteur Français ↔ San et la future application d'apprentissage.
 
-Il sert de référence commune pour :
-
-- le collecteur web ;
-- le back-office de transcription et validation ;
-- la constitution progressive des corpus ;
-- la future partie Machine Learning ;
-- le futur traducteur Français ↔ San ;
-- la future application d'apprentissage.
-
-Le cahier des charges doit évoluer avec les retours des locuteurs, validateurs, linguistes et membres du projet.
-
----
-
-## 2. Contexte et vision
-
-Les variétés du San sont encore faiblement représentées dans les outils numériques modernes. Le projet vise à construire des ressources de qualité à partir de données réellement produites ou validées par les locuteurs.
-
-Le projet ne doit pas :
-
-- inventer des formes San pour compléter artificiellement le corpus ;
-- présenter comme officielles des traductions non validées ;
-- mélanger silencieusement différentes variétés ;
-- considérer une localité comme une preuve automatique de variété ;
-- publier des audios ou données privées sans autorisation ;
-- intégrer automatiquement des ressources tierces sans vérifier leurs droits d'utilisation.
-
-Le principe directeur est :
+Principe directeur :
 
 > **Documenter la langue existante, préserver sa diversité, valider humainement les données et seulement ensuite construire des outils IA.**
 
+Le projet ne doit pas inventer de traductions San, mélanger silencieusement les variétés, déduire automatiquement une variété d'une localité, publier des audios sans consentement spécifique ni intégrer des ressources tierces sans vérifier leurs droits.
+
 ---
 
-## 3. Objectifs du projet
-
-### 3.1 Objectif principal
-
-Construire un corpus Français ↔ San propre, traçable, validé et exploitable pour :
-
-- la documentation linguistique ;
-- la traduction ;
-- la recherche ;
-- l'apprentissage ;
-- le traitement automatique du langage ;
-- la valorisation numérique du San.
-
-### 3.2 Objectifs intermédiaires
+## 2. Objectifs
 
 Le projet doit permettre de :
 
 - collecter du vocabulaire et des phrases Français → San ;
-- collecter de la parole naturelle San → San ;
-- stocker des audios privés ;
-- transcrire les audios ;
-- segmenter les récits longs ;
+- collecter de la parole naturelle produite directement en San ;
+- stocker les audios de manière privée ;
+- transcrire et segmenter les données ;
 - traduire en français les segments de parole naturelle ;
 - identifier et valider la variété linguistique ;
-- obtenir au moins deux validations indépendantes lorsque possible ;
-- produire des datasets versionnés ;
+- obtenir deux validations indépendantes lorsque possible ;
+- produire des datasets versionnés et traçables ;
 - conserver des splits train / validation / test stables ;
-- préparer une baseline ML reproductible sur Google Colab ;
-- construire à terme un traducteur puis une application d'apprentissage.
+- permettre la correction et le retrait des données ;
+- préparer une baseline ML reproductible ;
+- construire ensuite un traducteur puis des fonctionnalités d'apprentissage.
 
 ---
 
-## 4. Périmètre fonctionnel actuel
+## 3. Variétés linguistiques
 
-Le périmètre MVP couvre quatre espaces principaux :
+Le projet suit séparément :
 
-1. site public ;
-2. espace contributeur ;
-3. collecte linguistique ;
-4. back-office de modération et préparation du corpus.
-
-La partie ML et l'application pédagogique constituent les phases suivantes.
-
----
-
-## 5. Variétés linguistiques
-
-Le projet utilise « San » comme nom général, mais ne traite pas les données comme une seule variété homogène.
-
-Les références de travail actuelles sont :
-
-| Variété | ISO 639-3 | Usage dans le projet |
+| Variété | ISO 639-3 | Politique |
 | --- | --- | --- |
-| San Maka / San du Sud | `sbd` | variété distincte |
-| San Matya | `stj` | variété distincte |
-| San Maya | `sym` | variété distincte |
+| San Maka / San du Sud | `sbd` | collectée séparément |
+| San Matya | `stj` | collectée séparément |
+| San Maya | `sym` | collectée séparément |
 
-### 5.1 Stratégie côté utilisateur
+### 3.1 Aucune variété unique ciblée
 
-Le public ne doit pas être obligé de connaître les termes « Maka », « Matya » ou « Maya ».
+**Les trois variétés font partie du périmètre.** Le projet ne fixe pas à l'avance une variété prioritaire définitive.
 
-Le formulaire demande plutôt :
+La stratégie est pilotée par les données :
 
-> **Dans quelle ville ou localité avez-vous principalement appris ou parlé le San ?**
+```text
+collecte multi-communautés
+       ↓
+validation de la variété
+       ↓
+mesure de la couverture réelle
+       ↓
+corpus séparés / comparables
+       ↓
+choix des expériences ML selon quantité + qualité
+```
 
-Exemples :
+Une campagne terrain peut être concentrée géographiquement pour des raisons pratiques sans exclure les autres variétés du projet.
 
-- Toma ;
-- Tougan ;
-- autre localité.
+Une variété insuffisamment couverte reste documentée ; elle ne doit pas être fusionnée artificiellement avec une autre pour augmenter le volume.
 
-### 5.2 Suggestions internes
+### 3.2 Localité côté utilisateur
 
-Le référentiel peut conserver des suggestions documentées :
+Le public n'est pas obligé de connaître les noms « Maka », « Matya » ou « Maya ». Le formulaire demande plutôt :
+
+> Dans quelle ville ou localité avez-vous principalement appris ou parlé le San ?
+
+Le référentiel peut contenir une suggestion interne documentée, notamment :
 
 - Toma → San Maka / `sbd` ;
 - Tougan → San Matya / `stj`.
 
-Ces suggestions doivent contenir leur provenance documentaire et sont seulement une aide au travail du validateur.
-
-La règle est :
-
-```text
-localité déclarée
-       ↓
-suggestion interne éventuelle
-       ↓
-validation humaine
-       ↓
-variété validée
-```
-
-La variété finale n'est jamais déduite automatiquement par le logiciel.
-
-### 5.3 Pilote
-
-L'infrastructure supporte plusieurs variétés, mais la première campagne terrain peut se concentrer sur **une variété / communauté pilote** afin de maximiser la cohérence des premiers jeux de données.
-
-Cette décision reste à confirmer avec les personnes de terrain et les validateurs.
+La suggestion ne devient jamais automatiquement la variété validée. Le validateur peut confirmer, modifier ou laisser indéterminé.
 
 ---
 
-## 6. Acteurs et rôles
+## 4. Acteurs et permissions
 
-### 6.1 Visiteur
+### Visiteur
 
-Peut :
+Peut consulter le site public, les pages légales et commencer une contribution sans compte.
 
-- consulter la landing page ;
-- consulter les pages de confidentialité, politique de contribution et gouvernance ;
-- découvrir la communauté ;
-- commencer à contribuer sans compte ;
-- consulter la page « Rejoindre le projet ».
-
-### 6.2 Contributeur
+### Contributeur
 
 Peut :
 
 - contribuer sans mot de passe ;
-- se connecter avec Google ;
-- se connecter par code OTP envoyé par email ;
+- se connecter avec Google ou OTP email ;
 - compléter son profil ;
-- voir son tableau de bord ;
-- consulter l'historique de ses contributions ;
-- reprendre les futures campagnes ;
-- rendre son profil public uniquement par opt-in ;
-- candidater pour rejoindre l'équipe projet.
+- retrouver ses contributions ;
+- gérer son profil public opt-in ;
+- candidater pour rejoindre le projet ;
+- gérer ses demandes de correction, suppression ou retrait.
 
-### 6.3 Transcripteur
+### Transcripteur
 
-Peut :
+Peut écouter les audios privés autorisés et saisir/corriger les transcriptions. Il ne reçoit pas automatiquement les droits d'administration.
 
-- accéder au back-office avec les permissions nécessaires ;
-- écouter les audios privés ;
-- saisir ou corriger la transcription San ;
-- préparer les récits naturels pour segmentation.
+### Validateur
 
-Le rôle `transcriber` ne doit pas donner automatiquement les droits d'administration.
+Peut confirmer/corriger une transcription, confirmer une variété, approuver/rejeter une contribution et participer à la double validation. Un même compte ne peut pas effectuer les deux validations d'une même contribution.
 
-### 6.4 Validateur
+### Modérateur
 
-Peut :
+Peut gérer les opérations linguistiques et référentiels autorisés, sans obtenir automatiquement les droits sensibles réservés à l'administrateur.
 
-- relire les transcriptions ;
-- confirmer ou corriger le texte San ;
-- confirmer la variété ;
-- approuver ou rejeter une contribution ;
-- participer à la double validation.
+### Administrateur
 
-Un même utilisateur ne peut pas effectuer les deux validations de la même contribution.
+Peut notamment gérer les modérateurs, permissions, référentiels, candidatures, prompts, demandes de données et exports dataset.
 
-### 6.5 Modérateur
+Rôles système :
 
-Peut gérer les opérations linguistiques et les éléments de référence qui lui sont autorisés, mais ne doit pas disposer automatiquement des droits réservés à l'administrateur, notamment la gestion des modérateurs et l'export final du dataset.
-
-### 6.6 Administrateur
-
-Il n'y a qu'un administrateur principal.
-
-Il peut notamment :
-
-- gérer les modérateurs ;
-- gérer les permissions projet ;
-- gérer les référentiels ;
-- consulter les statistiques globales ;
-- examiner les candidatures projet ;
-- gérer les prompts ;
-- télécharger les exports dataset.
+```text
+admin
+moderator
+transcriber
+validator
+contributor
+```
 
 ---
 
-## 7. Authentification
+## 5. Authentification
 
-### 7.1 Contributeurs
+### Contributeurs
 
-Les contributeurs sont passwordless.
-
-Méthodes :
+Authentification passwordless :
 
 - Google OAuth ;
-- email + OTP de 8 chiffres.
+- email + OTP à 8 chiffres.
 
-Contraintes :
+Le même email vérifié doit correspondre au même compte, quel que soit le canal utilisé.
 
-- l'email est normalisé en minuscules ;
-- Google et OTP doivent retrouver le même compte lorsque l'adresse email vérifiée est identique ;
-- un OTP expire après une durée limitée ;
-- le code est stocké sous forme hashée ;
-- le nombre d'essais est limité ;
-- les demandes répétées sont soumises à rate limiting.
+### Staff
 
-### 7.2 Staff
-
-Admin et modérateurs utilisent email + mot de passe.
-
-Les comptes staff ne doivent pas utiliser le parcours public OTP / Google comme mécanisme principal d'administration.
+Admin et modérateurs utilisent email + mot de passe. Le parcours staff est séparé du parcours public.
 
 ---
 
-## 8. Profil contributeur
+## 6. Profil contributeur
 
-### 8.1 Contexte linguistique
+Contexte linguistique minimal :
 
-Le profil de collecte doit contenir au minimum :
-
-- localité principale d'apprentissage / usage ;
+- localité principale ;
 - autre localité si nécessaire ;
 - niveau de pratique ;
 - capacité à écrire le San.
 
-Le niveau est exprimé de manière compréhensible par le public :
-
-- langue maternelle / depuis l'enfance ;
-- courant ;
-- intermédiaire ;
-- notions de base.
-
-### 8.2 Profil utilisateur
-
-Après authentification, le contributeur complète :
+Après authentification :
 
 - nom ;
-- pays de résidence ;
+- pays ;
 - tranche d'âge ;
 - profession ;
 - organisation facultative.
 
-### 8.3 Profil public
-
-Le profil public est désactivé par défaut.
-
-Seules des données sûres peuvent être affichées publiquement :
-
-- nom public ;
-- profession ;
-- pays ;
-- bio ;
-- liens GitHub / LinkedIn facultatifs ;
-- badge membre du projet.
-
-Ne doivent pas être exposés publiquement :
-
-- email ;
-- tranche d'âge ;
-- localité linguistique exacte ;
-- niveau de maîtrise ;
-- audio ;
-- consentements internes ;
-- identifiants techniques.
+Le profil public est désactivé par défaut. Ne jamais exposer publiquement email, tranche d'âge, localité linguistique exacte, niveau de maîtrise, audio, consentement ou identifiants techniques.
 
 ---
 
-## 9. Mode de collecte A — Français → San
+## 7. Collecte A — Français → San
 
-### 9.1 Objectif
-
-Construire des correspondances ciblées entre français et San pour le vocabulaire, les expressions et les phrases courantes.
-
-### 9.2 Catalogue
-
-Le catalogue actuel contient exactement :
+Catalogue actuel :
 
 ```text
 25 thèmes
-× 20 prompts par thème
+× 20 prompts
 = 500 prompts
 ```
 
@@ -319,14 +187,9 @@ Répartition :
 150 phrases
 ```
 
-Chaque thème contient :
+Chaque thème contient 14 mots/expressions et 6 phrases.
 
-- 14 mots ou expressions ;
-- 6 phrases.
-
-### 9.3 Session standard
-
-Une session standard contient environ :
+Session standard :
 
 ```text
 7 mots / expressions
@@ -336,95 +199,36 @@ Une session standard contient environ :
 10 prompts
 ```
 
-### 9.4 Sélection intelligente
+Le moteur sélectionne des prompts actifs, évite ceux déjà traités par le même contributeur, favorise les moins couverts, prend en compte la priorité et randomise les ex æquo.
 
-Le moteur doit :
-
-- choisir uniquement des prompts actifs ;
-- éviter les prompts déjà traités par le même contributeur ;
-- favoriser les prompts ayant le moins de contributions utilisables ;
-- prendre en compte la priorité ;
-- randomiser les ex æquo.
-
-La cible initiale par prompt est de **3 contributions indépendantes** lorsque cela est possible.
-
-### 9.5 Réponse
-
-Pour chaque prompt, le contributeur peut :
-
-- écrire la réponse San ;
-- enregistrer sa voix ;
-- faire les deux ;
-- passer la question.
-
-L'audio est recommandé mais n'est pas obligatoire si une réponse écrite est fournie.
+Pour chaque prompt, le contributeur peut écrire, enregistrer sa voix, faire les deux ou passer la question. La cible initiale est d'obtenir environ 3 contributions indépendantes par prompt lorsque possible.
 
 ---
 
-## 10. Mode de collecte B — Parole naturelle San → San
+## 8. Collecte B — Parole naturelle San → San
 
-### 10.1 Objectif
+Objectif : éviter un corpus où le San est systématiquement produit comme calque de structures françaises.
 
-Éviter de constituer un corpus où le San est systématiquement produit comme traduction d'une structure française.
+Le catalogue contient **40 sujets de parole naturelle** autour notamment de la famille, du mariage, des cérémonies, de l'agriculture, du marché, des récits d'enfance, des proverbes, des contes, de la vie communautaire et de la transmission du San.
 
-Le projet collecte donc également des récits, descriptions, histoires, proverbes et explications produites directement en San.
+La consigne doit préciser :
 
-### 10.2 Banque de sujets
+> Ne traduisez pas la consigne française mot à mot. Parlez naturellement en San avec vos propres mots.
 
-Le catalogue contient actuellement **40 sujets** de parole naturelle couvrant notamment :
+### Audio
 
-- famille ;
-- mariage ;
-- cérémonies ;
-- funérailles ;
-- marché ;
-- nourriture ;
-- agriculture ;
-- élevage ;
-- saisons ;
-- déplacements ;
-- école ;
-- travail ;
-- santé comme récit de pratique sociale, sans conseil médical ;
-- histoire du village ;
-- entraide ;
-- danse et traditions ;
-- proverbes ;
-- contes ;
-- conseils des anciens ;
-- réconciliation ;
-- hospitalité ;
-- environnement ;
-- transmission du San ;
-- sujet libre.
-
-### 10.3 Consigne
-
-La consigne française est uniquement un déclencheur.
-
-Le site doit afficher clairement :
-
-> **Ne traduisez pas la consigne française mot à mot. Parlez naturellement en San avec vos propres mots.**
-
-### 10.4 Audio
-
-Pour les récits naturels :
-
-- l'audio est obligatoire ;
+- obligatoire pour la parole naturelle ;
 - durée recommandée : 2 à 5 minutes ;
-- limite fonctionnelle prévue : jusqu'à 10 minutes ;
-- taille serveur autorisée : jusqu'à environ 50 Mo côté validation Laravel ;
-- l'utilisateur doit pouvoir se réécouter ;
-- il doit pouvoir recommencer avant l'envoi.
+- limite fonctionnelle : environ 10 minutes ;
+- réécoute avant envoi ;
+- possibilité de recommencer.
 
-Le serveur de production doit être configuré avec des limites PHP / proxy supérieures à cette taille.
-
-### 10.5 Pipeline
+### Pipeline
 
 ```text
 Sujet de discussion
       ↓
-Audio naturel San
+Audio San naturel
       ↓
 Transcription San complète
       ↓
@@ -432,39 +236,22 @@ Segmentation
       ↓
 Traduction française de chaque segment
       ↓
-Validation de la contribution
+Validation linguistique
       ↓
 Corpus naturel San ↔ Français
 ```
 
-### 10.6 Segments
+La consigne française reste une métadonnée d'élicitation et ne constitue jamais la traduction du récit.
 
-Chaque segment peut contenir :
+Chaque segment peut conserver position, `start_ms`, `end_ms`, texte San, traduction française, variété et auteur des modifications.
 
-- position ;
-- `start_ms` ;
-- `end_ms` ;
-- texte San ;
-- traduction française ;
-- variété éventuelle ;
-- auteur de la création / dernière modification.
-
-Les timestamps permettent une future exploitation alignée avec l'audio.
-
-### 10.7 Règle de validation
-
-Un récit naturel ne doit pas être considéré validable pour le dataset tant que :
-
-- sa transcription San n'existe pas ;
-- au moins un segment n'a pas été créé ;
-- les segments utiles n'ont pas de texte San ;
-- les segments utiles n'ont pas de traduction française.
+Tous les segments d'un récit gardent le même `source_id` et le même split train/validation/test.
 
 ---
 
-## 11. Statuts des contributions
+## 9. Workflow de validation
 
-Le workflow utilise :
+Statuts :
 
 ```text
 pending
@@ -475,54 +262,99 @@ approved
 rejected
 ```
 
-Signification :
+`validated_twice` indique notamment un désaccord nécessitant arbitrage.
 
-- `pending` : contribution reçue, à transcrire ;
-- `transcribed` : transcription disponible, à valider ;
-- `validated_once` : une première validation existe ;
-- `validated_twice` : deux validations ne concordent pas totalement, arbitrage nécessaire ;
-- `approved` : contribution approuvée ;
-- `rejected` : contribution rejetée.
+Une parole naturelle ne peut pas rejoindre le dataset tant que sa transcription, sa segmentation et les traductions françaises des segments utiles ne sont pas prêtes.
 
-Côté contributeur, des libellés simplifiés sont utilisés :
-
-- Reçue ;
-- En vérification ;
-- Validée ;
-- Non retenue.
-
-Les notes internes des validateurs ne sont jamais affichées au contributeur.
+Côté contributeur, les statuts sont simplifiés en : Reçue, En vérification, Validée, Non retenue et Retirée.
 
 ---
 
-## 12. Double validation
+## 10. Consentement et confidentialité
 
-Une contribution est automatiquement approuvable lorsque deux validations indépendantes concordent sur les éléments nécessaires, notamment :
+Le consentement est versionné. La version actuelle est **1.1**.
 
-- décision ;
-- variété ;
-- transcription / correction effective.
+Elle couvre explicitement :
 
-Deux rejets indépendants peuvent mener au statut `rejected`.
+- stockage des réponses ;
+- transcription ;
+- validation ;
+- constitution du corpus ;
+- utilisation pour entraînement/évaluation lorsque autorisée ;
+- caractère privé des audios ;
+- politique de conservation ;
+- droit de correction et retrait.
 
-En cas de désaccord :
+L'audio brut n'est jamais publié publiquement par défaut. Une publication future nécessite une autorisation spécifique distincte.
 
-```text
-validated_twice
+---
+
+## 11. Conservation des données
+
+Politique opérationnelle :
+
+- audio d'une contribution définitivement rejetée : suppression après **90 jours** ;
+- audio d'une contribution `pending` sans traitement depuis **12 mois** : suppression ;
+- audio retenu : conservation privée tant qu'il est utile et couvert par le consentement, sauf demande de suppression ;
+- données de compte : conservation jusqu'à demande d'anonymisation/suppression, sous réserve d'une trace technique minimale.
+
+Configuration : `config/data_retention.php`.
+
+Commande :
+
+```bash
+php artisan data:purge-expired-audio
 ```
 
-Le projet doit définir avant la grande collecte :
+Cette commande est planifiée quotidiennement via le scheduler Laravel.
 
-- qui peut arbitrer ;
-- comment documenter l'arbitrage ;
-- comment traiter un désaccord durable ;
-- comment gérer une erreur découverte après approbation.
+---
+
+## 12. Correction, suppression et retrait
+
+Le contributeur authentifié dispose de `/mes-donnees`.
+
+Types de demandes :
+
+- correction ;
+- retrait d'une contribution ;
+- suppression d'un audio ;
+- anonymisation/suppression de données de compte ;
+- autre demande.
+
+### Retrait d'une contribution
+
+Le retrait est immédiat :
+
+```text
+withdrawn_at renseigné
++ audio supprimé
++ texte source supprimé
++ transcription supprimée
++ segments supprimés
++ validations liées supprimées
++ exclusion de tous les futurs exports
+```
+
+La ligne technique peut rester sans contenu linguistique afin de conserver une trace minimale de retrait.
+
+### Suppression audio
+
+Le fichier et son enregistrement en base sont supprimés immédiatement sans obligatoirement retirer la contribution textuelle.
+
+### Correction / anonymisation
+
+Les demandes nécessitant une intervention humaine sont visibles dans la file admin **Demandes de données**. Objectif de traitement : **30 jours**.
+
+### Dataset déjà publié
+
+Le projet garantit l'exclusion des données retirées de ses futures versions. Il ne peut pas garantir la suppression de copies qu'un tiers aurait déjà téléchargées avant le retrait.
 
 ---
 
 ## 13. Back-office
 
-Le back-office doit couvrir :
+Le back-office couvre :
 
 - dashboard statistiques ;
 - catégories ;
@@ -530,129 +362,20 @@ Le back-office doit couvrir :
 - localités ;
 - variétés ;
 - contributions ;
-- file « À transcrire » ;
-- file « À valider » ;
+- file À transcrire ;
+- file À valider ;
 - lecture sécurisée des audios ;
-- segmentation des récits naturels ;
+- segmentation des récits ;
 - candidatures projet ;
-- utilisateurs staff ;
+- utilisateurs et permissions ;
+- demandes de données ;
 - exports dataset.
 
-### 13.1 Dashboard
-
-Les indicateurs utiles comprennent notamment :
-
-- contributeurs ;
-- nombre total de contributions ;
-- contributions récentes ;
-- éléments à transcrire ;
-- éléments à valider ;
-- approuvées ;
-- rejetées ;
-- taux d'approbation ;
-- candidatures projet ;
-- couverture des prompts ;
-- prompts sous-couverts ;
-- répartition par localité ;
-- état de configuration Google / email.
-
 ---
 
-## 14. Candidature et communauté projet
+## 14. Exports datasets
 
-Le site permet à un contributeur authentifié de candidater pour rejoindre le projet.
-
-La candidature peut contenir :
-
-- domaines de contribution ;
-- expérience ;
-- motivation ;
-- disponibilité ;
-- portfolio ;
-- lien éventuel avec la langue / communauté.
-
-L'approbation d'une candidature :
-
-- crée une adhésion projet ;
-- ne donne pas automatiquement les permissions `admin`, `moderator`, `transcriber` ou `validator`.
-
-L'administrateur attribue ensuite les fonctions nécessaires séparément.
-
----
-
-## 15. Consentement
-
-Le consentement doit être versionné.
-
-Il doit expliquer au minimum :
-
-- stockage des réponses ;
-- transcription ;
-- validation ;
-- constitution d'un corpus ;
-- éventuelle utilisation pour entraîner / évaluer des modèles ;
-- politique de publication des audios.
-
-La publication publique de l'audio n'est jamais implicite.
-
-Une procédure explicite de correction, retrait ou suppression doit être finalisée avant une collecte publique à grande échelle.
-
----
-
-## 16. Gouvernance des données
-
-### 16.1 Séparation code / données
-
-Le dépôt de code est sous Apache-2.0.
-
-Cela ne signifie pas que :
-
-- les audios ;
-- les traductions ;
-- les datasets ;
-- les métadonnées ;
-- les ressources tierces
-
-sont automatiquement sous la même licence.
-
-### 16.2 Données privées
-
-Ne jamais committer sur GitHub :
-
-- audios bruts privés ;
-- données personnelles ;
-- datasets privés complets ;
-- secrets ;
-- clés API.
-
-### 16.3 Ressources tierces
-
-Avant réutilisation d'un dictionnaire, livre, application ou corpus existant, vérifier explicitement le droit de :
-
-- consulter ;
-- numériser ;
-- transformer ;
-- entraîner ;
-- republier ;
-- exploiter commercialement le cas échéant.
-
-### 16.4 Sauvegardes
-
-Avant collecte à grande échelle, mettre en place :
-
-- sauvegarde DB ;
-- sauvegarde privée des audios ;
-- chiffrement ou stockage protégé ;
-- contrôle d'accès ;
-- test de restauration.
-
----
-
-## 17. Exports datasets
-
-### 17.1 Export Français → San
-
-Seules les contributions éligibles sont exportées.
+### Français → San
 
 Colonnes principales :
 
@@ -675,9 +398,7 @@ submitted_at
 approved_at
 ```
 
-### 17.2 Export parole naturelle San → Français
-
-Chaque segment devient une ligne :
+### Parole naturelle San → Français
 
 ```text
 dataset_version
@@ -697,33 +418,13 @@ submitted_at
 approved_at
 ```
 
-### 17.3 Source ID
+Toute contribution avec `withdrawn_at` est exclue des deux exports.
 
-Le `source_id` est pseudonymisé à partir d'un secret stable de production.
-
-Le secret `DATASET_SOURCE_SALT` ne doit pas être changé arbitrairement après publication d'un corpus versionné.
-
-### 17.4 Splits
-
-Le split est déterministe :
-
-```text
-train
-validation
-test
-```
-
-Toutes les données dérivées d'une même source doivent conserver le même split.
-
-Exemple : les 40 segments d'un même récit naturel doivent tous rester dans `train`, ou tous dans `validation`, ou tous dans `test`.
-
-Cette règle protège l'évaluation contre les fuites de contenu.
+Le secret `DATASET_SOURCE_SALT` doit rester stable après publication de corpus versionnés.
 
 ---
 
-## 18. Architecture applicative
-
-Architecture applicative cible :
+## 15. Architecture applicative
 
 ```text
 Blade / UI
@@ -743,147 +444,43 @@ Model
 Database
 ```
 
-Éléments transverses :
-
-- Policies ;
-- Enums ;
-- rôles / permissions Spatie ;
-- services métier ;
-- tests Feature.
-
-Les règles métier ne doivent pas être dispersées dans les contrôleurs.
+Éléments transverses : Policies, Enums, Spatie Permission et tests Feature.
 
 ---
 
-## 19. Stack technique
+## 16. Stack technique
 
-### 19.1 Collecteur actuel
+### Collecteur
 
 - PHP 8.3+ ;
 - Laravel 13 ;
 - Blade ;
 - MySQL ;
-- Bootstrap ;
-- NiceAdmin pour l'administration ;
+- Bootstrap / NiceAdmin ;
 - Spatie Laravel Permission ;
 - Laravel Fortify ;
 - Google OAuth ;
 - OTP email ;
-- Resend pour la production email ;
-- stockage privé Laravel pour les audios ;
+- Resend en production ;
+- stockage privé Laravel ;
 - PHPUnit ;
 - GitHub Actions.
 
-### 19.2 Machine Learning futur
+### Machine Learning futur
 
 - Python ;
 - PyTorch ;
-- Hugging Face Transformers ;
-- Hugging Face Datasets ;
+- Hugging Face Transformers / Datasets ;
 - Google Colab ;
-- notebooks reproductibles ;
-- métriques automatiques ;
-- évaluation humaine.
+- baseline dictionnaire / mémoire de traduction ;
+- modèles multilingues ou byte-level à comparer ;
+- métriques automatiques + évaluation humaine.
 
-Le modèle final n'est pas figé. Le projet doit comparer une baseline simple et des modèles multilingues / byte-level adaptés au faible volume de données.
-
----
-
-## 20. Machine Learning — stratégie
-
-Le projet ne doit pas commencer directement par un gros modèle.
-
-Ordre recommandé :
-
-```text
-Corpus validé
-   ↓
-normalisation
-   ↓
-baseline dictionnaire / mémoire de traduction
-   ↓
-modèle simple ou byte-level
-   ↓
-évaluation automatique
-   ↓
-évaluation humaine
-   ↓
-analyse des erreurs
-   ↓
-itération
-```
-
-### 20.1 Première direction
-
-La première direction expérimentale est :
-
-```text
-Français → San
-```
-
-sur un domaine limité et une variété clairement identifiée.
-
-### 20.2 Bidirectionnel
-
-La direction :
-
-```text
-San → Français
-```
-
-sera ajoutée progressivement, notamment grâce aux segments de parole naturelle.
-
-### 20.3 Protection contre la contamination
-
-Les variantes inversées ou augmentées d'une même paire doivent conserver :
-
-- le même `source_id` ;
-- le même split.
+Le choix d'un modèle par variété ou multi-variétés dépendra des volumes réellement validés.
 
 ---
 
-## 21. Future application d'apprentissage
-
-Après une base linguistique suffisamment validée, le projet pourra construire une application mobile / web inspirée des principes pédagogiques de Duolingo, mais adaptée aux réalités du San.
-
-Fonctionnalités envisagées :
-
-- vocabulaire ;
-- phrases du quotidien ;
-- écoute ;
-- répétition ;
-- association mot-image ;
-- remise en ordre ;
-- traduction guidée ;
-- exercices audio ;
-- progression par niveau ;
-- leçons regroupées par thème ;
-- affichage clair de la variété ciblée.
-
-Un premier MVP pédagogique pourra commencer avec environ 20 à 40 leçons, après validation du corpus correspondant.
-
----
-
-## 22. Exigences UX
-
-Le site public doit :
-
-- être mobile-first ;
-- rester simple pour des utilisateurs non techniques ;
-- ne pas exposer le vocabulaire linguistique interne lorsque cela n'aide pas le contributeur ;
-- utiliser la palette visuelle de la landing page ;
-- éviter les boutons Bootstrap bleus par défaut ;
-- conserver une cohérence entre landing, contribution, espace contributeur et pages légales ;
-- être utilisable sur connexion lente autant que possible ;
-- permettre de réessayer après un échec réseau ;
-- prévenir clairement avant l'utilisation du microphone ;
-- proposer une alternative texte pour la collecte ciblée.
-
----
-
-## 23. Exigences non fonctionnelles
-
-### 23.1 Sécurité
+## 17. Sécurité et exploitation
 
 En production :
 
@@ -891,280 +488,175 @@ En production :
 - `APP_DEBUG=false` ;
 - secrets hors du dépôt ;
 - cookies sécurisés ;
-- validation stricte des fichiers audio ;
+- validation stricte des uploads ;
 - rate limiting ;
-- autorisations contrôlées par Policies / permissions ;
-- audio servi uniquement via routes autorisées ;
-- aucun accès public direct au stockage privé.
+- autorisations via Policies/permissions ;
+- aucun accès public direct aux audios ;
+- sauvegarde DB + audios privés ;
+- test de restauration ;
+- scheduler Laravel actif pour la politique de rétention.
 
-### 23.2 Performance
+---
 
-Le système doit rester utilisable avec :
+## 18. UX
 
-- plusieurs centaines puis milliers de contributions ;
-- pagination sur les listes admin ;
-- exports chunkés ;
-- requêtes optimisées pour les files de modération.
+Le site doit rester mobile-first, compréhensible par un public non technique et cohérent avec la palette de la landing page.
 
-### 23.3 Compatibilité
+À tester :
 
-Tester au minimum :
-
-- Chrome desktop ;
 - Chrome Android ;
 - Safari iOS ;
-- autorisation refusée du microphone ;
+- refus d'accès micro ;
 - réseau lent ;
-- envoi audio interrompu ;
-- reprise / nouvel enregistrement.
+- interruption d'upload ;
+- récit de plusieurs minutes ;
+- réenregistrement.
 
 ---
 
-## 24. Emails transactionnels
+## 19. Tests et CI
 
-Le projet prévoit Resend en production.
+Les tests critiques doivent couvrir notamment :
 
-Emails principaux :
-
-- code OTP ;
-- invitation modérateur ;
-- décision de candidature projet.
-
-Les emails sont en français tant qu'une traduction San n'a pas été validée par des personnes compétentes.
-
----
-
-## 25. Tests et CI
-
-Les fonctionnalités critiques doivent être couvertes par tests Feature.
-
-Couverture existante / attendue :
-
-- permissions back-office ;
-- OTP ;
-- Google et OTP vers le même compte ;
-- confidentialité des audios ;
-- rôles spécialisés ;
+- OTP et Google ;
+- permissions ;
+- confidentialité audio ;
 - double validation ;
-- export dataset ;
-- protection des splits ;
-- catalogue de prompts ;
-- parole naturelle ;
 - segmentation ;
-- autorisations de validation.
+- exports et splits ;
+- retrait d'une contribution ;
+- suppression d'audio ;
+- interdiction de gérer la contribution d'un autre utilisateur ;
+- purge de rétention ;
+- catalogue des prompts ;
+- parole naturelle.
 
-GitHub Actions doit lancer automatiquement PHPUnit sur les changements du collecteur.
+GitHub Actions exécute PHPUnit sur le collecteur.
 
 ---
 
-## 26. Indicateurs de progression
+## 20. Jalons
 
-### 26.1 Collecte ciblée
+### A — Collecteur technique
 
-Suivre :
+**Largement réalisé.**
 
-- prompts actifs ;
-- prompts ayant 0, 1, 2, 3+ contributions ;
-- taux d'approbation ;
-- taux de rejet ;
-- répartition par thème ;
-- répartition par localité ;
-- répartition par variété validée ;
-- contributeurs uniques.
+### B — Parole naturelle
 
-### 26.2 Parole naturelle
+**Implémentée techniquement, à tester sur le terrain.**
 
-Suivre :
-
-- nombre de récits ;
-- durée totale audio ;
-- récits transcrits ;
-- récits segmentés ;
-- segments traduits ;
-- segments validés ;
-- durée moyenne par récit ;
-- couverture des sujets.
-
-### 26.3 Qualité
-
-Suivre :
-
-- taux de désaccord entre validateurs ;
-- corrections après première validation ;
-- contributions sans variété confirmée ;
-- erreurs fréquentes de transcription ;
-- prompts français jugés ambigus.
-
----
-
-## 27. Jalons
-
-### Jalon A — Collecteur technique
-
-**Statut : largement réalisé.**
-
-Comprend :
-
-- collecte ciblée ;
-- comptes ;
-- audio ;
-- back-office ;
-- transcription ;
-- validation ;
-- export ;
-- rôles ;
-- CI.
-
-### Jalon B — Parole naturelle
-
-**Statut : implémenté techniquement, à tester sur le terrain.**
-
-Comprend :
-
-- sujets naturels ;
-- enregistrement long ;
-- transcription ;
-- segmentation ;
-- traduction ;
-- export San → Français.
-
-### Jalon C — Pilote réel
+### C — Pilote réel
 
 Objectif :
 
 - 10 à 20 contributeurs réels ;
 - 2 à 4 validateurs ;
-- plusieurs localités / contexte maîtrisé ;
 - premiers prompts couverts par plusieurs locuteurs ;
 - premiers récits naturels complets ;
-- évaluation du workflow de désaccord.
+- mesure séparée de la couverture Maka / Matya / Maya ;
+- test réel du workflow de désaccord.
 
-### Jalon D — Corpus v0.x
+### D — Corpus v0.x
 
 Objectif :
 
 - couverture suffisante des 500 prompts ;
-- au moins 200 phrases simples validées ;
+- au moins 200 phrases validées ;
 - volume significatif de segments naturels ;
+- statistiques qualité ;
 - data card ;
 - licence dataset ;
-- statistiques qualité ;
 - splits figés.
 
-### Jalon E — Baseline ML
+### E — Baseline ML
 
-Objectif :
+Objectif : notebook Colab reproductible, baseline dictionnaire/mémoire de traduction, premier modèle, métriques, évaluation humaine et rapport d'erreurs.
 
-- notebook Google Colab ;
-- baseline dictionnaire ;
-- premier modèle ;
-- métriques ;
-- évaluation humaine ;
-- rapport d'erreurs.
+### F — Traducteur expérimental
 
-### Jalon F — Traducteur expérimental
+Français → San sur domaine limité avec variété clairement affichée lorsque connue, signalement/correction et version du modèle.
 
-Objectif :
+### G — Apprentissage
 
-- Français → San ;
-- domaine limité ;
-- variété affichée ;
-- avertissements ;
-- corrections utilisateur ;
-- version du modèle.
-
-### Jalon G — Apprentissage
-
-Objectif :
-
-- premières leçons ;
-- audio ;
-- exercices ;
-- progression ;
-- test avec communauté pilote.
+Vocabulaire, phrases, écoute, répétition, association mot-image, remise en ordre, traduction guidée et progression.
 
 ---
 
-## 28. Décisions encore ouvertes
+## 21. Décisions encore ouvertes
 
-Avant l'ouverture publique à grande échelle, il faut encore décider ou finaliser :
+Les décisions encore réellement ouvertes concernent surtout :
 
-- variété prioritaire du premier pilote ;
-- communauté / localité pilote ;
-- liste des validateurs réels ;
-- règles d'arbitrage linguistique ;
-- conventions pratiques de segmentation de parole naturelle ;
-- durée de conservation des audios ;
-- procédure formelle de retrait et correction ;
-- politique de sauvegarde ;
+- recrutement de validateurs réels ;
+- organisation des relais / zones de collecte afin de couvrir les trois variétés ;
+- conventions détaillées de segmentation de parole naturelle ;
+- arbitrage final en cas de désaccord durable entre validateurs ;
+- sauvegardes de production et procédure de restauration ;
 - licence du futur dataset ;
 - inventaire complet des ressources tierces et de leurs droits ;
-- seuil de qualité minimum avant entraînement ML.
+- seuil de qualité minimum avant chaque expérimentation ML.
+
+**Le choix d'une variété unique prioritaire n'est plus une décision ouverte : Maka, Matya et Maya restent toutes les trois dans le projet.**
 
 ---
 
-## 29. Critères de sortie avant pilote public
+## 22. Critères avant pilote public
 
-Le système peut être considéré prêt pour un petit pilote lorsque :
-
-- les migrations s'exécutent sur une base vierge ;
-- les seeders sont idempotents ;
-- les tests passent ;
-- l'audio fonctionne sur plusieurs téléphones ;
-- les pages publiques sont cohérentes visuellement ;
-- Google OAuth et Resend sont configurés en production ;
-- les sauvegardes sont en place ;
-- les audios restent privés ;
-- les 500 prompts ont été relus ;
-- les sujets de parole naturelle ont été relus ;
-- les validateurs réels sont identifiés ;
-- le texte de consentement est validé ;
-- la procédure de retrait est documentée ;
-- la variété / zone pilote est choisie.
+- migrations et seeders fonctionnels ;
+- tests verts ;
+- audio testé sur plusieurs téléphones ;
+- Google OAuth et Resend configurés ;
+- sauvegardes en place ;
+- scheduler de rétention actif ;
+- 500 prompts et 40 sujets naturels relus ;
+- validateurs identifiés ;
+- consentement 1.1 publié ;
+- procédure de retrait fonctionnelle ;
+- organisation pratique de la collecte définie.
 
 ---
 
-## 30. Critères de sortie avant première expérimentation ML
+## 23. Critères avant expérimentation ML sérieuse
 
-Ne pas démarrer une expérimentation présentée comme sérieuse tant que :
+Ne pas considérer un entraînement comme une baseline sérieuse tant que :
 
 - un corpus validé n'existe pas ;
-- les variétés sont identifiées ;
+- les variétés sont étiquetées ;
+- la couverture de chaque variété est mesurée ;
 - le dataset est versionné ;
 - les splits sont stables ;
-- les consentements autorisent l'usage prévu ;
-- les données test sont séparées avant toute augmentation inverse ;
-- un jeu de test humain est conservé ;
-- la qualité de la transcription est jugée acceptable ;
-- les données naturelles et élicitées sont distinguées.
+- les consentements autorisent l'usage ;
+- les données retirées sont exclues ;
+- les données test sont séparées avant augmentation ;
+- un jeu d'évaluation humaine est conservé ;
+- données naturelles et élicitées restent distinguées.
 
 ---
 
-## 31. Documentation associée
+## 24. Documentation associée
 
-- [`README.md`](README.md) — présentation générale ;
-- [`docs/VISION.md`](docs/VISION.md) — vision ;
-- [`docs/ROADMAP.md`](docs/ROADMAP.md) — feuille de route ;
-- [`docs/DIALECTS.md`](docs/DIALECTS.md) — variétés ;
-- [`docs/DATA_GOVERNANCE.md`](docs/DATA_GOVERNANCE.md) — gouvernance ;
-- [`docs/DATA_SCHEMA.md`](docs/DATA_SCHEMA.md) — schéma de données ;
-- [`CONTRIBUTING.md`](CONTRIBUTING.md) — contribution au projet ;
-- [`CODE_OF_CONDUCT.md`](CODE_OF_CONDUCT.md) — règles communautaires.
+- [`README.md`](README.md) ;
+- [`docs/VISION.md`](docs/VISION.md) ;
+- [`docs/ROADMAP.md`](docs/ROADMAP.md) ;
+- [`docs/DIALECTS.md`](docs/DIALECTS.md) ;
+- [`docs/DATA_GOVERNANCE.md`](docs/DATA_GOVERNANCE.md) ;
+- [`docs/DATA_SCHEMA.md`](docs/DATA_SCHEMA.md) ;
+- [`CONTRIBUTING.md`](CONTRIBUTING.md) ;
+- [`CODE_OF_CONDUCT.md`](CODE_OF_CONDUCT.md).
 
 ---
 
-## 32. Principe final
+## 25. Principe final
 
-La réussite de Langue SAN ne sera pas mesurée uniquement par le nombre de phrases collectées ou par un score automatique de traduction.
+La réussite de Langue SAN ne sera pas mesurée uniquement par le nombre de phrases collectées ou par un score automatique.
 
 Le projet doit préserver simultanément :
 
-- la fidélité linguistique ;
-- la diversité des variétés ;
-- la naturalité des usages ;
-- la traçabilité ;
-- le consentement ;
-- la qualité de validation ;
-- l'utilité pour les communautés.
+- fidélité linguistique ;
+- diversité des variétés ;
+- naturalité des usages ;
+- traçabilité ;
+- consentement et possibilité de retrait ;
+- qualité de validation ;
+- utilité pour les communautés.
 
-Le corpus doit rester la fondation du projet : **collecter mieux avant d'entraîner plus gros**.
+**Collecter mieux avant d'entraîner plus gros.**
