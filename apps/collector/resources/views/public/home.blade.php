@@ -33,7 +33,8 @@
             <ul class="navbar-nav ms-auto align-items-lg-center gap-lg-3 py-3 py-lg-0">
                 <li class="nav-item"><a class="nav-link san-nav-link" href="#pourquoi">Pourquoi contribuer ?</a></li>
                 <li class="nav-item"><a class="nav-link san-nav-link" href="#fonctionnement">Comment ça marche</a></li>
-                <li class="nav-item"><a class="nav-link san-nav-link" href="#themes">Thèmes</a></li>
+                <li class="nav-item"><a class="nav-link san-nav-link" href="{{ route('community') }}">Communauté</a></li>
+                <li class="nav-item"><a class="nav-link san-nav-link" href="{{ route('project.join') }}">Rejoindre le projet</a></li>
                 @guest
                     <li class="nav-item"><a class="nav-link san-nav-link" href="{{ route('contributor.auth.show') }}">Mon compte</a></li>
                 @endguest
@@ -135,6 +136,8 @@
         </div>
     </div>
 </section>
+
+@include('public.partials.community-preview')
 
 <section class="section-san pt-0">
     <div class="container">
