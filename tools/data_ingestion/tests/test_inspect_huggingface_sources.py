@@ -48,6 +48,19 @@ def test_target_configs_finds_chikhapo_pairs():
     assert inspect.target_configs_for_source(source, configs) == ["eng_stj", "stj_eng"]
 
 
+def test_infer_chikhapo_configs_from_repo_files():
+    files = [
+        "data/stj_eng/train-00000.parquet",
+        "data/eng_stj/train-00000.parquet",
+        "data/fra_eng/train-00000.parquet",
+        "README.md",
+    ]
+    assert inspect.infer_chikhapo_configs_from_repo_files(files, ["stj"]) == [
+        "eng_stj",
+        "stj_eng",
+    ]
+
+
 def test_config_sizes_extracts_num_rows():
     payload = {
         "size": {
@@ -74,7 +87,7 @@ def test_build_summary_marks_no_download_and_no_training():
         {"repo_id": "c"},
     ]
     results = [
-        {"status": "inspection_success"},
+        {"status": "inspection_success_with_fallback"},
         {"status": "inspection_failed"},
     ]
     summary = inspect.build_summary(results, all_sources)
