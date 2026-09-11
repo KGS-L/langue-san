@@ -8,13 +8,19 @@ class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
-        $this->call([
+        $seeders = [
             LinguisticReferenceSeeder::class,
             CategorySeeder::class,
             PromptSeeder::class,
             ConsentVersionSeeder::class,
             RolePermissionSeeder::class,
             AdminUserSeeder::class,
-        ]);
+        ];
+
+        if (! app()->environment('production')) {
+            $seeders[] = DemoContributorSeeder::class;
+        }
+
+        $this->call($seeders);
     }
 }
