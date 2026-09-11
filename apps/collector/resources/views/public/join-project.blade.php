@@ -7,6 +7,7 @@
     <link href="{{ asset('assets/vendor/bootstrap/css/bootstrap.min.css') }}" rel="stylesheet">
     <link href="{{ asset('assets/vendor/bootstrap-icons/bootstrap-icons.css') }}" rel="stylesheet">
     <link href="{{ asset('assets/css/landing.css') }}" rel="stylesheet">
+    <link href="{{ asset('assets/css/public-theme.css') }}" rel="stylesheet">
 </head>
 <body class="bg-light">
 <nav class="navbar bg-white border-bottom py-3"><div class="container"><a class="san-brand" href="{{ route('home') }}"><img src="{{ asset('assets/img/langue-san-logo.svg') }}" alt=""><span>Langue SAN</span></a><a href="{{ route('community') }}" class="btn btn-light">La communauté</a></div></nav>
