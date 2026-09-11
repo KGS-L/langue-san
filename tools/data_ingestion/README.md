@@ -1,27 +1,40 @@
 # Data ingestion
 
-Ce dossier regroupe les outils utilisés pour acquérir, contrôler et préparer des ressources linguistiques externes destinées au projet Langue SAN.
-
-Il est volontairement séparé de :
-
-- `apps/collector/`, qui collecte les contributions terrain et communautaires ;
-- `data/`, qui contient les schémas, exemples et futurs jeux de données publiables ;
-- `ml/`, qui servira au prétraitement ML, aux expériences, à l'entraînement et à l'évaluation.
+Ce dossier regroupe les outils utilisés pour **découvrir, récupérer, inventorier et comparer des ressources linguistiques externes** destinées au projet Langue SAN.
 
 > Guide complet : [`GUIDE_DATA_INGESTION.md`](GUIDE_DATA_INGESTION.md)
->
-> Le guide détaille les étapes, statuts, commandes, résultats attendus, échecs possibles, niveaux de validation et procédure d'ajout d'une nouvelle source.
+
+## Périmètre de la branche `feat/data-ingestion`
+
+Dans cette branche, le but principal est la **récolte technique des sources externes**.
+
+```text
+source externe
+    ↓
+vérification provenance / droits
+    ↓
+collector ou scraper
+    ↓
+data/raw/                        # local, non commité
+    ↓
+normalisation technique minimale
+    ↓
+QA / statistiques / comparaison
+    ↓
+SOURCE RÉCOLTÉE
+```
+
+La transformation ultérieure en source linguistique officielle du projet, la validation humaine, `standard_san`, l'import applicatif et l'autorisation ML seront traités séparément.
 
 ## Principes
 
-1. Ne jamais mélanger automatiquement les variétés San Maka (`sbd`), San Matya (`stj`) et San Maya (`sym`).
-2. Conserver pour chaque ressource sa provenance, son URL, sa licence et sa date d'acquisition.
-3. Une donnée récupérée sur Internet n'est pas automatiquement une donnée validée linguistiquement.
-4. Les ressources dont les droits sont incertains restent désactivées jusqu'à vérification.
-5. Les données brutes doivent être écrites sous `data/raw/`, déjà exclu de Git.
-6. La notation source doit être conservée avant toute éventuelle normalisation linguistique.
-7. Une glose française ajoutée par le projet n'est pas une validation de la forme San correspondante.
-8. Aucun script ne doit promouvoir automatiquement une forme externe vers `standard_san`.
+1. Ne jamais mélanger automatiquement San Maka (`sbd`), San Matya (`stj`) et San Maya (`sym`).
+2. Conserver provenance, URL, licence/droits et date d'acquisition.
+3. Une donnée accessible publiquement n'est pas automatiquement réutilisable ou publiable.
+4. Les ressources aux droits incertains restent désactivées dans `config/sources.yaml`.
+5. `data/raw/` et `data/processed/` sont des données locales de travail et ne sont pas publiées automatiquement.
+6. La notation source est conservée telle quelle.
+7. Une similarité de chaînes de caractères n'est jamais une validation linguistique.
 
 ## Structure
 
@@ -33,16 +46,20 @@ tools/data_ingestion/
 │   └── sources.yaml
 ├── collectors/
 │   ├── __init__.py
+│   ├── ainsisoisje.py
 │   └── asjp.py
 ├── processors/
 │   ├── __init__.py
 │   ├── build_review_sheet.py
+│   ├── compare_ainsisoisje_asjp.py
 │   ├── enrich_concepts.py
 │   ├── normalize.py
 │   └── qa_variants.py
 ├── tests/
+│   ├── test_ainsisoisje.py
 │   ├── test_asjp.py
 │   ├── test_build_review_sheet.py
+│   ├── test_compare_ainsisoisje_asjp.py
 │   ├── test_config.py
 │   ├── test_enrich_concepts.py
 │   ├── test_normalize.py
@@ -50,34 +67,6 @@ tools/data_ingestion/
 ├── GUIDE_DATA_INGESTION.md
 ├── README.md
 └── requirements.txt
-```
-
-## Pipeline
-
-```text
-Source externe
-      ↓
-collector
-      ↓
-data/raw/                       # non commité
-      ↓
-normalisation
-      ↓
-data/processed/                 # données de travail
-      ↓
-rapport QA général
-      ↓
-analyse des variantes
-      ↓
-enrichissement contrôlé des concepts FR
-      ↓
-préparation de la feuille de revue humaine
-      ↓
-validation linguistique humaine
-      ↓
-dataset approuvé explicitement
-      ↓
-ML / traduction / apprentissage
 ```
 
 ## Installation locale
@@ -90,220 +79,181 @@ source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
-Lors des sessions suivantes :
+Puis, à chaque session :
 
 ```bash
 source .venv/bin/activate
-```
-
-## Tests
-
-```bash
 pytest tests
 ```
 
-Les tests unitaires n'ont pas besoin d'Internet pour les transformations locales. Ils vérifient notamment la sélection des codes ISO, la conservation de la provenance, le parsing du schéma CLDF, la normalisation, l'analyse des variantes, l'enrichissement contrôlé des concepts français et la préparation de la revue humaine.
+# Source 1 — ASJP v21
 
-# ASJP — première source active
+ASJP est notre première source structurée.
 
-L'intégration initiale utilise **ASJP v21 (2025)** sous forme CLDF. Le collecteur utilise les tables structurées publiées par le projet ASJP, puis extrait uniquement les entrées correspondant aux codes ISO du projet :
+```text
+licence : CC-BY-4.0
+statut  : approved_for_ingestion
+```
 
-- `sbd` — San Maka / Southern Samo San ;
-- `stj` — San Matya ;
-- `sym` — San Maya.
-
-La ressource reste `external_unverified` tant qu'elle n'a pas été contrôlée par notre processus linguistique.
-
-## 1. Collecte
+Collecte :
 
 ```bash
 python collectors/asjp.py
 ```
 
-Sortie :
-
-```text
-<racine-du-repo>/data/raw/asjp/asjp_v21_san_wordlists.json
-```
-
 Résultat réel actuel :
 
 ```text
-341 entrées au total
+341 entrées
 sbd : 37 entrées / 34 concepts / 36 formes
 stj : 129 entrées / 78 concepts / 111 formes
 sym : 175 entrées / 88 concepts / 150 formes
 ```
 
-## 2. Normalisation + rapport QA général
+Normalisation :
 
 ```bash
 python processors/normalize.py
 ```
 
-Sorties :
-
-```text
-<racine-du-repo>/data/processed/asjp/
-├── asjp_v21_san_normalized.json
-├── asjp_v21_san_normalized.csv
-└── asjp_v21_report.json
-```
-
-Le normaliseur conserve la forme ASJP originale dans `source_form`. Il ne la transforme jamais automatiquement en orthographe San validée : `standard_san` reste `null` tant qu'une validation linguistique n'a pas eu lieu.
-
-## 3. Analyse QA des variantes
+QA variantes :
 
 ```bash
 python processors/qa_variants.py
 ```
 
-Résultat réel actuel :
+Résultat réel :
 
 ```text
 68 groupes multi-formes
-
-Par variété :
 sbd : 2
 stj : 35
 sym : 31
-
-Par type :
-cross_wordlist_single_each            : 16
-cross_wordlist_with_internal_variants : 27
-internal_variants_same_wordlist       : 25
 ```
 
-Sorties :
-
-```text
-<racine-du-repo>/data/processed/asjp/
-├── asjp_v21_variants_review.json
-├── asjp_v21_variants_review.csv
-└── asjp_v21_variants_summary.json
-```
-
-Une variante détectée n'est pas automatiquement une erreur. Le pipeline conserve les formes et demande une revue humaine au lieu d'en sélectionner une arbitrairement.
-
-## 4. Enrichissement contrôlé des concepts en français
-
-Le fichier :
-
-```text
-config/concepts_fr.yaml
-```
-
-contient des glosses françaises de travail pour les concepts ASJP observés dans notre extraction.
-
-Commande :
+Glosses françaises de travail :
 
 ```bash
 python processors/enrich_concepts.py
 ```
 
-Résultat réel actuel :
+Résultat réel :
 
 ```text
-Concepts ASJP uniques : 92
-Concepts avec glose FR : 92
-Concepts sans glose FR : 0
-Entrées enrichies : 341 / 341
+92 / 92 concepts glossés en français
+341 / 341 entrées enrichies
 ```
 
-Sorties :
-
-```text
-<racine-du-repo>/data/processed/asjp/
-├── asjp_v21_san_enriched.json
-├── asjp_v21_san_enriched.csv
-└── asjp_v21_concepts_fr_report.json
-```
-
-Le processeur ajoute notamment :
-
-```text
-concept_fr
-concept_fr_source = project_controlled_gloss_v1
-concept_fr_status = project_controlled_gloss
-concept_fr_note
-```
-
-Exemple :
-
-```text
-concept_normalized = water
-concept_fr         = eau
-source_form        = mu
-standard_san       = null
-```
-
-Cela signifie uniquement : « le concept ASJP `water` est glossé `eau` en français ». Cela ne signifie pas encore : « `eau → mu` est une paire de traduction San validée ».
-
-## 5. Préparation de la revue humaine
-
-Commande :
+La préparation de revue humaine déjà développée reste disponible, mais elle n'est pas la priorité de cette branche :
 
 ```bash
 python processors/build_review_sheet.py
 ```
 
-Le script regroupe les 341 lignes par combinaison `variété + concept`. Les statistiques précédentes indiquent qu'on attend **200 éléments de revue** :
+# Source 2 — Ainsi sois-je / Dictionnaire Français-Samo
+
+Ressource publique :
 
 ```text
-sbd : 34 concepts
-stj : 78 concepts
-sym : 88 concepts
-Total : 200 éléments de revue
+https://ainsisoisje.com/dictionnaire-samo-francais/
 ```
 
-Parmi eux, 68 correspondent à des concepts multi-formes déjà identifiés par `qa_variants.py` et 132 devraient être des concepts à forme unique.
+La page indique actuellement **126 noms** dans le répertoire.
+
+Points importants :
+
+```text
+nom de langue affiché : Samo
+variété ISO            : inconnue
+copyright               : All Rights Reserved
+statut droits           : rights_review_required
+publication             : non approuvée
+training ML             : non approuvé
+```
+
+Cette source reste donc une **source candidate locale pour inventaire et comparaison**. Son contenu brut ne doit pas être commité ou publié tant que les droits de réutilisation ne sont pas clarifiés.
+
+## Collecte
+
+```bash
+python collectors/ainsisoisje.py
+```
+
+Le collecteur :
+
+- charge la page principale ;
+- découvre les liens par lettre du plugin WordPress Name Directory ;
+- visite les pages avec une courte pause ;
+- extrait les couples `français / samo` ;
+- déduplique uniquement les couples strictement identiques ;
+- ne lui attribue aucun code ISO ;
+- écrit localement sous `data/raw/ainsisoisje/`.
+
+Sortie :
+
+```text
+<repo>/data/raw/ainsisoisje/dictionnaire_samo_francais.json
+```
+
+Le compteur récupéré est comparé au compteur public du site afin de repérer un scraping incomplet.
+
+## Comparaison avec ASJP
+
+Après la collecte :
+
+```bash
+python processors/compare_ainsisoisje_asjp.py
+```
+
+Le comparateur cherche :
+
+```text
+SITE_ONLY_OR_UNRESOLVED
+EXACT_FORM_MATCH
+FORM_SIMILARITY_CANDIDATE
+CONCEPT_MATCH_FORM_DIFFERENT
+```
+
+Il compare d'abord les concepts français du site aux glosses françaises contrôlées d'ASJP, puis calcule une similarité graphique entre les formes Samo et les formes ASJP.
+
+Important :
+
+```text
+FORM_SIMILARITY_CANDIDATE
+    !=
+forme linguistiquement équivalente
+```
+
+De même, le rapport peut produire un **signal heuristique** de proximité vers `sbd`, `stj` ou `sym`, mais ce signal ne doit jamais être utilisé comme attribution automatique de variété.
 
 Sorties :
 
 ```text
-<racine-du-repo>/data/processed/asjp/review/
-├── asjp_v21_human_review.json
-├── asjp_v21_human_review.csv
-└── asjp_v21_human_review_summary.json
+<repo>/data/processed/comparisons/
+├── ainsisoisje_vs_asjp.json
+├── ainsisoisje_vs_asjp.csv
+└── ainsisoisje_vs_asjp_report.json
 ```
 
-Le CSV contient les données de contexte nécessaires au validateur ainsi que des champs laissés volontairement à compléter :
+# État actuel des sources
 
 ```text
-selected_source_form
-standard_san
-reviewer_notes
-decision_status
-linguistic_status
-```
+ASJP
+├── découverte / provenance      ✅
+├── droits                       ✅ CC-BY-4.0
+├── collecte                     ✅ 341
+├── normalisation / QA           ✅
+└── état branche ingestion       ✅ SOURCE RÉCOLTÉE
 
-Priorités :
+Ainsi sois-je
+├── découverte                   ✅
+├── volume annoncé               ✅ 126
+├── variété exacte               ? inconnue
+├── droits                       ⚠️ All Rights Reserved
+├── collector                    ✅ implémenté
+├── collecte locale réelle       ⏳ à exécuter
+└── comparaison ASJP             ⏳ après collecte
 
-```text
-high   = divergence entre plusieurs listes + variantes internes
-medium = autre groupe multi-formes
-normal = une seule forme source observée
-```
-
-Même dans une ligne `normal`, la forme source n'est pas automatiquement considérée correcte : elle doit encore être validée linguistiquement.
-
-# Statut actuel
-
-```text
-ASJP — licence / provenance             ✅
-ASJP — collecte                         ✅ 341 entrées
-ASJP — séparation sbd/stj/sym           ✅
-ASJP — normalisation                    ✅ 341 / 341
-ASJP — QA variantes                     ✅ 68 groupes classifiés
-ASJP — glosses françaises contrôlées    ✅ 92 / 92 concepts ; 341 / 341 entrées
-ASJP — préparation revue humaine        ⏳ prochaine étape locale
-ASJP — validation orthographique San    ⏳ non commencée
-ASJP — validation humaine               ⏳ non commencée
-ASJP — training                         ❌ non approuvé
-```
-
-La règle centrale reste :
-
-```text
-Téléchargé ≠ correct linguistiquement ≠ validé ≠ autorisé pour entraînement
+Hugging Face
+└── inventaire datasets          ⏳ ensuite
 ```
