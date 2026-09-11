@@ -45,6 +45,7 @@ class PromptRepository implements PromptRepositoryInterface
             'active' => $this->model->newQuery()->where('is_active', true)->count(),
             'words' => $this->model->newQuery()->where('type', PromptType::WORD->value)->count(),
             'sentences' => $this->model->newQuery()->where('type', PromptType::SENTENCE->value)->count(),
+            'narratives' => $this->model->newQuery()->where('type', PromptType::NARRATIVE->value)->count(),
             'under_covered' => $this->applyUnderCovered($this->model->newQuery())->count(),
         ];
     }
@@ -97,6 +98,33 @@ class PromptRepository implements PromptRepositoryInterface
             ->inRandomOrder()
             ->limit($limit)
             ->get();
+    }
+
+    public function naturalSpeechForContributor(int $contributorProfileId, int $limit = 12): Collection
+    {
+        return $this->model->newQuery()
+            ->where('type', PromptType::NARRATIVE->value)
+            ->where('is_active', true)
+            ->whereDoesntHave('contributions', fn (Builder $query) => $query->where('contributor_profile_id', $contributorProfileId))
+            ->with('category')
+            ->withCount([
+                'contributions as usable_contributions_count' => fn (Builder $query) => $query->where('status', '!=', ContributionStatus::REJECTED->value),
+            ])
+            ->orderBy('usable_contributions_count')
+            ->orderByDesc('priority')
+            ->inRandomOrder()
+            ->limit($limit)
+            ->get();
+    }
+
+    public function findActiveNarrative(int $promptId): ?Prompt
+    {
+        return $this->model->newQuery()
+            ->whereKey($promptId)
+            ->where('type', PromptType::NARRATIVE->value)
+            ->where('is_active', true)
+            ->with('category')
+            ->first();
     }
 
     private function baseListQuery(): Builder
