@@ -9,38 +9,62 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class DatasetExportService
 {
+    public function summary(): array
+    {
+        $ids = $this->eligibleQuery()->pluck('id');
+        $splits = ['train' => 0, 'validation' => 0, 'test' => 0];
+
+        foreach ($ids as $id) {
+            $sourceId = $this->sourceId((int) $id);
+            $splits[$this->splitFor($sourceId)]++;
+        }
+
+        return [
+            'version' => (string) config('dataset.version', '0.1.0'),
+            'eligible' => $ids->count(),
+            'splits' => $splits,
+            'sourceSaltConfigured' => config('dataset.source_salt') !== 'langue-san-local-dev-salt',
+        ];
+    }
+
     public function csv(): StreamedResponse
     {
-        $filename = 'langue-san-approved-'.now()->format('Ymd-His').'.csv';
+        $version = (string) config('dataset.version', '0.1.0');
+        $filename = 'langue-san-'.$version.'-approved-'.now()->format('Ymd-His').'.csv';
 
-        return response()->streamDownload(function () {
+        return response()->streamDownload(function () use ($version) {
             $out = fopen('php://output', 'w');
             fputcsv($out, [
-                'id',
+                'dataset_version',
+                'source_id',
+                'split',
+                'direction',
                 'prompt_code',
                 'variety',
+                'variety_iso',
                 'french',
                 'context',
                 'san',
                 'type',
                 'category',
                 'locality',
-                'validation_level',
+                'validation_count',
+                'submitted_at',
+                'approved_at',
             ]);
 
-            Contribution::query()
-                ->where('status', ContributionStatus::APPROVED->value)
-                ->whereNotNull('san_text')
-                ->whereHas(
+            $this->eligibleQuery()
+                ->with([
+                    'prompt.category',
+                    'locality',
+                    'validations.variety',
                     'contributorProfile.consents.consentVersion',
-                    fn ($query) => $query->where('allow_training', true),
-                )
-                ->with(['prompt.category', 'locality', 'validations.variety', 'contributorProfile.consents.consentVersion'])
+                ])
                 ->orderBy('id')
-                ->chunkById(500, function ($items) use ($out) {
+                ->chunkById(500, function ($items) use ($out, $version) {
                     foreach ($items as $item) {
                         $lastValidation = $item->validations->last();
-                        $variety = $lastValidation?->variety?->name;
+                        $variety = $lastValidation?->variety;
 
                         if (! $variety) {
                             continue;
@@ -50,10 +74,16 @@ class DatasetExportService
                             ? $lastValidation->san_text_corrected
                             : $item->san_text;
 
+                        $sourceId = $this->sourceId($item->id);
+
                         fputcsv($out, [
-                            $item->id,
+                            $version,
+                            $sourceId,
+                            $this->splitFor($sourceId),
+                            'fr-san',
                             $item->prompt->code,
-                            $variety,
+                            $variety->name,
+                            $variety->iso_code,
                             $item->prompt->french_text,
                             $item->prompt->context,
                             $san,
@@ -61,11 +91,52 @@ class DatasetExportService
                             $item->prompt->category->name,
                             $item->locality?->name,
                             $item->validations->count(),
+                            optional($item->submitted_at)->toIso8601String(),
+                            optional($lastValidation?->created_at)->toIso8601String(),
                         ]);
                     }
                 });
 
             fclose($out);
         }, $filename, ['Content-Type' => 'text/csv; charset=UTF-8']);
+    }
+
+    private function eligibleQuery()
+    {
+        return Contribution::query()
+            ->where('status', ContributionStatus::APPROVED->value)
+            ->whereNotNull('san_text')
+            ->whereHas('validations', fn ($query) => $query->whereNotNull('variety_id'))
+            ->whereHas(
+                'contributorProfile.consents.consentVersion',
+                fn ($query) => $query->where('allow_training', true),
+            );
+    }
+
+    private function sourceId(int $contributionId): string
+    {
+        return substr(hash_hmac(
+            'sha256',
+            'contribution:'.$contributionId,
+            (string) config('dataset.source_salt', 'langue-san-local-dev-salt'),
+        ), 0, 24);
+    }
+
+    private function splitFor(string $sourceId): string
+    {
+        $bucket = hexdec(substr(hash('sha256', $sourceId), 0, 8)) % 100;
+        $splits = config('dataset.splits', ['train' => 80, 'validation' => 10, 'test' => 10]);
+        $train = (int) ($splits['train'] ?? 80);
+        $validation = (int) ($splits['validation'] ?? 10);
+
+        if ($bucket < $train) {
+            return 'train';
+        }
+
+        if ($bucket < $train + $validation) {
+            return 'validation';
+        }
+
+        return 'test';
     }
 }
