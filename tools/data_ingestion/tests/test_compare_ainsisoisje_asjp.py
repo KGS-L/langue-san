@@ -82,3 +82,26 @@ def test_summary_marks_training_unapproved():
     summary = compare.build_summary(items)
     assert summary["training_approved"] is False
     assert summary["by_classification"]["EXACT_FORM_MATCH"] == 1
+
+
+def test_deduplicate_site_entries_keeps_one_pair_for_comparison():
+    entries = [
+        {"french": "Noir", "samo": "Ti", "occurrence_id": "1"},
+        {"french": "Noir", "samo": "Ti", "occurrence_id": "2"},
+        {"french": "Eau", "samo": "Mu", "occurrence_id": "3"},
+    ]
+    unique = compare.deduplicate_site_entries(entries)
+    assert len(unique) == 2
+    assert unique[0]["occurrence_id"] == "1"
+    assert unique[1]["occurrence_id"] == "3"
+
+
+def test_summary_reports_raw_and_unique_site_counts():
+    items = compare.compare_sources(
+        [{"french": "eau", "samo": "mu"}],
+        _asjp_entries(),
+    )
+    summary = compare.build_summary(items, raw_site_entry_count=2)
+    assert summary["site_raw_occurrence_count"] == 2
+    assert summary["site_unique_pair_count_compared"] == 1
+    assert summary["duplicate_occurrences_excluded_from_comparison"] == 1
