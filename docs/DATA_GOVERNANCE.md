@@ -1,6 +1,6 @@
 # Gouvernance des données
 
-Ce document décrit les règles initiales de gestion des données du projet. Il sera affiné avant l'ouverture publique de la collecte.
+Ce document décrit les règles de gestion des données du projet Langue SAN.
 
 ## 1. Code open source ≠ données automatiquement ouvertes
 
@@ -8,77 +8,75 @@ Le code de ce dépôt est sous Apache-2.0. Cette licence ne s'applique pas autom
 
 - aux enregistrements audio ;
 - aux traductions collectées ;
-- aux récits naturels et leurs transcriptions ;
 - aux métadonnées des contributeurs ;
+- aux datasets produits ;
 - aux ressources provenant de dictionnaires, livres, applications ou corpus tiers.
 
 Toute publication d'un dataset doit avoir sa propre licence et une provenance claire.
 
-## 2. Consentement
+## 2. Consentement versionné
 
-Avant tout enregistrement ou contribution destinée à être réutilisée, le site doit expliquer clairement les usages prévus.
+Avant toute contribution réutilisable, le site explique les usages prévus. Le consentement est enregistré avec une version identifiable.
 
-Le consentement doit distinguer autant que possible :
+La version 1.1 distingue notamment :
 
 - stockage de la contribution ;
-- utilisation pour transcription et validation ;
-- segmentation et traduction des récits naturels ;
-- utilisation pour construire un corpus ;
-- utilisation pour entraînement et évaluation de modèles ;
+- transcription et validation ;
+- constitution d'un corpus ;
+- utilisation pour entraînement et évaluation lorsque `allow_training` est autorisé ;
 - publication éventuelle du texte ;
 - publication éventuelle de l'audio.
 
-La publication publique de l'audio ne doit jamais être supposée implicitement.
+**La publication publique de l'audio n'est jamais implicite.** Le consentement courant conserve `allow_audio_publication = false`. Une publication future d'un enregistrement brut nécessitera une autorisation spécifique distincte.
 
 ## 3. Minimisation des données personnelles
 
-Le projet doit collecter seulement ce qui est nécessaire. Un identifiant pseudonyme peut être utilisé à la place d'un nom réel.
+Le projet collecte seulement ce qui est utile au fonctionnement du collecteur et à l'analyse linguistique.
 
-Les informations linguistiques utiles peuvent inclure la localité d'apprentissage ou d'usage, le niveau de maîtrise et, après validation, la variété linguistique. Le formulaire public ne doit pas exiger du contributeur qu'il connaisse les labels techniques Maka, Matya ou Maya.
+Un identifiant pseudonyme est utilisé pour le profil de contribution. Les informations de connexion et données de compte ne doivent pas être copiées dans les exports ML.
 
-## 4. Stockage
+Les informations linguistiques utiles peuvent inclure :
 
-Les audios bruts et datasets privés doivent rester hors du dépôt GitHub.
+- localité d'apprentissage ou d'usage ;
+- niveau de pratique ;
+- capacité à écrire le San ;
+- variété validée ;
+- contexte de collecte.
 
-Exemples de zones privées :
+## 4. Stockage privé
+
+Les audios bruts et datasets privés restent hors du dépôt GitHub.
+
+Exemples :
 
 ```text
-apps/collector/storage/app/private/recordings/
+apps/collector/storage/app/private/
 data/private/
 data/raw/
 ```
 
-Des sauvegardes chiffrées et un contrôle d'accès devront être mis en place avant une collecte à grande échelle.
+Les audios sont servis uniquement par des routes autorisées de l'application.
 
-## 5. Deux formes de collecte complémentaires
+Avant une collecte à grande échelle, les sauvegardes de base de données et d'audios doivent être protégées et un test de restauration doit être réalisé.
 
-### 5.1 Français → San élicité
+## 5. Durées de conservation
 
-Le contributeur traduit des mots, expressions et phrases françaises ciblées. Cette forme produit des paires parallèles contrôlées et facilite la mesure de couverture de concepts précis.
+La politique opérationnelle courante est :
 
-### 5.2 Parole naturelle San → San
+- **audio d'une contribution définitivement rejetée : 90 jours** après le dernier changement de statut, puis suppression automatique ;
+- **audio d'une contribution `pending` sans aucun traitement depuis 12 mois : suppression automatique** ;
+- **audio d'une contribution retenue :** conservation privée tant qu'il reste utile à la traçabilité/validation et couvert par le consentement, sauf demande de suppression ;
+- **données de compte :** conservation tant que le compte reste actif ou jusqu'à une demande d'anonymisation/suppression, sous réserve de traces techniques minimales ne contenant plus le contenu linguistique retiré.
 
-Une consigne thématique sert uniquement à déclencher un récit naturel en San : histoire familiale, mariage, marché, agriculture, conte, proverbe, souvenir, etc.
+Ces durées sont configurables dans `config/data_retention.php`.
 
-Pipeline :
+La commande :
 
-```text
-consigne thématique
-      ↓
-audio San naturel
-      ↓
-transcription San complète
-      ↓
-segmentation en phrases / unités utiles
-      ↓
-traduction française de chaque segment
-      ↓
-validation linguistique
+```bash
+php artisan data:purge-expired-audio
 ```
 
-La consigne française n'est jamais la traduction du récit. Elle reste uniquement une métadonnée d'élicitation.
-
-Cette deuxième source est importante pour limiter le biais structurel qu'un corpus composé uniquement de traductions du français pourrait introduire dans le San collecté.
+applique la purge des audios expirés. Elle est planifiée quotidiennement par le scheduler Laravel.
 
 ## 6. Cycle de validation
 
@@ -93,37 +91,87 @@ approved
 rejected
 ```
 
-Pour une contribution de parole naturelle, `transcribed` ne suffit pas à autoriser la validation : le récit doit aussi avoir été segmenté et chaque segment doit comporter une transcription San et une traduction française.
+Une donnée utilisée pour l'entraînement doit être traçable jusqu'à sa provenance, sa version de consentement et son statut de validation.
 
-Une donnée utilisée pour l'entraînement doit être traçable jusqu'à sa provenance et à son statut de validation.
+`validated_twice` représente notamment les cas où deux validations ne concordent pas complètement et où un arbitrage reste nécessaire.
 
-## 7. Variétés linguistiques et localités
+## 7. Variétés linguistiques
 
-Conserver séparément au minimum :
+Le projet couvre simultanément :
 
-- localité déclarée par le contributeur ;
-- éventuelle variété suggérée par le référentiel ;
-- statut et source de cette suggestion ;
-- variété validée par un humain ;
+- San Maka / San du Sud (`sbd`) ;
+- San Matya (`stj`) ;
+- San Maya (`sym`).
+
+Aucune variété unique n'est imposée à l'avance comme cible définitive. La couverture réellement collectée et validée déterminera les datasets et expériences ML raisonnables.
+
+Conserver séparément :
+
+- localité déclarée ;
+- suggestion de variété et sa source lorsqu'elle existe ;
+- variété validée ;
 - validateur ayant confirmé la classification.
 
-Une correspondance documentée comme Toma → Maka ou Tougan → Matya peut servir d'aide interne au validateur, mais ne doit jamais remplir automatiquement la variété validée d'une contribution.
+Une contribution de variété inconnue peut être conservée pour analyse, mais elle ne doit pas être fusionnée silencieusement avec une variété connue.
 
-Une contribution dont la variété reste indéterminée peut être conservée, mais ne doit pas être fusionnée silencieusement avec une variété connue.
+## 8. Parole naturelle
 
-## 8. Segmentation et prévention des fuites ML
+La parole naturelle suit une règle distincte de la traduction élicitée.
 
-Un récit naturel est une source unique même s'il produit plusieurs dizaines de segments.
+```text
+consigne de discussion
+      ↓
+audio San naturel
+      ↓
+transcription San
+      ↓
+segmentation
+      ↓
+traduction française par segment
+      ↓
+validation
+```
 
-Tous les segments provenant du même récit doivent :
+La consigne française est une métadonnée d'élicitation, jamais la traduction du récit.
 
-- conserver le même identifiant de source pseudonymisé ;
-- rester ensemble dans le même split `train`, `validation` ou `test` ;
-- ne jamais être répartis aléatoirement indépendamment les uns des autres.
+Tous les segments d'un même récit gardent le même `source_id` et le même split train/validation/test afin d'éviter une fuite de contenu entre entraînement et évaluation.
 
-La même règle s'applique aux futures paires inversées : une paire dérivée d'une source existante doit conserver le split de cette source.
+## 9. Correction, suppression et retrait
 
-## 9. Ressources tierces
+Un contributeur authentifié dispose de la page `/mes-donnees` pour :
+
+- demander une correction ;
+- supprimer un enregistrement audio ;
+- retirer entièrement une contribution ;
+- demander l'anonymisation ou la suppression de ses données de compte ;
+- soumettre une autre demande concernant ses données.
+
+### Retrait d'une contribution
+
+Le retrait est appliqué immédiatement dans le collecteur :
+
+1. `withdrawn_at` est renseigné ;
+2. l'audio privé est supprimé ;
+3. le texte San soumis et la transcription de travail sont supprimés ;
+4. les segments naturels sont supprimés ;
+5. les validations liées au contenu sont supprimées ;
+6. les futurs exports excluent systématiquement la contribution.
+
+La ligne technique de contribution peut rester comme trace minimale de retrait sans contenu linguistique.
+
+### Suppression d'audio
+
+Une demande de suppression d'audio supprime immédiatement le fichier privé et son enregistrement en base, sans obligatoirement retirer le texte de la contribution.
+
+### Correction et anonymisation
+
+Les demandes nécessitant une intervention humaine passent par la file administrateur `Demandes de données`. L'objectif opérationnel est un traitement sous **30 jours**.
+
+### Datasets déjà publiés
+
+Le projet peut garantir l'exclusion des données retirées de ses **futurs exports et futures versions**. Il ne peut pas garantir l'effacement de copies d'un dataset déjà téléchargées ou redistribuées par des tiers avant la demande. Cette limite doit être indiquée clairement au contributeur.
+
+## 10. Ressources tierces
 
 Ne pas copier automatiquement le contenu d'une application, d'un livre ou d'un dictionnaire dans le dataset.
 
@@ -136,19 +184,21 @@ Avant réutilisation, vérifier explicitement le droit de :
 - republier ;
 - exploiter commercialement, si cela devient pertinent.
 
-## 10. Publication future
+## 11. Publication future
 
 Avant toute publication d'un dataset :
 
 - retirer ou pseudonymiser les données personnelles non nécessaires ;
+- exclure les contributions retirées ;
 - vérifier les consentements ;
 - vérifier les licences de toutes les sources ;
 - documenter la méthode de collecte ;
-- distinguer données élicitées et parole naturelle ;
-- documenter les variétés couvertes ;
+- documenter les variétés couvertes et leurs volumes ;
 - publier une data card ;
-- versionner le dataset.
+- choisir une licence dataset distincte ;
+- versionner le dataset ;
+- figer les splits train/validation/test.
 
-## 11. Suppression et correction
+## 12. Principe de réversibilité
 
-Le système doit permettre de corriger une donnée contestée et de retracer les changements. Une procédure de demande de retrait et une durée de conservation des audios devront être définies avant la collecte publique à grande échelle.
+Le système de collecte doit être conçu de sorte qu'une contribution puisse être retirée sans nécessiter une réinitialisation globale du corpus. Les exports sont reconstruits à partir des données actuellement éligibles plutôt que considérés comme une copie permanente de toute donnée historique.
