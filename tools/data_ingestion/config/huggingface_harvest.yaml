@@ -38,6 +38,26 @@ text_subsets:
     rights_status: "dataset_license_declared_upstream_provenance_preserved"
     enabled: true
 
+  - key: taxi1500_sbd
+    repo_id: "cis-lmu/Taxi1500-RawData"
+    family: "taxi1500"
+    config: "sbd_Latn"
+    splits: ["taxi1500"]
+    iso_639_3: "sbd"
+    variety: "maka"
+    license: "source-specific-or-other"
+    rights_status: "rights_review_required_local_research_only"
+    domain: "religious_bible_text"
+    local_only: true
+    publication_approved: false
+    training_approved: false
+    enabled: true
+    notes:
+      - "7919 lignes détectées lors de l'inspection du Dataset Viewer."
+      - "Récolte locale acceptée pour inventaire/recherche malgré la licence de contenu non clarifiée."
+      - "Ne pas committer, republier ou redistribuer le RAW tant que les droits amont ne sont pas clarifiés."
+      - "Domaine biblique fortement biaisé : à conserver séparément des corpus généraux."
+
 lexical_subsets:
   - key: chikhapo_stj_eng
     repo_id: "ec5ug/chikhapo"
@@ -52,8 +72,6 @@ lexical_subsets:
     enabled: true
 
 blocked_or_deferred:
-  - repo_id: "cis-lmu/Taxi1500-RawData"
-    reason: "Bible corpus; source/content rights unclear and domain highly biased."
   - repo_id: "openbmb/DCAD-2000"
     reason: "License is declared as other; rights review required before harvest."
   - repo_id: "lbourdois/panlex"
