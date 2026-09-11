@@ -55,9 +55,8 @@
     <div class="row justify-content-center">
         <div class="col-lg-8">
             <div class="mb-4">
-                <div class="d-flex justify-content-between align-items-center mb-2">
+                <div class="mb-2">
                     <span class="small text-muted">Étape 2 sur 3</span>
-                    <span class="badge bg-light text-dark border">{{ $profile->public_code }}</span>
                 </div>
                 <div class="progress" style="height:8px"><div class="progress-bar" style="width:66%"></div></div>
             </div>
