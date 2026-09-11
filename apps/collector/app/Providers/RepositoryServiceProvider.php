@@ -5,6 +5,7 @@ namespace App\Providers;
 use App\Contracts\Repositories\CategoryRepositoryInterface;
 use App\Contracts\Repositories\CollectionSessionRepositoryInterface;
 use App\Contracts\Repositories\ContributionRepositoryInterface;
+use App\Contracts\Repositories\ContributionSegmentRepositoryInterface;
 use App\Contracts\Repositories\ContributorConsentRepositoryInterface;
 use App\Contracts\Repositories\ContributorProfileRepositoryInterface;
 use App\Contracts\Repositories\LocalityRepositoryInterface;
@@ -19,6 +20,7 @@ use App\Contracts\Repositories\VarietyRepositoryInterface;
 use App\Repositories\Eloquent\CategoryRepository;
 use App\Repositories\Eloquent\CollectionSessionRepository;
 use App\Repositories\Eloquent\ContributionRepository;
+use App\Repositories\Eloquent\ContributionSegmentRepository;
 use App\Repositories\Eloquent\ContributorConsentRepository;
 use App\Repositories\Eloquent\ContributorProfileRepository;
 use App\Repositories\Eloquent\LocalityRepository;
@@ -47,6 +49,7 @@ class RepositoryServiceProvider extends ServiceProvider
         PromptRepositoryInterface::class => PromptRepository::class,
         CollectionSessionRepositoryInterface::class => CollectionSessionRepository::class,
         ContributionRepositoryInterface::class => ContributionRepository::class,
+        ContributionSegmentRepositoryInterface::class => ContributionSegmentRepository::class,
         RecordingRepositoryInterface::class => RecordingRepository::class,
         ValidationRepositoryInterface::class => ValidationRepository::class,
     ];
