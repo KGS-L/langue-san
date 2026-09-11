@@ -7,10 +7,11 @@
     <link rel="icon" type="image/svg+xml" href="{{ asset('assets/img/langue-san-logo.svg') }}">
     <link href="{{ asset('assets/vendor/bootstrap/css/bootstrap.min.css') }}" rel="stylesheet">
     <link href="{{ asset('assets/vendor/bootstrap-icons/bootstrap-icons.css') }}" rel="stylesheet">
+    <link href="{{ asset('assets/css/public-theme.css') }}" rel="stylesheet">
     <style>
         .voice-card {
-            border: 2px solid #0d6efd;
-            background: linear-gradient(180deg, #f4f8ff 0%, #ffffff 100%);
+            border: 2px solid rgba(23, 38, 64, .32);
+            background: linear-gradient(180deg, #f8f5ee 0%, #ffffff 100%);
             border-radius: 1rem;
         }
         .record-button {
@@ -28,6 +29,10 @@
             display: inline-block;
             background: #dc3545;
             animation: pulse 1s infinite;
+        }
+        .recommended-badge {
+            background: #172640;
+            color: #fff;
         }
         @keyframes pulse {
             0%, 100% { opacity: 1; transform: scale(1); }
@@ -79,7 +84,7 @@
                         @csrf
 
                         <div class="voice-card p-4 mb-4 text-center">
-                            <div class="d-flex justify-content-center mb-2"><span class="badge text-bg-primary">Recommandé</span></div>
+                            <div class="d-flex justify-content-center mb-2"><span class="badge recommended-badge">Recommandé</span></div>
                             <h2 class="h5 fw-bold"><i class="bi bi-mic-fill me-1"></i>Répondre avec votre voix</h2>
                             <p class="text-muted small mb-3">Appuyez sur le micro, parlez naturellement en San, puis arrêtez l’enregistrement. Vous pourrez vous réécouter avant d’envoyer.</p>
 
