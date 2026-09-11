@@ -12,6 +12,7 @@ class DatabaseSeeder extends Seeder
             LinguisticReferenceSeeder::class,
             CategorySeeder::class,
             PromptSeeder::class,
+            NaturalSpeechPromptSeeder::class,
             ConsentVersionSeeder::class,
             RolePermissionSeeder::class,
             AdminUserSeeder::class,
