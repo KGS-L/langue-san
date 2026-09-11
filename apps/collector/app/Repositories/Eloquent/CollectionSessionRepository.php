@@ -40,6 +40,17 @@ class CollectionSessionRepository implements CollectionSessionRepositoryInterfac
             ]);
     }
 
+    public function findOpenForContributor(int $contributorProfileId): ?CollectionSession
+    {
+        return $this->model->newQuery()
+            ->where('contributor_profile_id', $contributorProfileId)
+            ->where('status', CollectionSessionStatus::STARTED->value)
+            ->with('category')
+            ->latest('started_at')
+            ->latest('id')
+            ->first();
+    }
+
     public function findForContributor(int $sessionId, int $contributorProfileId): ?CollectionSession
     {
         return $this->model->newQuery()
