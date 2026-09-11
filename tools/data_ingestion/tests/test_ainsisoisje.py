@@ -27,6 +27,21 @@ def test_discover_letter_urls_deduplicates_and_resolves_relative_links():
     ]
 
 
+def test_parse_name_directory_entries_preserves_duplicates():
+    html = '''
+    <div class="name_directory_name_box">
+      <h4 role="term">Noir</h4><br><p>Ti</p>
+    </div>
+    <div class="name_directory_name_box">
+      <h4 role="term">Noir</h4><br><p>Ti</p>
+    </div>
+    '''
+    assert ainsisoisje.parse_directory_entries(html) == [
+        ("Noir", "Ti"),
+        ("Noir", "Ti"),
+    ]
+
+
 def test_parse_name_directory_entries():
     html = '''
     <div class="name_directory_name_box">
@@ -43,6 +58,21 @@ def test_parse_name_directory_entries():
         ("Eau", "mu"),
         ("Chien", "jiri"),
     ]
+
+
+def test_duplicate_analysis_counts_occurrences_without_removing_them():
+    entries = [
+        {"french": "Noir", "samo": "Ti", "source_page": "N"},
+        {"french": "Noir", "samo": "Ti", "source_page": "N"},
+        {"french": "Eau", "samo": "Mu", "source_page": "E"},
+        {"french": "EAU", "samo": "mu", "source_page": "E"},
+        {"french": "Chien", "samo": "Jiri", "source_page": "C"},
+    ]
+    result = ainsisoisje.analyze_duplicate_occurrences(entries)
+    assert result["unique_pair_count"] == 3
+    assert result["duplicate_group_count"] == 2
+    assert result["duplicate_extra_occurrences"] == 2
+    assert sum(group["occurrences"] for group in result["duplicate_groups"]) == 4
 
 
 def test_clean_description_removes_plugin_labels():
