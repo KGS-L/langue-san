@@ -19,14 +19,21 @@ class FortifyServiceProvider extends ServiceProvider
     {
         Fortify::resetUserPasswordsUsing(ResetUserPassword::class);
 
-        Fortify::loginView(fn () => view('auth.login'));
+        Fortify::loginView(fn () => view('auth.staff-login'));
         Fortify::requestPasswordResetLinkView(fn () => view('auth.forgot-password'));
         Fortify::resetPasswordView(fn (Request $request) => view('auth.reset-password', ['request' => $request]));
 
         Fortify::authenticateUsing(function (Request $request): ?User {
-            $user = User::query()->where('email', Str::lower((string) $request->input('email')))->first();
+            $user = User::query()
+                ->where('email', Str::lower((string) $request->input('email')))
+                ->first();
 
-            if ($user && $user->status === UserStatus::ACTIVE && Hash::check((string) $request->input('password'), $user->password)) {
+            if (
+                $user
+                && $user->isStaff()
+                && $user->status === UserStatus::ACTIVE
+                && Hash::check((string) $request->input('password'), $user->password)
+            ) {
                 return $user;
             }
 
