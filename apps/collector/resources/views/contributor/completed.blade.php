@@ -7,6 +7,7 @@
     <link rel="icon" type="image/svg+xml" href="{{ asset('assets/img/langue-san-logo.svg') }}">
     <link href="{{ asset('assets/vendor/bootstrap/css/bootstrap.min.css') }}" rel="stylesheet">
     <link href="{{ asset('assets/vendor/bootstrap-icons/bootstrap-icons.css') }}" rel="stylesheet">
+    <link href="{{ asset('assets/css/public-theme.css') }}" rel="stylesheet">
 </head>
 <body class="bg-light">
 <main class="container py-5 min-vh-100 d-flex align-items-center">
