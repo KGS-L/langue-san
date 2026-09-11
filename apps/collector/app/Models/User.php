@@ -78,7 +78,27 @@ class User extends Authenticatable
     public function isAdmin(): bool { return $this->hasRole(UserRole::ADMIN->value); }
     public function isModerator(): bool { return $this->hasRole(UserRole::MODERATOR->value); }
     public function isContributor(): bool { return $this->hasRole(UserRole::CONTRIBUTOR->value); }
-    public function isStaff(): bool { return $this->hasAnyRole([UserRole::ADMIN->value, UserRole::MODERATOR->value]); }
+    public function isTranscriber(): bool { return $this->hasRole(UserRole::TRANSCRIBER->value); }
+    public function isValidator(): bool { return $this->hasRole(UserRole::VALIDATOR->value); }
+
+    /**
+     * Staff accounts are the password-based internal accounts only.
+     * Specialized contributors keep their normal passwordless contributor account.
+     */
+    public function isStaff(): bool
+    {
+        return $this->hasAnyRole([UserRole::ADMIN->value, UserRole::MODERATOR->value]);
+    }
+
+    public function hasBackofficeAccess(): bool
+    {
+        return $this->hasAnyRole([
+            UserRole::ADMIN->value,
+            UserRole::MODERATOR->value,
+            UserRole::TRANSCRIBER->value,
+            UserRole::VALIDATOR->value,
+        ]);
+    }
 
     public function needsContributorOnboarding(): bool
     {
