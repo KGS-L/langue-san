@@ -1,5 +1,6 @@
 from importlib.util import module_from_spec, spec_from_file_location
 from pathlib import Path
+import json
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -13,8 +14,10 @@ SPEC.loader.exec_module(collector)
 
 
 class _FakeResponse:
-    def __init__(self, payload):
+    def __init__(self, payload, status_code=200, headers=None):
         self.payload = payload
+        self.status_code = status_code
+        self.headers = headers or {}
 
     def raise_for_status(self):
         return None
@@ -78,3 +81,23 @@ def test_probe_split_reports_total_without_harvest():
     assert result["partial"] is False
     assert result["first_row_available"] is True
     assert result["first_row_idx"] == 0
+
+
+def test_resume_state_uses_existing_row_indices(tmp_path):
+    path = tmp_path / "partial.jsonl"
+    records = [
+        {"row_idx": 0, "source_row": {"text": "a"}},
+        {"row_idx": 1, "source_row": {"text": "b"}},
+        {"row_idx": 2, "source_row": {"text": "c"}},
+    ]
+    path.write_text(
+        "".join(json.dumps(item) + "\n" for item in records),
+        encoding="utf-8",
+    )
+    assert collector._resume_state(path) == (3, 3)
+
+
+def test_resume_state_empty_file_starts_at_zero(tmp_path):
+    path = tmp_path / "empty.jsonl"
+    path.write_text("", encoding="utf-8")
+    assert collector._resume_state(path) == (0, 0)
