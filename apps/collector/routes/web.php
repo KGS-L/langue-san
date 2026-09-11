@@ -17,11 +17,13 @@ Route::middleware('guest')->group(function () {
     Route::get('/compte/google', [ContributorAuthController::class, 'googleRedirect'])->name('contributor.auth.google.redirect');
     Route::get('/compte/google/callback', [ContributorAuthController::class, 'googleCallback'])->name('contributor.auth.google.callback');
 
-    // Compatibilité avec les anciens liens publics : inscription et connexion
-    // contributeur sont désormais réunies dans le même écran sans mot de passe.
     Route::redirect('/register', '/compte')->name('register');
     Route::redirect('/connexion', '/compte')->name('contributor.login');
 });
+
+Route::post('/compte/deconnexion', [ContributorAuthController::class, 'logout'])
+    ->middleware('auth')
+    ->name('contributor.logout');
 
 Route::get('/auth/redirect', function (Request $request, ContributorIdentityService $identities) {
     $user = $request->user();
