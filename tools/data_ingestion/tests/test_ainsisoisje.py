@@ -14,6 +14,11 @@ def test_extract_declared_count():
     assert ainsisoisje.extract_declared_count(html) == 126
 
 
+def test_extract_letter_declared_count():
+    html = "Il existe 5 noms dans ce répertoire qui commencent par la lettre N."
+    assert ainsisoisje.extract_letter_declared_count(html) == 5
+
+
 def test_discover_letter_urls_deduplicates_and_resolves_relative_links():
     html = '''
     <a class="name_directory_startswith" href="?name_directory_startswith=A">A</a>
@@ -39,6 +44,17 @@ def test_parse_name_directory_entries_preserves_duplicates():
     assert ainsisoisje.parse_directory_entries(html) == [
         ("Noir", "Ti"),
         ("Noir", "Ti"),
+    ]
+
+
+def test_parse_name_directory_entries_preserves_term_with_empty_description():
+    html = '''
+    <div class="name_directory_name_box">
+      <h4 role="term">Mot sans traduction</h4>
+    </div>
+    '''
+    assert ainsisoisje.parse_directory_entries(html) == [
+        ("Mot sans traduction", ""),
     ]
 
 
