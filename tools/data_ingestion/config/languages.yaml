@@ -1,0 +1,24 @@
+version: 1
+
+varieties:
+  maka:
+    name: "San Maka / San du Sud"
+    iso_639_3: "sbd"
+    locality_hint: "Toma"
+    enabled: true
+
+  matya:
+    name: "San Matya"
+    iso_639_3: "stj"
+    locality_hint: "Tougan"
+    enabled: true
+
+  maya:
+    name: "San Maya"
+    iso_639_3: "sym"
+    locality_hint: null
+    enabled: true
+
+# `locality_hint` est un indice interne de travail, jamais une attribution
+# automatique de variété à un contributeur. La variété validée reste une
+# décision linguistique distincte.

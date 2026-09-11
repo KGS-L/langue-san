@@ -1,0 +1,29 @@
+version: 1
+
+sources:
+  asjp:
+    name: "The ASJP Database"
+    type: "structured_dataset"
+    homepage: "https://asjp.clld.org/"
+    license: "CC-BY-4.0"
+    enabled: true
+    status: "approved_for_ingestion"
+    intended_use: "lexical_reference"
+
+  huggingface:
+    name: "Hugging Face datasets"
+    type: "dataset_registry"
+    homepage: "https://huggingface.co/datasets"
+    license: "per-resource"
+    enabled: false
+    status: "resource_review_required"
+    intended_use: "to_be_evaluated"
+
+  webonary:
+    name: "Webonary"
+    type: "dictionary_platform"
+    homepage: "https://www.webonary.org/"
+    license: "rights_review_required"
+    enabled: false
+    status: "rights_review_required"
+    intended_use: "reference_only_until_authorized"
