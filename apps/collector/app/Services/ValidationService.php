@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Contracts\Repositories\ContributionRepositoryInterface;
 use App\Contracts\Repositories\ValidationRepositoryInterface;
 use App\Enums\ContributionStatus;
+use App\Enums\PromptType;
 use App\Enums\ValidationDecision;
 use App\Models\Contribution;
 use App\Models\User;
@@ -23,6 +24,7 @@ class ValidationService
     {
         return DB::transaction(function () use ($contribution, $validator, $data) {
             $lockedContribution = Contribution::query()
+                ->with(['prompt', 'segments'])
                 ->lockForUpdate()
                 ->findOrFail($contribution->id);
 
@@ -36,6 +38,24 @@ class ValidationService
                 throw ValidationException::withMessages([
                     'decision' => 'Aucune transcription San n’est disponible. Transcrivez d’abord la contribution.',
                 ]);
+            }
+
+            if ($lockedContribution->prompt->type === PromptType::NARRATIVE) {
+                if ($lockedContribution->segments->isEmpty()) {
+                    throw ValidationException::withMessages([
+                        'decision' => 'Ce récit naturel doit être segmenté en phrases et traduit en français avant la validation linguistique.',
+                    ]);
+                }
+
+                $incompleteSegment = $lockedContribution->segments->first(
+                    fn ($segment) => blank($segment->san_text) || blank($segment->french_translation),
+                );
+
+                if ($incompleteSegment) {
+                    throw ValidationException::withMessages([
+                        'decision' => 'Tous les segments du récit doivent contenir une transcription San et une traduction française avant validation.',
+                    ]);
+                }
             }
 
             if ($lockedContribution->validations()->where('validator_id', $validator->id)->exists()) {
