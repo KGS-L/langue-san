@@ -2,15 +2,37 @@
 
 Le projet utilise « San » comme nom général, mais les données ne doivent pas être traitées comme une seule variété homogène.
 
-## Variétés de travail initiales
+## Variétés de travail
 
 | Variété | Code ISO 639-3 utilisé dans la documentation du projet | Statut dans le projet |
 | --- | --- | --- |
-| San Maka / San du Sud | `sbd` | à documenter séparément |
-| San Matya | `stj` | à documenter séparément |
-| San Maya | `sym` | à documenter séparément |
+| San Maka / San du Sud | `sbd` | collectée et documentée séparément |
+| San Matya | `stj` | collectée et documentée séparément |
+| San Maya | `sym` | collectée et documentée séparément |
 
 Cette liste sert d'organisation initiale. La terminologie, les frontières linguistiques et les noms préférés doivent continuer à être confirmés avec des locuteurs et spécialistes.
+
+## Pas de variété unique ciblée
+
+Le projet ne choisit pas une seule variété comme cible définitive du collecteur. **San Maka, San Matya et San Maya sont toutes les trois dans le périmètre.**
+
+La stratégie est volontairement pilotée par les données :
+
+```text
+collecte dans plusieurs communautés
+        ↓
+classification + validation de la variété
+        ↓
+mesure de la couverture réelle de chaque variété
+        ↓
+constitution de corpus séparés / comparables
+        ↓
+expériences ML uniquement lorsque la quantité et la qualité le permettent
+```
+
+Une campagne terrain peut être organisée localement dans une zone donnée pour des raisons pratiques sans transformer cette zone en « variété officielle » du projet.
+
+Le projet ne doit pas compenser artificiellement un manque de données d'une variété en la mélangeant silencieusement avec une autre. Si une variété dispose de trop peu de données pour un entraînement fiable, elle reste documentée dans le corpus jusqu'à ce que la couverture soit suffisante.
 
 ## Localité côté utilisateur, variété côté validation
 
@@ -60,3 +82,11 @@ La variété reste une donnée de validation linguistique. Un validateur compét
 ## Règle pour le Machine Learning
 
 Par défaut, une donnée dont la variété n'est pas suffisamment établie ne doit pas rejoindre automatiquement un dataset d'entraînement ciblant une variété précise.
+
+Les décisions d'entraînement doivent être prises **après mesure du corpus validé**. Selon les volumes disponibles, nous pourrons entraîner ou évaluer :
+
+- un modèle dédié à une variété suffisamment couverte ;
+- plusieurs modèles séparés ;
+- ou, plus tard, un modèle multi-variétés avec étiquettes explicites si les données permettent de le faire proprement.
+
+Aucune de ces options ne doit être décidée en masquant l'identité réelle des données collectées.
