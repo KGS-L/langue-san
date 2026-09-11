@@ -11,11 +11,14 @@ use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
-    use HasFactory, Notifiable;
+    use HasFactory, HasRoles, Notifiable;
+
+    protected string $guard_name = 'web';
 
     protected $fillable = [
         'name',
@@ -39,7 +42,10 @@ class User extends Authenticatable
     }
 
     public function profile(): HasOne { return $this->hasOne(ContributorProfile::class); }
+    public function userProfile(): HasOne { return $this->hasOne(UserProfile::class); }
     public function validations(): HasMany { return $this->hasMany(Validation::class, 'validator_id'); }
+    public function projectApplications(): HasMany { return $this->hasMany(ProjectApplication::class); }
+    public function projectMembership(): HasOne { return $this->hasOne(ProjectMembership::class); }
 
     public function contributions(): HasManyThrough
     {
@@ -71,8 +77,28 @@ class User extends Authenticatable
         );
     }
 
-    public function isAdmin(): bool { return $this->role === UserRole::ADMIN; }
-    public function isModerator(): bool { return $this->role === UserRole::MODERATOR; }
-    public function isContributor(): bool { return $this->role === UserRole::CONTRIBUTOR; }
-    public function isStaff(): bool { return $this->isAdmin() || $this->isModerator(); }
+    public function isAdmin(): bool
+    {
+        return $this->hasRole(UserRole::ADMIN->value) || $this->role === UserRole::ADMIN;
+    }
+
+    public function isModerator(): bool
+    {
+        return $this->hasRole(UserRole::MODERATOR->value) || $this->role === UserRole::MODERATOR;
+    }
+
+    public function isContributor(): bool
+    {
+        return $this->hasRole(UserRole::CONTRIBUTOR->value) || $this->role === UserRole::CONTRIBUTOR;
+    }
+
+    public function isStaff(): bool
+    {
+        return $this->isAdmin() || $this->isModerator();
+    }
+
+    public function needsContributorOnboarding(): bool
+    {
+        return $this->isContributor() && ! $this->userProfile?->isComplete();
+    }
 }
