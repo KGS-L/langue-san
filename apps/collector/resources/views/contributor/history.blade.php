@@ -16,13 +16,13 @@
 <body>
 <nav class="navbar bg-white border-bottom py-3"><div class="container">
     <a class="brand d-flex align-items-center gap-2" href="{{ route('home') }}"><img src="{{ asset('assets/img/langue-san-logo.svg') }}" width="38" height="38" alt=""><span>Langue SAN</span></a>
-    <a href="{{ route('contributor.dashboard') }}" class="btn btn-outline-san btn-sm"><i class="bi bi-arrow-left me-1"></i>Mon espace</a>
+    <a href="{{ route('contributor.dashboard') }}" class="btn btn-outline-primary btn-sm"><i class="bi bi-arrow-left me-1"></i>Mon espace</a>
 </div></nav>
 
 <main class="container py-5" style="max-width:1000px">
     <div class="d-flex flex-column flex-lg-row justify-content-between gap-3 align-items-lg-end mb-4">
         <div><span class="badge rounded-pill text-bg-light border mb-2">Historique personnel</span><h1 class="fw-bold mb-1" style="color:var(--san-navy)">Mes contributions</h1><p class="text-muted mb-0">Suivez l’avancement de vos réponses sans exposer les commentaires internes des validateurs.</p></div>
-        <a href="{{ route('contributor.home') }}" class="btn btn-san"><i class="bi bi-mic-fill me-1"></i>Nouvelle contribution</a>
+        <a href="{{ route('contributor.home') }}" class="btn btn-primary"><i class="bi bi-mic-fill me-1"></i>Nouvelle contribution</a>
     </div>
 
     <div class="card panel shadow-sm mb-4"><div class="card-body p-3 p-md-4">
@@ -36,7 +36,7 @@
                     @endforeach
                 </select>
             </div>
-            <div class="col-auto"><button class="btn btn-san">Filtrer</button></div>
+            <div class="col-auto"><button class="btn btn-primary">Filtrer</button></div>
             @if($activeStatus)<div class="col-auto"><a class="btn btn-light" href="{{ route('contributor.history') }}">Réinitialiser</a></div>@endif
         </form>
     </div></div>
@@ -58,7 +58,7 @@
                 </div>
             </div></article>
         @empty
-            <div class="card panel shadow-sm"><div class="card-body p-5 text-center"><i class="bi bi-chat-square-text fs-1 text-muted"></i><h2 class="h5 mt-3">Aucune contribution trouvée</h2><p class="text-muted">Commencez une session pour partager vos premières réponses.</p><a href="{{ route('contributor.home') }}" class="btn btn-san">Contribuer maintenant</a></div></div>
+            <div class="card panel shadow-sm"><div class="card-body p-5 text-center"><i class="bi bi-chat-square-text fs-1 text-muted"></i><h2 class="h5 mt-3">Aucune contribution trouvée</h2><p class="text-muted">Commencez une session pour partager vos premières réponses.</p><a href="{{ route('contributor.home') }}" class="btn btn-primary">Contribuer maintenant</a></div></div>
         @endforelse
     </div>
 
