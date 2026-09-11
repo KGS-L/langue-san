@@ -24,6 +24,7 @@
         <div class="d-flex gap-2 flex-wrap">
             <a href="{{ route('contributor.home') }}" class="btn btn-primary"><i class="bi bi-mic-fill me-1"></i>Contribuer</a>
             <a href="{{ route('contributor.history') }}" class="btn btn-outline-primary"><i class="bi bi-clock-history me-1"></i>Mes contributions</a>
+            <a href="{{ route('contributor.data-requests.index') }}" class="btn btn-outline-primary"><i class="bi bi-shield-check me-1"></i>Mes données</a>
             @if($user->hasBackofficeAccess())<a href="{{ route('admin.dashboard') }}" class="btn btn-outline-primary"><i class="bi bi-person-workspace me-1"></i>Espace de travail</a>@endif
             <a href="{{ route('project.join') }}" class="btn btn-outline-primary">Rejoindre le projet</a>
         </div>
@@ -47,7 +48,7 @@
                 <div class="d-flex justify-content-between align-items-center mb-3"><h2 class="h5 fw-bold mb-0">Mes dernières contributions</h2><a href="{{ route('contributor.history') }}" class="small text-decoration-none">Voir tout l’historique</a></div>
                 <div class="table-responsive"><table class="table align-middle mb-0"><thead><tr><th>Prompt</th><th>Thème</th><th>Statut</th><th>Date</th></tr></thead><tbody>
                 @forelse($recentContributions as $contribution)
-                    <tr><td class="fw-semibold">{{ \Illuminate\Support\Str::limit($contribution->prompt?->french_text, 40) }}</td><td>{{ $contribution->prompt?->category?->name }}</td><td><span class="badge {{ $contribution->status->publicBadgeClass() }}">{{ $contribution->status->publicLabel() }}</span></td><td>{{ optional($contribution->submitted_at)->format('d/m/Y') }}</td></tr>
+                    <tr><td class="fw-semibold">{{ \Illuminate\Support\Str::limit($contribution->prompt?->french_text, 40) }}</td><td>{{ $contribution->prompt?->category?->name }}</td><td>@if($contribution->withdrawn_at)<span class="badge text-bg-secondary">Retirée</span>@else<span class="badge {{ $contribution->status->publicBadgeClass() }}">{{ $contribution->status->publicLabel() }}</span>@endif</td><td>{{ optional($contribution->submitted_at)->format('d/m/Y') }}</td></tr>
                 @empty<tr><td colspan="4" class="text-center text-muted py-4">Aucune contribution pour le moment.</td></tr>@endforelse
                 </tbody></table></div>
             </div></div>
@@ -65,7 +66,7 @@
     </div>
 
     <div class="row g-4">
-        <div class="col-lg-6">
+        <div class="col-lg-4">
             <div class="card panel shadow-sm h-100"><div class="card-body p-4"><h2 class="h5 fw-bold">Ma candidature au projet</h2>
                 @if($user->projectMembership?->is_active)
                     <span class="badge text-bg-success mb-2">Membre du projet</span><p class="text-muted small mb-2">Votre candidature a été acceptée. Merci de contribuer avec votre expérience au projet.</p>
@@ -77,8 +78,11 @@
                 @endif
             </div></div>
         </div>
-        <div class="col-lg-6">
+        <div class="col-lg-4">
             <div class="card panel shadow-sm h-100"><div class="card-body p-4"><h2 class="h5 fw-bold">Ma visibilité</h2><p class="small text-muted">{{ $user->userProfile?->public_profile_enabled ? 'Votre profil est visible dans la communauté publique.' : 'Votre profil public est désactivé.' }}</p><a href="{{ route('contributor.profile.edit') }}" class="btn btn-light w-100">Gérer mon profil</a></div></div>
+        </div>
+        <div class="col-lg-4">
+            <div class="card panel shadow-sm h-100"><div class="card-body p-4"><h2 class="h5 fw-bold">Mes données</h2><p class="small text-muted">Demandez une correction, supprimez un audio, retirez une contribution ou demandez l’anonymisation de votre compte.</p><a href="{{ route('contributor.data-requests.index') }}" class="btn btn-outline-primary w-100"><i class="bi bi-shield-check me-1"></i>Gérer mes données</a></div></div>
         </div>
     </div>
 </main>
