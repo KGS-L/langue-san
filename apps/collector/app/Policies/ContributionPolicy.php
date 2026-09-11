@@ -1,5 +1,14 @@
 <?php
+
 namespace App\Policies;
+
 use App\Models\Contribution;
 use App\Models\User;
-class ContributionPolicy { public function viewAny(User $u): bool{return $u->isStaff();} public function view(User $u, Contribution $m): bool{return $u->isStaff();} public function update(User $u, Contribution $m): bool{return $u->isStaff();} public function delete(User $u, Contribution $m): bool{return $u->isAdmin();} }
+
+class ContributionPolicy
+{
+    public function viewAny(User $user): bool { return $user->can('view contributions'); }
+    public function view(User $user, Contribution $contribution): bool { return $user->can('view contributions'); }
+    public function update(User $user, Contribution $contribution): bool { return $user->can('transcribe contributions'); }
+    public function delete(User $user, Contribution $contribution): bool { return $user->isAdmin(); }
+}
