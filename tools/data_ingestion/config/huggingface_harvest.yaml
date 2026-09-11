@@ -1,0 +1,62 @@
+version: 1
+
+# Cibles Hugging Face autorisées pour une récolte locale technique.
+# Cela ne signifie PAS que les données sont validées linguistiquement ou
+# approuvées pour publication / entraînement ML.
+
+text_subsets:
+  - key: fineweb2_sbd
+    repo_id: "HuggingFaceFW/fineweb-2"
+    family: "fineweb2"
+    config: "sbd_Latn"
+    splits: ["train", "test"]
+    iso_639_3: "sbd"
+    variety: "maka"
+    license: "odc-by"
+    rights_status: "dataset_license_declared_upstream_provenance_preserved"
+    enabled: true
+
+  - key: finepdfs_sbd
+    repo_id: "HuggingFaceFW/finepdfs"
+    family: "finepdfs"
+    config: "sbd_Latn"
+    splits: ["train"]
+    iso_639_3: "sbd"
+    variety: "maka"
+    license: "odc-by"
+    rights_status: "dataset_license_declared_upstream_provenance_preserved"
+    enabled: true
+
+  - key: glotcc_sbd
+    repo_id: "cis-lmu/GlotCC-V1"
+    family: "glotcc"
+    config: "sbd-Latn"
+    splits: ["train"]
+    iso_639_3: "sbd"
+    variety: "maka"
+    license: "cc0-1.0"
+    rights_status: "dataset_license_declared_upstream_provenance_preserved"
+    enabled: true
+
+lexical_subsets:
+  - key: chikhapo_stj_eng
+    repo_id: "ec5ug/chikhapo"
+    family: "chikhapo"
+    configs: ["eng_stj", "stj_eng"]
+    iso_639_3: "stj"
+    variety: "matya"
+    license: "mit"
+    upstream_sources: ["PanLex", "GATITOS", "IDS"]
+    rights_status: "upstream_source_provenance_review_required"
+    local_only: true
+    enabled: true
+
+blocked_or_deferred:
+  - repo_id: "cis-lmu/Taxi1500-RawData"
+    reason: "Bible corpus; source/content rights unclear and domain highly biased."
+  - repo_id: "openbmb/DCAD-2000"
+    reason: "License is declared as other; rights review required before harvest."
+  - repo_id: "lbourdois/panlex"
+    reason: "Useful CC0 vocabulary snapshot, but target-row extraction strategy still pending."
+  - repo_id: "espnet/mms_ulab_v2"
+    reason: "Unlabeled audio; defer to the future audio/ASR acquisition phase."
