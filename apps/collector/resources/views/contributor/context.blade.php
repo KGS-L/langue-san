@@ -23,9 +23,8 @@
     <div class="row justify-content-center">
         <div class="col-lg-7">
             <div class="mb-4">
-                <div class="d-flex justify-content-between align-items-center mb-2">
+                <div class="mb-2">
                     <span class="small text-muted">Étape 1 sur 3</span>
-                    <span class="badge bg-light text-dark border">{{ $profile->public_code }}</span>
                 </div>
                 <div class="progress" style="height: 8px;">
                     <div class="progress-bar" role="progressbar" style="width: 33%" aria-valuenow="33" aria-valuemin="0" aria-valuemax="100"></div>
@@ -156,7 +155,6 @@
 
         function toggleOtherLocality() {
             const isOther = localitySelect.value === 'other';
-
             otherWrapper.classList.toggle('d-none', !isOther);
             otherInput.required = isOther;
             otherInput.setAttribute('aria-required', isOther ? 'true' : 'false');
