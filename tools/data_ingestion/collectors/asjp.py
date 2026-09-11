@@ -4,9 +4,9 @@ Le collecteur télécharge les tables CLDF publiques de la version v21 d'ASJP,
 puis extrait uniquement les listes lexicales associées aux codes ISO 639-3
 utilisés par le projet Langue SAN : ``sbd``, ``stj`` et ``sym``.
 
-Les sorties sont écrites sous ``data/raw/asjp/``. Ce dossier est ignoré par
-Git et les données récupérées restent marquées comme ressources externes non
-validées linguistiquement par le projet.
+Les sorties sont écrites sous ``<repo>/data/raw/asjp/``. Ce dossier est ignoré
+par Git et les données récupérées restent marquées comme ressources externes
+non validées linguistiquement par le projet.
 """
 
 from __future__ import annotations
@@ -22,7 +22,8 @@ from typing import Iterable
 import requests
 
 
-RAW_OUTPUT_DIR = Path("data/raw/asjp")
+REPO_ROOT = Path(__file__).resolve().parents[3]
+RAW_OUTPUT_DIR = REPO_ROOT / "data" / "raw" / "asjp"
 SUPPORTED_ISO_CODES = ("sbd", "stj", "sym")
 ASJP_VERSION = "v21"
 BASE_RAW_URL = f"https://raw.githubusercontent.com/lexibank/asjp/{ASJP_VERSION}/cldf"
@@ -176,7 +177,7 @@ def main() -> None:
         "--output-dir",
         type=Path,
         default=RAW_OUTPUT_DIR,
-        help="Dossier de sortie brute",
+        help="Dossier de sortie brute (défaut: <repo>/data/raw/asjp)",
     )
     args = parser.parse_args()
 
