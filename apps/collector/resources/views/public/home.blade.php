@@ -65,7 +65,7 @@
                     <img
                         class="hero-real-image"
                         src="{{ asset('assets/img/langue-san-hero.jpg') }}"
-                        onerror="this.onerror=null;this.src='{{ asset('assets/img/card.jpg') }}';"
+                        onerror="this.onerror=null;this.src='{{ asset('assets/img/langue-san-hero.png') }}';"
                         alt="Un jeune échange avec sa grand-mère autour d’un outil vocal en San"
                     >
                     <div class="hero-real-caption">

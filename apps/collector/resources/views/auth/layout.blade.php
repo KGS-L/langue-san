@@ -18,7 +18,7 @@
                     <div class="col-lg-4 col-md-6 d-flex flex-column align-items-center justify-content-center">
                         <div class="d-flex justify-content-center py-4">
                             <a href="{{ route('home') }}" class="logo d-flex align-items-center w-auto">
-                                <img src="{{ asset('assets/img/langue-san-logo.svg') }}" alt="Logo Langue SAN">
+                                <img src="{{ asset('assets/img/langue-san-auth-illustration.png') }}" alt="Logo Langue SAN">
                                 <span class="d-none d-lg-block">Langue SAN</span>
                             </a>
                         </div>

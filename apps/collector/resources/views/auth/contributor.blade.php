@@ -58,7 +58,7 @@
         <div class="col-lg-6 auth-visual d-none d-lg-flex">
             <img
                 src="{{ asset('assets/img/langue-san-auth-illustration.jpg') }}"
-                onerror="this.onerror=null;this.src='{{ asset('assets/img/card.jpg') }}';"
+                onerror="this.onerror=null;this.src='{{ asset('assets/img/langue-san-auth-illustration.png') }}';"
                 alt="Un jeune utilise Langue SAN avec sa grand-mère"
             >
         </div>
