@@ -5,10 +5,10 @@ Cette source est une *source candidate* : la page publique affiche un copyright
 entraînement ML. Les données récupérées restent donc dans ``data/raw/`` pour
 inventaire local, comparaison de sources et étude de provenance.
 
-Le RAW doit refléter le site le plus fidèlement possible. En particulier, les
-entrées dupliquées présentes sur le site ne sont PAS supprimées au moment de la
-collecte. Elles sont conservées comme occurrences distinctes puis signalées dans
-les métadonnées.
+Le RAW doit refléter le site le plus fidèlement possible. Les doublons présents
+sur le site sont conservés. Une entrée possédant un terme français mais aucune
+description Samo est également conservée : une absence de traduction fait partie
+de l'état de la source et ne doit pas faire disparaître l'occurrence du RAW.
 """
 
 from __future__ import annotations
@@ -108,7 +108,9 @@ class _DirectoryParser(HTMLParser):
             if self.box_depth <= 0:
                 term = _clean_text(" ".join(self.term_parts))
                 description = _clean_description(" ".join(self.description_parts))
-                if term and description:
+                # Le plugin compte le nom/terme comme entrée même si sa
+                # description est vide. Le RAW doit donc conserver ce cas.
+                if term:
                     self.entries.append((term, description))
                 self.in_box = False
                 self.box_depth = 0
@@ -171,6 +173,17 @@ def extract_declared_count(html: str) -> int | None:
     return int(match.group(1)) if match else None
 
 
+def extract_letter_declared_count(html: str) -> int | None:
+    """Extrait le compteur d'une page lettre, ex. « Il existe 5 noms ... »."""
+
+    match = re.search(
+        r"Il\s+existe\s+(\d+)\s+noms?\s+dans\s+ce\s+r[ée]pertoire",
+        html,
+        flags=re.I,
+    )
+    return int(match.group(1)) if match else None
+
+
 def analyze_duplicate_occurrences(entries: list[dict[str, Any]]) -> dict[str, Any]:
     """Décrit les doublons du site sans les supprimer du RAW."""
 
@@ -227,13 +240,28 @@ def collect(output_dir: Path = RAW_OUTPUT_DIR, *, delay_seconds: float = 0.25) -
         )
 
     entries: list[dict[str, Any]] = []
+    page_stats: list[dict[str, Any]] = []
     occurrence_index = 0
+
     for page_index, page_url in enumerate(letter_urls):
         if page_index and delay_seconds > 0:
             time.sleep(delay_seconds)
         html = _download_html(page_url)
         letter = _letter_from_url(page_url)
-        for entry_index, (french, samo) in enumerate(parse_directory_entries(html), start=1):
+        parsed_entries = parse_directory_entries(html)
+        page_declared_count = extract_letter_declared_count(html)
+
+        page_stats.append(
+            {
+                "letter": letter,
+                "source_page": page_url,
+                "site_declared_count": page_declared_count,
+                "parsed_count": len(parsed_entries),
+                "count_matches": page_declared_count is None or page_declared_count == len(parsed_entries),
+            }
+        )
+
+        for entry_index, (french, samo) in enumerate(parsed_entries, start=1):
             occurrence_index += 1
             entries.append(
                 {
@@ -241,6 +269,7 @@ def collect(output_dir: Path = RAW_OUTPUT_DIR, *, delay_seconds: float = 0.25) -
                     "occurrence_id": f"ainsisoisje-{occurrence_index:03d}",
                     "french": french,
                     "samo": samo,
+                    "has_samo_translation": bool(samo),
                     "source_page": page_url,
                     "source_letter": letter,
                     "source_position_in_page": entry_index,
@@ -256,6 +285,18 @@ def collect(output_dir: Path = RAW_OUTPUT_DIR, *, delay_seconds: float = 0.25) -
         )
 
     duplicate_info = analyze_duplicate_occurrences(entries)
+    missing_samo_entries = [
+        {
+            "french": entry["french"],
+            "source_letter": entry["source_letter"],
+            "source_page": entry["source_page"],
+            "source_position_in_page": entry["source_position_in_page"],
+        }
+        for entry in entries
+        if not entry.get("samo")
+    ]
+    page_count_mismatches = [stat for stat in page_stats if not stat["count_matches"]]
+
     output_dir.mkdir(parents=True, exist_ok=True)
     output_path = output_dir / "dictionnaire_samo_francais.json"
     retrieved_at = datetime.now(timezone.utc).isoformat()
@@ -272,6 +313,11 @@ def collect(output_dir: Path = RAW_OUTPUT_DIR, *, delay_seconds: float = 0.25) -
             "duplicate_group_count": duplicate_info["duplicate_group_count"],
             "duplicate_extra_occurrences": duplicate_info["duplicate_extra_occurrences"],
             "duplicate_groups": duplicate_info["duplicate_groups"],
+            "entries_without_samo_translation_count": len(missing_samo_entries),
+            "entries_without_samo_translation": missing_samo_entries,
+            "page_stats": page_stats,
+            "page_count_mismatch_count": len(page_count_mismatches),
+            "page_count_mismatches": page_count_mismatches,
             "site_declared_entry_count": declared_count,
             "count_matches_site": declared_count is None or declared_count == len(entries),
             "rights": SOURCE_RIGHTS,
@@ -284,6 +330,7 @@ def collect(output_dir: Path = RAW_OUTPUT_DIR, *, delay_seconds: float = 0.25) -
             "validation_status": "external_unverified",
             "notes": [
                 "Le RAW conserve toutes les occurrences visibles, y compris les doublons du site.",
+                "Les termes français sans description Samo sont conservés comme entrées incomplètes.",
                 "La page publique affiche un copyright All Rights Reserved.",
                 "Aucune variété ISO n'est attribuée automatiquement au mot Samo du site.",
                 "Le RAW doit rester local et ne doit pas être publié ou utilisé pour le ML sans clarification des droits.",
@@ -312,6 +359,24 @@ def main() -> None:
     print(f"Occurrences dupliquées supplémentaires : {metadata['duplicate_extra_occurrences']}")
     for group in metadata.get("duplicate_groups", []):
         print(f"  - {group['french']} → {group['samo']} ({group['occurrences']} occurrences)")
+
+    print(
+        "Entrées sans traduction Samo : "
+        f"{metadata['entries_without_samo_translation_count']}"
+    )
+    for entry in metadata.get("entries_without_samo_translation", []):
+        print(
+            f"  - [{entry['source_letter']}] {entry['french']} "
+            f"(position {entry['source_position_in_page']})"
+        )
+
+    print(f"Pages avec compteur incohérent : {metadata['page_count_mismatch_count']}")
+    for stat in metadata.get("page_count_mismatches", []):
+        print(
+            f"  - {stat['letter']}: site={stat['site_declared_count']} / "
+            f"parser={stat['parsed_count']}"
+        )
+
     if metadata.get("site_declared_entry_count") is not None:
         print(f"Compteur annoncé par le site : {metadata['site_declared_entry_count']}")
         print(f"Compteur cohérent : {metadata['count_matches_site']}")
