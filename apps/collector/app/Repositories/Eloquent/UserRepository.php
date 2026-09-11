@@ -13,7 +13,10 @@ class UserRepository implements UserRepositoryInterface
 
     public function paginate(int $perPage = 20): LengthAwarePaginator
     {
-        return $this->model->newQuery()->with('profile.locality')->latest()->paginate($perPage);
+        return $this->model->newQuery()
+            ->with(['profile.locality', 'userProfile', 'roles'])
+            ->latest()
+            ->paginate($perPage);
     }
 
     public function findOrFail(int $id): User
@@ -36,6 +39,7 @@ class UserRepository implements UserRepositoryInterface
     public function update(User $user, array $data): User
     {
         $user->update($data);
+
         return $user->refresh();
     }
 
