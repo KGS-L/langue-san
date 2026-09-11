@@ -39,6 +39,7 @@ class UpdateContextRequest extends FormRequest
             'locality_other' => ['nullable', 'string', 'max:150', 'required_if:locality_choice,other'],
             'fluency_level' => ['required', 'in:native,fluent,intermediate,basic'],
             'can_write_san' => ['required', 'boolean'],
+            'next' => ['nullable', Rule::in(['translation', 'natural-speech'])],
         ];
     }
 
