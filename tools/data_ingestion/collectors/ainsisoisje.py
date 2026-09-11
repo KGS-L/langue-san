@@ -1,14 +1,14 @@
-"""Collecteur du petit dictionnaire Français / Samo publié sur ainsisoisje.com.
+"""Collecteur du dictionnaire Français / Samo publié sur ainsisoisje.com.
 
-Cette source est traitée comme une *source candidate* : la page publique affiche
-un copyright « All Rights Reserved » et ne fournit pas, à ce stade, de licence
-explicite autorisant publication ou entraînement ML. Les données récupérées sont
-donc conservées uniquement dans ``data/raw/`` (ignoré par Git) pour inventaire,
-comparaison de sources et étude de provenance.
+Cette source est une *source candidate* : la page publique affiche un copyright
+« All Rights Reserved » et ne fournit pas de licence autorisant publication ou
+entraînement ML. Les données récupérées restent donc dans ``data/raw/`` pour
+inventaire local, comparaison de sources et étude de provenance.
 
-Le site utilise le plugin WordPress « Name Directory ». Le collecteur découvre
-les URLs par lettre depuis la page d'index puis extrait les couples terme /
-description rendus dans ``div.name_directory_name_box``.
+Le RAW doit refléter le site le plus fidèlement possible. En particulier, les
+entrées dupliquées présentes sur le site ne sont PAS supprimées au moment de la
+collecte. Elles sont conservées comme occurrences distinctes puis signalées dans
+les métadonnées.
 """
 
 from __future__ import annotations
@@ -17,11 +17,12 @@ import argparse
 import json
 import re
 import time
+from collections import Counter, defaultdict
 from datetime import datetime, timezone
 from html.parser import HTMLParser
 from pathlib import Path
-from typing import Iterable
-from urllib.parse import urljoin
+from typing import Any
+from urllib.parse import parse_qs, urljoin, urlparse
 
 import requests
 
@@ -70,7 +71,6 @@ class _DirectoryParser(HTMLParser):
 
     def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
         classes = self._classes(attrs)
-
         if tag == "div" and "name_directory_name_box" in classes and not self.in_box:
             self.in_box = True
             self.box_depth = 1
@@ -80,36 +80,29 @@ class _DirectoryParser(HTMLParser):
 
         if not self.in_box:
             return
-
         if tag == "div":
             self.box_depth += 1
-
         if tag in {"script", "style", "input", "button"}:
             self.ignore_depth += 1
             return
-
         if self._attr(attrs, "role") == "term":
             self.in_term = True
             self.term_depth = 1
             return
-
         if self.in_term:
             self.term_depth += 1
 
     def handle_endtag(self, tag: str) -> None:
         if not self.in_box:
             return
-
         if self.ignore_depth and tag in {"script", "style", "input", "button"}:
             self.ignore_depth -= 1
             return
-
         if self.in_term:
             self.term_depth -= 1
             if self.term_depth <= 0:
                 self.in_term = False
                 self.term_depth = 0
-
         if tag == "div":
             self.box_depth -= 1
             if self.box_depth <= 0:
@@ -138,7 +131,6 @@ def _clean_text(value: str) -> str:
 
 def _clean_description(value: str) -> str:
     text = _clean_text(value)
-    # Libellés ajoutés par le plugin, pas par le dictionnaire lui-même.
     text = re.sub(r"(?:\.\.\.\s*)?(?:show|read)\s+more\b", "", text, flags=re.I)
     text = re.sub(r"(?:show|read)\s+less\b", "", text, flags=re.I)
     text = re.sub(r"(?:afficher|lire)\s+plus\b", "", text, flags=re.I)
@@ -146,9 +138,16 @@ def _clean_description(value: str) -> str:
     return _clean_text(text)
 
 
-def parse_directory_entries(html: str) -> list[tuple[str, str]]:
-    """Retourne les couples ``(français, samo)`` depuis une page par lettre."""
+def _pair_key(french: Any, samo: Any) -> tuple[str, str]:
+    return (_clean_text(str(french or "")).casefold(), _clean_text(str(samo or "")).casefold())
 
+
+def _letter_from_url(url: str) -> str | None:
+    values = parse_qs(urlparse(url).query).get("name_directory_startswith") or []
+    return values[0] if values else None
+
+
+def parse_directory_entries(html: str) -> list[tuple[str, str]]:
     parser = _DirectoryParser()
     parser.feed(html)
     parser.close()
@@ -156,8 +155,6 @@ def parse_directory_entries(html: str) -> list[tuple[str, str]]:
 
 
 def discover_letter_urls(html: str, base_url: str = DICTIONARY_URL) -> list[str]:
-    """Découvre les liens du plugin contenant ``name_directory_startswith``."""
-
     hrefs = re.findall(r'href=["\']([^"\']*name_directory_startswith=[^"\']+)["\']', html, flags=re.I)
     urls: list[str] = []
     seen: set[str] = set()
@@ -170,10 +167,42 @@ def discover_letter_urls(html: str, base_url: str = DICTIONARY_URL) -> list[str]
 
 
 def extract_declared_count(html: str) -> int | None:
-    """Extrait le compteur public, ex. « Il y a actuellement 126 noms ... »."""
-
     match = re.search(r"Il\s+y\s+a\s+actuellement\s+(\d+)\s+noms?", html, flags=re.I)
     return int(match.group(1)) if match else None
+
+
+def analyze_duplicate_occurrences(entries: list[dict[str, Any]]) -> dict[str, Any]:
+    """Décrit les doublons du site sans les supprimer du RAW."""
+
+    counts = Counter(_pair_key(entry.get("french"), entry.get("samo")) for entry in entries)
+    pages: dict[tuple[str, str], set[str]] = defaultdict(set)
+    display: dict[tuple[str, str], tuple[str, str]] = {}
+    for entry in entries:
+        key = _pair_key(entry.get("french"), entry.get("samo"))
+        pages[key].add(str(entry.get("source_page") or ""))
+        display.setdefault(key, (str(entry.get("french") or ""), str(entry.get("samo") or "")))
+
+    groups = []
+    for key, count in sorted(counts.items()):
+        if count <= 1:
+            continue
+        french, samo = display[key]
+        groups.append(
+            {
+                "french": french,
+                "samo": samo,
+                "occurrences": count,
+                "extra_occurrences": count - 1,
+                "source_pages": sorted(page for page in pages[key] if page),
+            }
+        )
+
+    return {
+        "unique_pair_count": len(counts),
+        "duplicate_group_count": len(groups),
+        "duplicate_extra_occurrences": sum(group["extra_occurrences"] for group in groups),
+        "duplicate_groups": groups,
+    }
 
 
 def _download_html(url: str, *, timeout: int = 60) -> str:
@@ -186,40 +215,35 @@ def _download_html(url: str, *, timeout: int = 60) -> str:
     return response.text
 
 
-def collect(
-    output_dir: Path = RAW_OUTPUT_DIR,
-    *,
-    delay_seconds: float = 0.25,
-) -> Path:
-    """Collecte localement le répertoire public sans promouvoir ses droits."""
+def collect(output_dir: Path = RAW_OUTPUT_DIR, *, delay_seconds: float = 0.25) -> Path:
+    """Collecte toutes les occurrences du répertoire public, doublons compris."""
 
     index_html = _download_html(DICTIONARY_URL)
     declared_count = extract_declared_count(index_html)
     letter_urls = discover_letter_urls(index_html)
-
     if not letter_urls:
         raise AinsisoisjeCollectorError(
             "Aucun lien par lettre Name Directory détecté. Le HTML du site a peut-être changé."
         )
 
-    entries: list[dict[str, str]] = []
-    seen: set[tuple[str, str]] = set()
-
-    for index, page_url in enumerate(letter_urls):
-        if index and delay_seconds > 0:
+    entries: list[dict[str, Any]] = []
+    occurrence_index = 0
+    for page_index, page_url in enumerate(letter_urls):
+        if page_index and delay_seconds > 0:
             time.sleep(delay_seconds)
         html = _download_html(page_url)
-        for french, samo in parse_directory_entries(html):
-            key = (french.casefold(), samo.casefold())
-            if key in seen:
-                continue
-            seen.add(key)
+        letter = _letter_from_url(page_url)
+        for entry_index, (french, samo) in enumerate(parse_directory_entries(html), start=1):
+            occurrence_index += 1
             entries.append(
                 {
                     "source": "ainsisoisje",
+                    "occurrence_id": f"ainsisoisje-{occurrence_index:03d}",
                     "french": french,
                     "samo": samo,
                     "source_page": page_url,
+                    "source_letter": letter,
+                    "source_position_in_page": entry_index,
                     "variety": "unknown",
                     "iso_639_3": "unknown",
                     "validation_status": "external_unverified",
@@ -231,6 +255,7 @@ def collect(
             "Aucune entrée Français / Samo extraite. Vérifier le rendu Name Directory du site."
         )
 
+    duplicate_info = analyze_duplicate_occurrences(entries)
     output_dir.mkdir(parents=True, exist_ok=True)
     output_path = output_dir / "dictionnaire_samo_francais.json"
     retrieved_at = datetime.now(timezone.utc).isoformat()
@@ -243,6 +268,10 @@ def collect(
             "dictionary_url": DICTIONARY_URL,
             "retrieved_at": retrieved_at,
             "entry_count": len(entries),
+            "unique_pair_count": duplicate_info["unique_pair_count"],
+            "duplicate_group_count": duplicate_info["duplicate_group_count"],
+            "duplicate_extra_occurrences": duplicate_info["duplicate_extra_occurrences"],
+            "duplicate_groups": duplicate_info["duplicate_groups"],
             "site_declared_entry_count": declared_count,
             "count_matches_site": declared_count is None or declared_count == len(entries),
             "rights": SOURCE_RIGHTS,
@@ -254,6 +283,7 @@ def collect(
             "intended_use": "local_source_inventory_and_comparison_only",
             "validation_status": "external_unverified",
             "notes": [
+                "Le RAW conserve toutes les occurrences visibles, y compris les doublons du site.",
                 "La page publique affiche un copyright All Rights Reserved.",
                 "Aucune variété ISO n'est attribuée automatiquement au mot Samo du site.",
                 "Le RAW doit rester local et ne doit pas être publié ou utilisé pour le ML sans clarification des droits.",
@@ -270,24 +300,18 @@ def main() -> None:
     parser = argparse.ArgumentParser(
         description="Collecter le dictionnaire Français / Samo de ainsisoisje.com pour inventaire local"
     )
-    parser.add_argument(
-        "--output-dir",
-        type=Path,
-        default=RAW_OUTPUT_DIR,
-        help="Dossier RAW local (défaut: <repo>/data/raw/ainsisoisje)",
-    )
-    parser.add_argument(
-        "--delay",
-        type=float,
-        default=0.25,
-        help="Pause entre pages par lettre en secondes (défaut: 0.25)",
-    )
+    parser.add_argument("--output-dir", type=Path, default=RAW_OUTPUT_DIR)
+    parser.add_argument("--delay", type=float, default=0.25)
     args = parser.parse_args()
 
     path = collect(args.output_dir, delay_seconds=max(0.0, args.delay))
-    payload = json.loads(path.read_text(encoding="utf-8"))
-    metadata = payload["metadata"]
-    print(f"Entrées récupérées : {metadata['entry_count']}")
+    metadata = json.loads(path.read_text(encoding="utf-8"))["metadata"]
+    print(f"Occurrences récupérées : {metadata['entry_count']}")
+    print(f"Paires Français/Samo uniques : {metadata['unique_pair_count']}")
+    print(f"Groupes dupliqués sur le site : {metadata['duplicate_group_count']}")
+    print(f"Occurrences dupliquées supplémentaires : {metadata['duplicate_extra_occurrences']}")
+    for group in metadata.get("duplicate_groups", []):
+        print(f"  - {group['french']} → {group['samo']} ({group['occurrences']} occurrences)")
     if metadata.get("site_declared_entry_count") is not None:
         print(f"Compteur annoncé par le site : {metadata['site_declared_entry_count']}")
         print(f"Compteur cohérent : {metadata['count_matches_site']}")
