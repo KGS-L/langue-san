@@ -30,7 +30,6 @@ class UserService
                 'name' => $data['name'],
                 'email' => Str::lower($data['email']),
                 'password' => $data['password'],
-                'role' => UserRole::CONTRIBUTOR,
                 'status' => UserStatus::ACTIVE,
             ]);
             $user->syncRoles([UserRole::CONTRIBUTOR->value]);
@@ -85,7 +84,6 @@ class UserService
                 'email' => $email,
                 'email_verified_at' => now(),
                 'password' => Str::random(64),
-                'role' => UserRole::CONTRIBUTOR,
                 'status' => UserStatus::ACTIVE,
             ]);
             $user->syncRoles([UserRole::CONTRIBUTOR->value]);
@@ -101,7 +99,6 @@ class UserService
                 'name' => $data['name'],
                 'email' => Str::lower(trim($data['email'])),
                 'password' => Str::random(64),
-                'role' => UserRole::MODERATOR,
                 'status' => $data['status'] ?? UserStatus::ACTIVE,
             ]);
             $user->syncRoles([UserRole::MODERATOR->value]);
