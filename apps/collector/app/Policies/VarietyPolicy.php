@@ -1,5 +1,14 @@
 <?php
+
 namespace App\Policies;
-use App\Models\Variety;
+
 use App\Models\User;
-class VarietyPolicy { public function viewAny(User $u): bool{return $u->isStaff();} public function create(User $u): bool{return $u->isStaff();} public function update(User $u, Variety $m): bool{return $u->isStaff();} public function delete(User $u, Variety $m): bool{return $u->isAdmin();} }
+use App\Models\Variety;
+
+class VarietyPolicy
+{
+    public function viewAny(User $user): bool { return $user->can('manage reference data'); }
+    public function create(User $user): bool { return $user->can('manage reference data'); }
+    public function update(User $user, Variety $variety): bool { return $user->can('manage reference data'); }
+    public function delete(User $user, Variety $variety): bool { return $user->can('manage reference data'); }
+}
