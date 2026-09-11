@@ -9,6 +9,12 @@ asjp = module_from_spec(SPEC)
 SPEC.loader.exec_module(asjp)
 
 
+def test_default_raw_output_is_repository_data_raw():
+    expected_repo_root = ROOT.parents[1]
+    assert asjp.REPO_ROOT == expected_repo_root
+    assert asjp.RAW_OUTPUT_DIR == expected_repo_root / "data" / "raw" / "asjp"
+
+
 def test_extract_wordlists_filters_supported_iso_and_keeps_provenance():
     languages = [
         {"ID": "SOUTHERN_SAMO_SAN", "Name": "Southern Samo San", "ISO639P3code": "sbd", "Glottocode": "sout2844"},
