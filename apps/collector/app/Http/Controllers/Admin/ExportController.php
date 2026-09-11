@@ -22,4 +22,11 @@ class ExportController extends Controller
 
         return $service->csv();
     }
+
+    public function downloadNaturalSpeech(DatasetExportService $service)
+    {
+        abort_unless(auth()->user()?->can('export dataset'), 403);
+
+        return $service->naturalSpeechCsv();
+    }
 }
