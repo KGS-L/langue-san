@@ -44,13 +44,8 @@
                         <span class="badge bg-light text-dark border">{{ $profile->public_code }}</span>
                     </div>
 
-                    <div class="alert alert-info">
-                        <i class="bi bi-info-circle me-1"></i>
-                        Nous ne vous demanderons pas de choisir « Maka », « Matya » ou « Maya ». Nous commencerons par la localité où vous avez principalement appris ou parlé le San.
-                    </div>
-
                     <div class="row g-3 my-2">
-                        <div class="col-md-4"><div class="border rounded p-3 h-100"><i class="bi bi-geo-alt fs-4"></i><h2 class="h6 mt-2">1. Votre contexte</h2><p class="small text-muted mb-0">Localité et quelques informations linguistiques.</p></div></div>
+                        <div class="col-md-4"><div class="border rounded p-3 h-100"><i class="bi bi-geo-alt fs-4"></i><h2 class="h6 mt-2">1. Votre contexte</h2><p class="small text-muted mb-0">Localité et quelques informations sur votre pratique du San.</p></div></div>
                         <div class="col-md-4"><div class="border rounded p-3 h-100"><i class="bi bi-grid fs-4"></i><h2 class="h6 mt-2">2. Votre thème</h2><p class="small text-muted mb-0">Salutations, famille, nombres, marché, etc.</p></div></div>
                         <div class="col-md-4"><div class="border rounded p-3 h-100"><i class="bi bi-mic fs-4"></i><h2 class="h6 mt-2">3. Vos réponses</h2><p class="small text-muted mb-0">10 questions, en texte, en audio ou les deux.</p></div></div>
                     </div>
@@ -61,7 +56,7 @@
                             <a href="{{ route('register') }}" class="btn btn-outline-primary btn-lg">Créer un compte (facultatif)</a>
                         @endguest
                     </div>
-                    <p class="small text-muted mt-2 mb-0">Le questionnaire commence par votre contexte linguistique. Aucun compte n’est nécessaire pour cette étape.</p>
+                    <p class="small text-muted mt-2 mb-0">Le questionnaire commence par quelques informations simples sur votre pratique du San. Aucun compte n’est nécessaire.</p>
                 </div>
             </div>
 
