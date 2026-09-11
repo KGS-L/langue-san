@@ -36,11 +36,13 @@ tools/data_ingestion/
 │   └── asjp.py
 ├── processors/
 │   ├── __init__.py
+│   ├── build_review_sheet.py
 │   ├── enrich_concepts.py
 │   ├── normalize.py
 │   └── qa_variants.py
 ├── tests/
 │   ├── test_asjp.py
+│   ├── test_build_review_sheet.py
 │   ├── test_config.py
 │   ├── test_enrich_concepts.py
 │   ├── test_normalize.py
@@ -68,6 +70,8 @@ rapport QA général
 analyse des variantes
       ↓
 enrichissement contrôlé des concepts FR
+      ↓
+préparation de la feuille de revue humaine
       ↓
 validation linguistique humaine
       ↓
@@ -98,7 +102,7 @@ source .venv/bin/activate
 pytest tests
 ```
 
-Les tests unitaires n'ont pas besoin d'Internet pour les transformations locales. Ils vérifient notamment la sélection des codes ISO, la conservation de la provenance, le parsing du schéma CLDF, la normalisation, l'analyse des variantes et l'enrichissement contrôlé des concepts français.
+Les tests unitaires n'ont pas besoin d'Internet pour les transformations locales. Ils vérifient notamment la sélection des codes ISO, la conservation de la provenance, le parsing du schéma CLDF, la normalisation, l'analyse des variantes, l'enrichissement contrôlé des concepts français et la préparation de la revue humaine.
 
 # ASJP — première source active
 
@@ -197,7 +201,16 @@ Commande :
 python processors/enrich_concepts.py
 ```
 
-Sorties prévues :
+Résultat réel actuel :
+
+```text
+Concepts ASJP uniques : 92
+Concepts avec glose FR : 92
+Concepts sans glose FR : 0
+Entrées enrichies : 341 / 341
+```
+
+Sorties :
 
 ```text
 <racine-du-repo>/data/processed/asjp/
@@ -226,15 +239,64 @@ standard_san       = null
 
 Cela signifie uniquement : « le concept ASJP `water` est glossé `eau` en français ». Cela ne signifie pas encore : « `eau → mu` est une paire de traduction San validée ».
 
+## 5. Préparation de la revue humaine
+
+Commande :
+
+```bash
+python processors/build_review_sheet.py
+```
+
+Le script regroupe les 341 lignes par combinaison `variété + concept`. Les statistiques précédentes indiquent qu'on attend **200 éléments de revue** :
+
+```text
+sbd : 34 concepts
+stj : 78 concepts
+sym : 88 concepts
+Total : 200 éléments de revue
+```
+
+Parmi eux, 68 correspondent à des concepts multi-formes déjà identifiés par `qa_variants.py` et 132 devraient être des concepts à forme unique.
+
+Sorties :
+
+```text
+<racine-du-repo>/data/processed/asjp/review/
+├── asjp_v21_human_review.json
+├── asjp_v21_human_review.csv
+└── asjp_v21_human_review_summary.json
+```
+
+Le CSV contient les données de contexte nécessaires au validateur ainsi que des champs laissés volontairement à compléter :
+
+```text
+selected_source_form
+standard_san
+reviewer_notes
+decision_status
+linguistic_status
+```
+
+Priorités :
+
+```text
+high   = divergence entre plusieurs listes + variantes internes
+medium = autre groupe multi-formes
+normal = une seule forme source observée
+```
+
+Même dans une ligne `normal`, la forme source n'est pas automatiquement considérée correcte : elle doit encore être validée linguistiquement.
+
 # Statut actuel
 
 ```text
 ASJP — licence / provenance             ✅
 ASJP — collecte                         ✅ 341 entrées
 ASJP — séparation sbd/stj/sym           ✅
-ASJP — normalisation                    ✅
+ASJP — normalisation                    ✅ 341 / 341
 ASJP — QA variantes                     ✅ 68 groupes classifiés
-ASJP — glosses françaises contrôlées    ⏳ prochaine étape locale
+ASJP — glosses françaises contrôlées    ✅ 92 / 92 concepts ; 341 / 341 entrées
+ASJP — préparation revue humaine        ⏳ prochaine étape locale
 ASJP — validation orthographique San    ⏳ non commencée
 ASJP — validation humaine               ⏳ non commencée
 ASJP — training                         ❌ non approuvé
