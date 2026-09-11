@@ -4,6 +4,7 @@ use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\ContributionController;
 use App\Http\Controllers\Admin\ContributionSegmentController;
 use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\DataRequestController;
 use App\Http\Controllers\Admin\ExportController;
 use App\Http\Controllers\Admin\LocalityController;
 use App\Http\Controllers\Admin\ProjectApplicationController;
@@ -41,6 +42,9 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:admin,moderato
     Route::get('project-applications/{projectApplication}', [ProjectApplicationController::class, 'show'])->name('project-applications.show');
     Route::post('project-applications/{projectApplication}/review', [ProjectApplicationController::class, 'review'])->name('project-applications.review');
     Route::post('project-applications/{projectApplication}/access', [ProjectApplicationController::class, 'updateAccess'])->name('project-applications.access.update');
+
+    Route::get('data-requests', [DataRequestController::class, 'index'])->name('data-requests.index');
+    Route::post('data-requests/{dataRequest}/review', [DataRequestController::class, 'review'])->name('data-requests.review');
 
     Route::get('exports', [ExportController::class, 'index'])->name('exports.index');
     Route::get('exports/download', [ExportController::class, 'download'])->name('exports.download');
