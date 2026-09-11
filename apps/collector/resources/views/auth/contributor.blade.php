@@ -11,9 +11,30 @@
         :root { --san-navy:#172640; --san-gold:#d3a84a; --san-cream:#f8f5ee; }
         body { background:#f7f8fb; color:#1f2937; }
         .auth-shell { min-height:100vh; }
-        .auth-visual { min-height:620px; position:relative; overflow:hidden; background:var(--san-navy); }
-        .auth-visual img { width:100%; height:100%; object-fit:cover; position:absolute; inset:0; }
-        .auth-visual::after { content:""; position:absolute; inset:0; background:linear-gradient(180deg,rgba(23,38,64,.04),rgba(23,38,64,.3)); pointer-events:none; }
+        .auth-visual {
+            min-height:100vh;
+            height:100vh;
+            position:sticky;
+            top:0;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            overflow:hidden;
+            padding:24px;
+            background:#12336f;
+        }
+        .auth-visual img {
+            position:static;
+            display:block;
+            width:auto;
+            max-width:100%;
+            height:auto;
+            max-height:calc(100vh - 48px);
+            object-fit:contain;
+            object-position:center;
+            border-radius:22px;
+            box-shadow:0 24px 60px rgba(0,0,0,.18);
+        }
         .auth-panel { max-width:520px; width:100%; }
         .brand-link { color:var(--san-navy); text-decoration:none; font-weight:800; }
         .google-btn { min-height:54px; border:1px solid #d9dee7; background:#fff; color:#1f2937; font-weight:700; }
@@ -22,13 +43,19 @@
         .divider { display:flex; align-items:center; gap:12px; color:#94a3b8; font-size:.85rem; }
         .divider::before,.divider::after { content:""; height:1px; background:#e2e8f0; flex:1; }
         .privacy-note { font-size:.82rem; color:#64748b; }
-        @media (max-width: 991.98px) { .auth-visual { min-height:300px; } }
+        @media (max-width: 1199.98px) {
+            .auth-visual { padding:16px; }
+            .auth-visual img { max-height:calc(100vh - 32px); }
+        }
+        @media (max-width: 991.98px) {
+            .auth-visual { display:none !important; }
+        }
     </style>
 </head>
 <body>
 <div class="container-fluid px-0 auth-shell">
     <div class="row g-0 min-vh-100">
-        <div class="col-lg-6 auth-visual d-none d-lg-block">
+        <div class="col-lg-6 auth-visual d-none d-lg-flex">
             <img
                 src="{{ asset('assets/img/langue-san-auth-illustration.jpg') }}"
                 onerror="this.onerror=null;this.src='{{ asset('assets/img/card.jpg') }}';"
