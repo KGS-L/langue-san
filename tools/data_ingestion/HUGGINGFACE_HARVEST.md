@@ -4,7 +4,7 @@ Ce document prend le relais après l'inventaire, le triage et l'inspection des r
 
 ## Résultat de l'inspection ciblée
 
-Inspection locale réussie après 51 tests :
+Inspection locale réussie après 59 tests :
 
 ```text
 espnet/mms_ulab_v2
@@ -27,7 +27,8 @@ HuggingFaceFW/fineweb-2
   sbd_Latn détecté
   splits train + test
   taille non renvoyée par /size
-  → cible texte Maka
+  /rows renvoie actuellement HTTP 500 sur le probe local
+  → cible texte Maka conservée, fallback à ajouter si nécessaire
 
 HuggingFaceFW/finepdfs
   sbd_Latn : 7 lignes
@@ -39,7 +40,7 @@ cis-lmu/GlotCC-V1
 
 cis-lmu/Taxi1500-RawData
   sbd_Latn : 7 919 lignes
-  → gros volume, mais texte biblique et droits à clarifier : pas de récolte automatique pour le moment
+  → récolte locale activée, mais droits amont à clarifier et domaine biblique à isoler
 
 openbmb/DCAD-2000
   sbd_Latn : 3 lignes
@@ -54,64 +55,65 @@ Le fichier :
 config/huggingface_harvest.yaml
 ```
 
-active uniquement :
+active :
 
 ```text
 FineWeb2    → sbd_Latn
 FinePDFs    → sbd_Latn
 GlotCC-V1   → sbd-Latn
+Taxi1500    → sbd_Latn / split taxi1500
 ChiKhaPo    → eng_stj + stj_eng
 ```
 
 Ces récoltes restent des données externes non validées. Elles sont stockées sous `data/raw/`, ignoré par Git.
 
-## Sonde avant récolte des sous-ensembles texte sbd
+Important pour Taxi1500 : le projet Langue SAN est actuellement non commercial, mais cela ne remplace pas une licence explicite du contenu source. Le RAW Taxi1500 est donc accepté pour **récolte locale, inventaire et recherche technique**, avec `rights_review_required_local_research_only`. Il ne doit pas être commité, republié ou redistribué tant que les droits amont ne sont pas clarifiés.
 
-Comme `/size` n'a pas fourni le volume de FineWeb2, commencer par :
+## Récolte Taxi1500 sbd
 
-```bash
-python collectors/huggingface_text_subsets.py --probe-only
-```
-
-Cette commande récupère seulement **une ligne par split** et affiche le `num_rows_total` renvoyé par Dataset Viewer. Elle ne télécharge pas le corpus complet.
-
-Exemple de sortie attendue :
-
-```text
-fineweb2/sbd_Latn/train: total=...
-fineweb2/sbd_Latn/test: total=...
-finepdfs/sbd_Latn/train: total=7
-glotcc/sbd-Latn/train: total=2
-```
-
-Le rapport est écrit dans :
-
-```text
-data/raw/huggingface/huggingface_text_probe_summary.json
-```
-
-## Récolte des sous-ensembles texte sbd
-
-Après vérification des volumes :
+Sonde ciblée :
 
 ```bash
-python collectors/huggingface_text_subsets.py
+python collectors/huggingface_text_subsets.py --target taxi1500_sbd --probe-only
 ```
 
-Le collecteur utilise l'API Dataset Viewer `/rows`, 100 lignes maximum par requête, et parcourt chaque split jusqu'à la fin.
+Récolte complète des 7 919 lignes :
 
-Sorties attendues :
+```bash
+python collectors/huggingface_text_subsets.py --target taxi1500_sbd
+```
+
+Sortie attendue :
 
 ```text
-data/raw/huggingface/
-├── fineweb2/sbd_Latn/train.jsonl
-├── fineweb2/sbd_Latn/test.jsonl
-├── finepdfs/sbd_Latn/train.jsonl
-├── glotcc/sbd-Latn/train.jsonl
-└── huggingface_text_harvest_summary.json
+data/raw/huggingface/taxi1500/sbd_Latn/taxi1500.jsonl
 ```
 
-Chaque ligne conserve :
+Le corpus reste étiqueté :
+
+```text
+iso_639_3       = sbd
+variety         = maka
+rights_status   = rights_review_required_local_research_only
+domain          = religious_bible_text
+validation_status = external_unverified
+```
+
+Le domaine biblique doit rester séparé des futurs corpus généraux pour éviter qu'il ne domine les données du projet.
+
+## Autres sous-ensembles texte sbd
+
+Pour sonder/récolter individuellement :
+
+```bash
+python collectors/huggingface_text_subsets.py --target finepdfs_sbd --probe-only
+python collectors/huggingface_text_subsets.py --target glotcc_sbd --probe-only
+python collectors/huggingface_text_subsets.py --target fineweb2_sbd --probe-only
+```
+
+Le Dataset Viewer de FineWeb2 a renvoyé une erreur HTTP 500 sur `/rows` lors du premier probe. Cela n'invalide pas la config `sbd_Latn`; un fallback Parquet/Hub pourra être ajouté si l'erreur persiste.
+
+Chaque ligne récoltée conserve :
 
 ```text
 repo_id
@@ -127,21 +129,16 @@ validation_status
 source_row
 ```
 
-Pour une seule cible :
-
-```bash
-python collectors/huggingface_text_subsets.py --target fineweb2_sbd
-```
-
 ## Récolte lexicale ChiKhaPo stj ↔ anglais
 
-Avant téléchargement, vérifier les chemins ciblés :
+Les chemins ciblés ont été confirmés :
 
-```bash
-python collectors/huggingface_chikhapo.py --list-only
+```text
+data/eng_stj.jsonl
+data/stj_eng.jsonl
 ```
 
-Puis télécharger uniquement les fichiers concernés :
+Téléchargement local :
 
 ```bash
 python collectors/huggingface_chikhapo.py
@@ -156,7 +153,7 @@ data/raw/huggingface/chikhapo/
 └── metadata.json
 ```
 
-Le repo ChiKhaPo est sous licence MIT, mais ses lexiques agrègent notamment PanLex, GATITOS et IDS. Pour cette raison, le RAW reste local et conserve le statut :
+Le repo ChiKhaPo est sous licence MIT, mais ses lexiques agrègent notamment PanLex, GATITOS et IDS. Le RAW reste local avec le statut :
 
 ```text
 upstream_source_provenance_review_required
@@ -165,10 +162,6 @@ upstream_source_provenance_review_required
 ## Sources volontairement bloquées ou différées
 
 ```text
-Taxi1500
-  7 919 lignes sbd détectées
-  mais corpus biblique + droits du contenu à clarifier
-
 DCAD-2000
   3 lignes sbd
   licence `other`
