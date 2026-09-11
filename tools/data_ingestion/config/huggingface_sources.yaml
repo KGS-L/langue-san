@@ -1,0 +1,179 @@
+version: 1
+
+# Revue manuelle après l'inventaire automatique du 11 septembre 2026.
+# Le score automatique de triage sert uniquement à découvrir des candidats.
+# Ce fichier distingue maintenant les sources canoniques, les miroirs et les
+# ressources de métadonnées afin d'éviter de télécharger plusieurs fois le même corpus.
+
+sources:
+  - repo_id: "espnet/mms_ulab_v2"
+    canonical: true
+    family: "mms_ulab_v2"
+    source_type: "unlabeled_audio"
+    target_iso_codes: ["sbd", "stj", "sym"]
+    license: "cc-by-nc-sa-4.0"
+    provenance: "MMS / Global Recordings Network; repackaged for XEUS"
+    decision: "inspect_only_for_now"
+    priority: "high"
+    notes:
+      - "Audio non transcrit : utile pour ASR/représentation vocale, pas pour la traduction parallèle."
+      - "Licence non commerciale."
+      - "Éviter les miroirs amine-khelif et sundram1996."
+
+  - repo_id: "amine-khelif/mms_ulab_v2"
+    canonical: false
+    family: "mms_ulab_v2"
+    relation: "mirror_or_copy_of_espnet"
+    decision: "skip_duplicate"
+
+  - repo_id: "sundram1996/mms_ulab_v2"
+    canonical: false
+    family: "mms_ulab_v2"
+    relation: "mirror_or_copy_of_espnet"
+    decision: "skip_duplicate"
+
+  - repo_id: "coml/mmsulab"
+    canonical: false
+    family: "mms_ulab_v2"
+    relation: "segmented_derivative_of_espnet_mms_ulab_v2"
+    source_type: "segmented_unlabeled_audio"
+    target_iso_codes: ["sbd", "stj", "sym"]
+    license: "cc-by-nc-sa-4.0"
+    decision: "defer_derivative"
+    notes:
+      - "DiscoPhon segmente MMS ulab v2 avec pyannote; ce n'est pas une source indépendante."
+
+  - repo_id: "lbourdois/language_tags"
+    canonical: true
+    family: "language_metadata"
+    source_type: "language_metadata"
+    target_iso_codes: ["sbd", "stj", "sym"]
+    license: "cc-by-4.0"
+    decision: "metadata_reference_only"
+    priority: "low"
+    notes:
+      - "Contient des identifiants/noms de langues, pas un corpus lexical ou textuel SAN."
+
+  - repo_id: "lbourdois/panlex"
+    canonical: true
+    family: "panlex_snapshot"
+    source_type: "lexical_vocabulary_snapshot"
+    target_iso_codes: ["sbd", "stj", "sym"]
+    license: "cc0-1.0"
+    decision: "inspect_target_rows"
+    priority: "high"
+    notes:
+      - "Snapshot PanLex de janvier 2024, ~24,6M lignes / 6152 langues."
+      - "Le repo lbourdois expose surtout vocab + code langue; il faut vérifier ce que les lignes SAN apportent réellement."
+      - "PanLex officiel publie ses snapshots sous CC0 mais conserve la provenance des sources internes."
+
+  - repo_id: "ec5ug/chikhapo"
+    canonical: true
+    family: "chikhapo"
+    source_type: "bilingual_lexicons_benchmark"
+    target_iso_codes: ["stj"]
+    license: "mit"
+    decision: "inspect_language_pairs"
+    priority: "high"
+    notes:
+      - "Lexiques bilingues avec source_word/target_translations."
+      - "Dérive de PanLex, GATITOS et IDS; provenance interne à conserver."
+      - "Le tag Hugging Face indique stj; vérifier les paires disponibles (anglais/français/autres)."
+
+  - repo_id: "HuggingFaceFW/fineweb-2"
+    canonical: true
+    family: "fineweb2"
+    source_type: "web_corpus"
+    target_iso_codes: ["sbd"]
+    expected_configs: ["sbd_Latn"]
+    license: "odc-by"
+    decision: "inspect_target_subset"
+    priority: "high"
+    notes:
+      - "Corpus Common Crawl; sous-ensemble sbd_Latn présent."
+      - "Texte web monolingue, utile pour corpus SAN mais bruit de détection de langue à contrôler."
+
+  - repo_id: "caoyuji/fineweb-2"
+    canonical: false
+    family: "fineweb2"
+    relation: "secondary_copy_or_derivative_to_verify"
+    decision: "skip_until_canonical_unavailable"
+
+  - repo_id: "HuggingFaceFW/finepdfs"
+    canonical: true
+    family: "finepdfs"
+    source_type: "pdf_web_corpus"
+    target_iso_codes: ["sbd"]
+    expected_configs: ["sbd_Latn"]
+    license: "odc-by"
+    decision: "inspect_target_subset"
+    priority: "medium"
+    notes:
+      - "PDFs issus de Common Crawl; sbd_Latn présent."
+      - "Le dataset documente du code-switching; vérification de langue nécessaire."
+
+  - repo_id: "KefranAbg/finepdfs"
+    canonical: false
+    family: "finepdfs"
+    relation: "duplicate_of_HuggingFaceFW/finepdfs"
+    decision: "skip_duplicate"
+
+  - repo_id: "cis-lmu/GlotCC-V1"
+    canonical: true
+    family: "glotcc"
+    source_type: "web_corpus"
+    target_iso_codes: ["sbd"]
+    expected_configs: ["sbd_Latn", "sbd-Latn"]
+    license: "cc0-1.0"
+    decision: "inspect_target_subset"
+    priority: "high"
+    notes:
+      - "Common Crawl multilingue avec métadonnées de détection et catégories."
+
+  - repo_id: "innadark/GlotCC-V1"
+    canonical: false
+    family: "glotcc"
+    relation: "duplicate_of_cis-lmu/GlotCC-V1"
+    decision: "skip_duplicate"
+
+  - repo_id: "cis-lmu/Taxi1500-RawData"
+    canonical: true
+    family: "taxi1500"
+    source_type: "bible_text"
+    target_iso_codes: ["sbd"]
+    expected_configs: ["sbd_Latn"]
+    license: "source_specific_or_other"
+    decision: "inspect_rights_and_subset"
+    priority: "medium"
+    notes:
+      - "Texte biblique brut; domaine religieux très biaisé."
+      - "Licence de contenu à clarifier avant toute réutilisation."
+
+  - repo_id: "pei39/Taxi1500-RawData-test"
+    canonical: false
+    family: "taxi1500"
+    relation: "test_copy_or_derivative"
+    decision: "skip_until_canonical_unavailable"
+
+  - repo_id: "lgi2p/finefreq"
+    canonical: true
+    family: "finefreq"
+    source_type: "character_frequency_statistics"
+    target_iso_codes: ["sbd"]
+    license: "cc-by-4.0"
+    decision: "defer_orthography_analysis"
+    priority: "low"
+    notes:
+      - "Pas de phrases; statistiques de caractères dérivées de FineWeb2."
+
+  - repo_id: "openbmb/DCAD-2000"
+    canonical: true
+    family: "dcad2000"
+    source_type: "cleaned_web_corpus"
+    target_iso_codes: ["sbd"]
+    license: "other"
+    decision: "inspect_rights_and_subset"
+    priority: "medium"
+    notes:
+      - "Corpus web nettoyé; malgré le score automatique faible, il peut être utile si un sous-ensemble sbd réel existe."
+      - "Licence affichée comme 'other/license' : vérification juridique obligatoire."
