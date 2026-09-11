@@ -185,7 +185,8 @@ Le collecteur :
 - découvre les liens par lettre du plugin WordPress Name Directory ;
 - visite les pages avec une courte pause ;
 - extrait les couples `français / samo` ;
-- déduplique uniquement les couples strictement identiques ;
+- conserve dans le RAW les occurrences dupliquées visibles sur le site ;
+- signale séparément les doublons et les écarts avec le compteur public ;
 - ne lui attribue aucun code ISO ;
 - écrit localement sous `data/raw/ainsisoisje/`.
 
@@ -195,7 +196,19 @@ Sortie :
 <repo>/data/raw/ainsisoisje/dictionnaire_samo_francais.json
 ```
 
-Le compteur récupéré est comparé au compteur public du site afin de repérer un scraping incomplet.
+Résultat réel actuel :
+
+```text
+compteur annoncé par le site      : 126
+occurrences récupérées            : 125
+paires Français/Samo uniques      : 124
+groupes dupliqués                 : 1
+occurrence dupliquée supplémentaire: 1
+
+doublon observé : Noir → Ti (2 occurrences)
+```
+
+Une occurrence reste non récupérée par rapport au compteur global du site. Les compteurs par lettre analysés par le collecteur sont néanmoins cohérents avec les pages parcourues. L'écart est conservé comme anomalie de collecte documentée au lieu d'être masqué.
 
 ## Comparaison avec ASJP
 
@@ -205,7 +218,32 @@ Après la collecte :
 python processors/compare_ainsisoisje_asjp.py
 ```
 
-Le comparateur cherche :
+Le comparateur travaille sur les **124 paires Français/Samo uniques** afin que le doublon du site ne biaise pas les statistiques. Le RAW reste inchangé avec ses 125 occurrences.
+
+Résultat réel actuel :
+
+```text
+Occurrences RAW du site : 125
+Paires uniques comparées : 124
+Doublons exclus des statistiques : 1
+
+CONCEPT_MATCH_FORM_DIFFERENT : 15
+FORM_SIMILARITY_CANDIDATE    : 9
+SITE_ONLY_OR_UNRESOLVED      : 100
+EXACT_FORM_MATCH             : 0
+```
+
+Signal heuristique de proximité des formes pour les concepts comparables :
+
+```text
+sbd : meilleur candidat 2 fois ; similarité moyenne 0.7494
+stj : meilleur candidat 12 fois ; similarité moyenne 0.5153
+sym : meilleur candidat 10 fois ; similarité moyenne 0.5463
+```
+
+Ce signal ne permet pas d'attribuer automatiquement le dictionnaire à `sbd`, `stj` ou `sym`. Il mesure seulement une ressemblance graphique entre chaînes pour les concepts que le comparateur a réussi à rapprocher.
+
+Le comparateur classe les lignes selon :
 
 ```text
 SITE_ONLY_OR_UNRESOLVED
@@ -214,8 +252,6 @@ FORM_SIMILARITY_CANDIDATE
 CONCEPT_MATCH_FORM_DIFFERENT
 ```
 
-Il compare d'abord les concepts français du site aux glosses françaises contrôlées d'ASJP, puis calcule une similarité graphique entre les formes Samo et les formes ASJP.
-
 Important :
 
 ```text
@@ -223,8 +259,6 @@ FORM_SIMILARITY_CANDIDATE
     !=
 forme linguistiquement équivalente
 ```
-
-De même, le rapport peut produire un **signal heuristique** de proximité vers `sbd`, `stj` ou `sym`, mais ce signal ne doit jamais être utilisé comme attribution automatique de variété.
 
 Sorties :
 
@@ -248,12 +282,14 @@ ASJP
 Ainsi sois-je
 ├── découverte                   ✅
 ├── volume annoncé               ✅ 126
+├── collecte locale              ✅ 125 occurrences / 124 paires uniques
+├── écart compteur               ⚠️ 1 occurrence non récupérée, documentée
+├── doublon connu                ⚠️ Noir → Ti
 ├── variété exacte               ? inconnue
 ├── droits                       ⚠️ All Rights Reserved
-├── collector                    ✅ implémenté
-├── collecte locale réelle       ⏳ à exécuter
-└── comparaison ASJP             ⏳ après collecte
+├── comparaison ASJP             ✅ 124 paires uniques comparées
+└── état branche ingestion       ✅ SOURCE CANDIDATE RÉCOLTÉE
 
 Hugging Face
-└── inventaire datasets          ⏳ ensuite
+└── inventaire datasets          ⏳ prochaine source
 ```
