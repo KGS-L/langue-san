@@ -1,12 +1,21 @@
 @php
     $currentUser = auth()->user();
-    $currentRole = $currentUser?->getRoleNames()->first();
-    $currentRoleLabel = match ($currentRole) {
-        'admin' => 'Administrateur',
-        'moderator' => 'Modérateur',
-        'contributor' => 'Contributeur',
-        default => 'Membre de l’équipe',
-    };
+    $currentRoleLabel = 'Membre de l’équipe';
+
+    if ($currentUser) {
+        foreach ([
+            \App\Enums\UserRole::ADMIN,
+            \App\Enums\UserRole::MODERATOR,
+            \App\Enums\UserRole::VALIDATOR,
+            \App\Enums\UserRole::TRANSCRIBER,
+            \App\Enums\UserRole::CONTRIBUTOR,
+        ] as $role) {
+            if ($currentUser->hasRole($role->value)) {
+                $currentRoleLabel = $role->label();
+                break;
+            }
+        }
+    }
 @endphp
 
 <header id="header" class="header fixed-top d-flex align-items-center">
@@ -31,6 +40,10 @@
                         <span>{{ $currentRoleLabel }}</span>
                     </li>
                     <li><hr class="dropdown-divider"></li>
+                    @if($currentUser?->isContributor())
+                        <li><a class="dropdown-item d-flex align-items-center" href="{{ route('contributor.dashboard') }}"><i class="bi bi-person-workspace"></i><span>Mon espace contributeur</span></a></li>
+                        <li><hr class="dropdown-divider"></li>
+                    @endif
                     <li>
                         <form action="{{ route('logout') }}" method="POST">
                             @csrf
