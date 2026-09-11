@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Enums\ProjectApplicationStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\ProjectApplication\ReviewProjectApplicationRequest;
+use App\Http\Requests\Admin\ProjectApplication\UpdateProjectMemberAccessRequest;
 use App\Models\ProjectApplication;
 use App\Services\ProjectApplicationService;
 use Illuminate\Http\RedirectResponse;
@@ -27,7 +28,7 @@ class ProjectApplicationController extends Controller
     {
         abort_unless(auth()->user()?->can('review project applications'), 403);
 
-        $projectApplication->load(['user.userProfile', 'reviewer']);
+        $projectApplication->load(['user.userProfile', 'user.projectMembership', 'user.roles', 'reviewer']);
 
         return view('admin.project-applications.show', [
             'application' => $projectApplication,
@@ -47,5 +48,19 @@ class ProjectApplicationController extends Controller
 
         return redirect()->route('admin.project-applications.show', $projectApplication)
             ->with('success', 'La décision a été enregistrée et la personne a été informée.');
+    }
+
+    public function updateAccess(
+        UpdateProjectMemberAccessRequest $request,
+        ProjectApplication $projectApplication,
+    ): RedirectResponse {
+        $this->applications->updateSpecializedAccess(
+            application: $projectApplication,
+            actor: $request->user(),
+            roles: $request->validated('roles', []),
+        );
+
+        return redirect()->route('admin.project-applications.show', $projectApplication)
+            ->with('success', 'Les accès spécialisés du membre ont été mis à jour.');
     }
 }
