@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\ContributionController;
+use App\Http\Controllers\Admin\ContributionSegmentController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\ExportController;
 use App\Http\Controllers\Admin\LocalityController;
@@ -30,6 +31,10 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:admin,moderato
     Route::resource('contributions', ContributionController::class)->only(['index', 'show']);
     Route::post('contributions/{contribution}/transcribe', [ContributionController::class, 'transcribe'])->name('contributions.transcribe');
     Route::post('contributions/{contribution}/validations', [ValidationController::class, 'store'])->name('contributions.validations.store');
+    Route::get('contributions/{contribution}/segments', [ContributionSegmentController::class, 'index'])->name('contributions.segments.index');
+    Route::post('contributions/{contribution}/segments', [ContributionSegmentController::class, 'store'])->name('contributions.segments.store');
+    Route::put('contributions/{contribution}/segments/{segment}', [ContributionSegmentController::class, 'update'])->name('contributions.segments.update');
+    Route::delete('contributions/{contribution}/segments/{segment}', [ContributionSegmentController::class, 'destroy'])->name('contributions.segments.destroy');
     Route::get('recordings/{recording}', [RecordingController::class, 'show'])->name('recordings.show');
 
     Route::get('project-applications', [ProjectApplicationController::class, 'index'])->name('project-applications.index');
