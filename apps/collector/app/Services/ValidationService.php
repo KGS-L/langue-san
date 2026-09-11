@@ -28,6 +28,12 @@ class ValidationService
                 ->lockForUpdate()
                 ->findOrFail($contribution->id);
 
+            if ($lockedContribution->withdrawn_at) {
+                throw ValidationException::withMessages([
+                    'decision' => 'Cette contribution a été retirée par son contributeur et ne peut plus être validée.',
+                ]);
+            }
+
             if (! $lockedContribution->status->canBeValidated()) {
                 throw ValidationException::withMessages([
                     'decision' => 'Cette contribution doit être transcrite avant validation, ou son workflow est déjà terminé.',
