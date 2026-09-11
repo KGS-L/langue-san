@@ -3,6 +3,10 @@
 Cette comparaison sert à mesurer le recouvrement potentiel entre sources. Elle
 ne valide aucune équivalence linguistique et n'attribue pas automatiquement la
 variété du dictionnaire « Samo » de ainsisoisje.com à sbd, stj ou sym.
+
+Le RAW Ainsi sois-je conserve toutes les occurrences visibles sur le site, y
+compris ses doublons. Pour éviter de biaiser les statistiques inter-sources, la
+comparaison travaille en revanche sur les paires Français/Samo uniques.
 """
 
 from __future__ import annotations
@@ -70,6 +74,29 @@ def similarity(a: Any, b: Any) -> float:
     if not left or not right:
         return 0.0
     return SequenceMatcher(None, left, right).ratio()
+
+
+def _site_pair_key(entry: dict[str, Any]) -> tuple[str, str]:
+    """Clé stable utilisée uniquement pour éviter le double comptage."""
+
+    return (
+        _exact_form_key(entry.get("french")),
+        _exact_form_key(entry.get("samo")),
+    )
+
+
+def deduplicate_site_entries(entries: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Retourne une occurrence par paire Français/Samo, sans modifier le RAW."""
+
+    unique: list[dict[str, Any]] = []
+    seen: set[tuple[str, str]] = set()
+    for entry in entries:
+        key = _site_pair_key(entry)
+        if key in seen:
+            continue
+        seen.add(key)
+        unique.append(entry)
+    return unique
 
 
 def _concept_variants(value: str) -> set[str]:
@@ -210,7 +237,11 @@ def compare_sources(site_entries: list[dict[str, Any]], asjp_entries: list[dict[
     return [compare_entry(entry, concept_index, labels) for entry in site_entries]
 
 
-def build_summary(comparisons: list[dict[str, Any]]) -> dict[str, Any]:
+def build_summary(
+    comparisons: list[dict[str, Any]],
+    *,
+    raw_site_entry_count: int | None = None,
+) -> dict[str, Any]:
     classifications = Counter(item["classification"] for item in comparisons)
     concept_matches = Counter(item["concept_match_type"] for item in comparisons)
 
@@ -234,8 +265,11 @@ def build_summary(comparisons: list[dict[str, Any]]) -> dict[str, Any]:
             "note": "Signal heuristique de chaînes de caractères, pas attribution linguistique de variété.",
         }
 
+    raw_count = raw_site_entry_count if raw_site_entry_count is not None else len(comparisons)
     return {
-        "site_entry_count": len(comparisons),
+        "site_raw_occurrence_count": raw_count,
+        "site_unique_pair_count_compared": len(comparisons),
+        "duplicate_occurrences_excluded_from_comparison": max(0, raw_count - len(comparisons)),
         "by_classification": dict(sorted(classifications.items())),
         "by_concept_match_type": dict(sorted(concept_matches.items())),
         "variety_similarity_signal": variety_signal,
@@ -262,8 +296,9 @@ def process_files(
     if not isinstance(site_entries, list) or not isinstance(asjp_entries, list):
         raise SourceComparisonError("Les deux fichiers doivent contenir une liste 'entries'.")
 
-    comparisons = compare_sources(site_entries, asjp_entries)
-    summary = build_summary(comparisons)
+    unique_site_entries = deduplicate_site_entries(site_entries)
+    comparisons = compare_sources(unique_site_entries, asjp_entries)
+    summary = build_summary(comparisons, raw_site_entry_count=len(site_entries))
 
     output_dir.mkdir(parents=True, exist_ok=True)
     json_path = output_dir / "ainsisoisje_vs_asjp.json"
@@ -309,7 +344,12 @@ def main() -> None:
 
     paths = process_files(args.site_input, args.asjp_input, args.output_dir)
     report = json.loads(paths["report"].read_text(encoding="utf-8"))
-    print(f"Entrées site comparées : {report['site_entry_count']}")
+    print(f"Occurrences RAW du site : {report['site_raw_occurrence_count']}")
+    print(f"Paires uniques comparées : {report['site_unique_pair_count_compared']}")
+    print(
+        "Doublons exclus des statistiques : "
+        f"{report['duplicate_occurrences_excluded_from_comparison']}"
+    )
     print("Par classification :")
     for name, count in report["by_classification"].items():
         print(f"- {name}: {count}")
