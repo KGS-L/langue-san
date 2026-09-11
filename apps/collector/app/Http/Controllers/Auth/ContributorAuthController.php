@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\SendContributorOtpRequest;
 use App\Http\Requests\Auth\VerifyContributorOtpRequest;
+use App\Models\User;
 use App\Services\ContributorIdentityService;
 use App\Services\ContributorOtpService;
 use App\Services\GoogleOAuthService;
@@ -20,7 +21,7 @@ class ContributorAuthController extends Controller
     public function show(Request $request, GoogleOAuthService $google): View|RedirectResponse
     {
         if ($request->user()?->isContributor()) {
-            return redirect()->route('contributor.home');
+            return $this->afterLogin($request->user());
         }
 
         if ($request->user()?->isStaff()) {
@@ -72,7 +73,7 @@ class ContributorAuthController extends Controller
         $request->session()->regenerate();
         $request->session()->forget(['contributor_otp_email', 'contributor_otp_sent']);
 
-        return redirect()->route('contributor.home');
+        return $this->afterLogin($user);
     }
 
     public function googleRedirect(Request $request, GoogleOAuthService $google): RedirectResponse
@@ -106,7 +107,7 @@ class ContributorAuthController extends Controller
         Auth::login($user, true);
         $request->session()->regenerate();
 
-        return redirect()->route('contributor.home');
+        return $this->afterLogin($user);
     }
 
     public function logout(Request $request): RedirectResponse
@@ -116,5 +117,14 @@ class ContributorAuthController extends Controller
         $request->session()->regenerateToken();
 
         return redirect()->route('home');
+    }
+
+    private function afterLogin(User $user): RedirectResponse
+    {
+        $user->loadMissing('userProfile');
+
+        return $user->needsContributorOnboarding()
+            ? redirect()->route('contributor.profile.edit')
+            : redirect()->route('contributor.dashboard');
     }
 }
