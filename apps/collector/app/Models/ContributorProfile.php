@@ -34,6 +34,7 @@ class ContributorProfile extends Model
     public function collectionSessions(): HasMany { return $this->hasMany(CollectionSession::class); }
     public function contributions(): HasMany { return $this->hasMany(Contribution::class); }
     public function consents(): HasMany { return $this->hasMany(ContributorConsent::class); }
+    public function dataRequests(): HasMany { return $this->hasMany(DataRequest::class); }
 
     public function isAnonymous(): bool { return $this->user_id === null; }
 }
