@@ -31,8 +31,9 @@ class ContributionController extends Controller
         $contribution->load([
             'contributorProfile.user',
             'prompt.category',
-            'locality',
+            'locality.suggestedVariety',
             'recording',
+            'segments.variety',
             'validations.validator',
             'validations.variety',
         ]);
