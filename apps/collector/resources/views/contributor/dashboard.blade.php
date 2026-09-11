@@ -6,6 +6,7 @@
     <link rel="icon" type="image/svg+xml" href="{{ asset('assets/img/langue-san-logo.svg') }}">
     <link href="{{ asset('assets/vendor/bootstrap/css/bootstrap.min.css') }}" rel="stylesheet">
     <link href="{{ asset('assets/vendor/bootstrap-icons/bootstrap-icons.css') }}" rel="stylesheet">
+    <link href="{{ asset('assets/css/public-theme.css') }}" rel="stylesheet">
     <style>
         :root{--san-navy:#172640;--san-gold:#d3a84a;--san-cream:#f8f5ee}.brand{color:var(--san-navy);font-weight:800;text-decoration:none}body{background:#f7f8fb}.stat-card,.panel{border:0;border-radius:18px}.stat-icon{width:46px;height:46px;border-radius:14px;background:var(--san-cream);display:grid;place-items:center;color:var(--san-navy);font-size:1.25rem}.btn-san{background:var(--san-navy);border-color:var(--san-navy);color:#fff}.btn-san:hover{background:#243b60;color:#fff}
     </style>
