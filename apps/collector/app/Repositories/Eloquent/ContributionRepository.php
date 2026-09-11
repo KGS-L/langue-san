@@ -24,7 +24,9 @@ class ContributionRepository implements ContributionRepositoryInterface
     public function paginateForTranscription(array $filters = [], int $perPage = 20): LengthAwarePaginator
     {
         return $this->applyFilters(
-            $this->baseQuery()->where('status', ContributionStatus::PENDING->value),
+            $this->baseQuery()
+                ->whereNull('withdrawn_at')
+                ->where('status', ContributionStatus::PENDING->value),
             $filters,
         )
             ->oldest('submitted_at')
@@ -42,6 +44,7 @@ class ContributionRepository implements ContributionRepositoryInterface
 
         return $this->applyFilters(
             $this->baseQuery()
+                ->whereNull('withdrawn_at')
                 ->whereIn('status', $statuses)
                 ->whereDoesntHave('validations', fn (Builder $query) => $query->where('validator_id', $validator->id)),
             $filters,
