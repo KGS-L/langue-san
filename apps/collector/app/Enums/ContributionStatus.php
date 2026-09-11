@@ -23,6 +23,16 @@ enum ContributionStatus: string
         };
     }
 
+    public function publicLabel(): string
+    {
+        return match ($this) {
+            self::PENDING => 'Reçue',
+            self::TRANSCRIBED, self::VALIDATED_ONCE, self::VALIDATED_TWICE => 'En vérification',
+            self::APPROVED => 'Validée',
+            self::REJECTED => 'Non retenue',
+        };
+    }
+
     public function badgeClass(): string
     {
         return match ($this) {
@@ -32,6 +42,16 @@ enum ContributionStatus: string
             self::VALIDATED_TWICE => 'bg-danger',
             self::APPROVED => 'bg-success',
             self::REJECTED => 'bg-secondary',
+        };
+    }
+
+    public function publicBadgeClass(): string
+    {
+        return match ($this) {
+            self::PENDING => 'text-bg-light border',
+            self::TRANSCRIBED, self::VALIDATED_ONCE, self::VALIDATED_TWICE => 'text-bg-warning',
+            self::APPROVED => 'text-bg-success',
+            self::REJECTED => 'text-bg-secondary',
         };
     }
 
