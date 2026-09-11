@@ -44,4 +44,5 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:admin,moderato
 
     Route::get('exports', [ExportController::class, 'index'])->name('exports.index');
     Route::get('exports/download', [ExportController::class, 'download'])->name('exports.download');
+    Route::get('exports/download-natural-speech', [ExportController::class, 'downloadNaturalSpeech'])->name('exports.natural-speech.download');
 });
