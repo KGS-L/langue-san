@@ -32,8 +32,9 @@
 
                     @guest
                         <div class="border-top mt-4 pt-4">
-                            <p class="small text-muted mb-2">Vous pouvez créer un compte pour retrouver plus facilement vos contributions et vos futures statistiques.</p>
-                            <a href="{{ route('register') }}" class="btn btn-outline-primary">Créer un compte (facultatif)</a>
+                            <h2 class="h5">Vous souhaitez retrouver cette contribution plus tard ?</h2>
+                            <p class="small text-muted mb-3">Créez ou retrouvez votre compte avec Google ou un code reçu par email. Les réponses que vous venez d’envoyer depuis ce navigateur seront automatiquement rattachées à ce compte.</p>
+                            <a href="{{ route('contributor.auth.show') }}" class="btn btn-outline-primary">Créer ou retrouver mon compte</a>
                         </div>
                     @endguest
                 </div>
