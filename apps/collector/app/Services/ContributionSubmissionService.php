@@ -47,13 +47,15 @@ class ContributionSubmissionService
         try {
             return DB::transaction(function () use ($session, $sessionPrompt, $profile, $data, $audio, &$storedPath) {
                 $text = trim((string) ($data['san_text'] ?? ''));
+                $submittedText = $text !== '' ? $text : null;
 
                 $contribution = $this->contributions->create([
                     'collection_session_id' => $session->id,
                     'prompt_id' => $sessionPrompt->prompt_id,
                     'contributor_profile_id' => $profile->id,
                     'locality_id' => $profile->locality_id,
-                    'san_text' => $text !== '' ? $text : null,
+                    'san_text' => $submittedText,
+                    'submitted_san_text' => $submittedText,
                     'status' => ContributionStatus::PENDING->value,
                     'submitted_at' => now(),
                 ]);
