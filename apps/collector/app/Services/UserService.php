@@ -23,21 +23,6 @@ class UserService
         return $this->users->paginate($perPage);
     }
 
-    public function createContributor(array $data): User
-    {
-        return DB::transaction(function () use ($data): User {
-            $user = $this->users->create([
-                'name' => $data['name'],
-                'email' => Str::lower($data['email']),
-                'password' => $data['password'],
-                'status' => UserStatus::ACTIVE,
-            ]);
-            $user->syncRoles([UserRole::CONTRIBUTOR->value]);
-
-            return $user;
-        });
-    }
-
     public function findOrCreatePasswordlessContributor(string $email, ?string $name = null): User
     {
         $email = Str::lower(trim($email));
@@ -67,7 +52,11 @@ class UserService
                 }
 
                 $user = $updates ? $this->users->update($user, $updates) : $user;
-                $user->syncRoles([UserRole::CONTRIBUTOR->value]);
+
+                // Keep validator/transcriber roles if an approved project member has them.
+                if (! $user->hasRole(UserRole::CONTRIBUTOR->value)) {
+                    $user->assignRole(UserRole::CONTRIBUTOR->value);
+                }
 
                 return $user;
             }
@@ -86,7 +75,7 @@ class UserService
                 'password' => Str::random(64),
                 'status' => UserStatus::ACTIVE,
             ]);
-            $user->syncRoles([UserRole::CONTRIBUTOR->value]);
+            $user->assignRole(UserRole::CONTRIBUTOR->value);
 
             return $user;
         });
@@ -125,11 +114,6 @@ class UserService
         $updated->syncRoles([UserRole::MODERATOR->value]);
 
         return $updated;
-    }
-
-    public function create(array $data): User
-    {
-        return $this->users->create($data);
     }
 
     public function update(User $user, array $data): User
