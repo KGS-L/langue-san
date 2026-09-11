@@ -3,7 +3,6 @@
 namespace Database\Seeders;
 
 use App\Enums\UserRole;
-use App\Models\User;
 use Illuminate\Database\Seeder;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
@@ -46,10 +45,6 @@ class RolePermissionSeeder extends Seeder
             'review project applications',
         ]);
 
-        User::query()->each(function (User $user): void {
-            if ($user->role instanceof UserRole) {
-                $user->syncRoles([$user->role->value]);
-            }
-        });
+        app(PermissionRegistrar::class)->forgetCachedPermissions();
     }
 }
