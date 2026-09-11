@@ -8,6 +8,7 @@ use App\Contracts\Repositories\ContributionRepositoryInterface;
 use App\Contracts\Repositories\ContributionSegmentRepositoryInterface;
 use App\Contracts\Repositories\ContributorConsentRepositoryInterface;
 use App\Contracts\Repositories\ContributorProfileRepositoryInterface;
+use App\Contracts\Repositories\DataRequestRepositoryInterface;
 use App\Contracts\Repositories\LocalityRepositoryInterface;
 use App\Contracts\Repositories\ProjectApplicationRepositoryInterface;
 use App\Contracts\Repositories\ProjectMembershipRepositoryInterface;
@@ -23,6 +24,7 @@ use App\Repositories\Eloquent\ContributionRepository;
 use App\Repositories\Eloquent\ContributionSegmentRepository;
 use App\Repositories\Eloquent\ContributorConsentRepository;
 use App\Repositories\Eloquent\ContributorProfileRepository;
+use App\Repositories\Eloquent\DataRequestRepository;
 use App\Repositories\Eloquent\LocalityRepository;
 use App\Repositories\Eloquent\ProjectApplicationRepository;
 use App\Repositories\Eloquent\ProjectMembershipRepository;
@@ -43,6 +45,7 @@ class RepositoryServiceProvider extends ServiceProvider
         ProjectMembershipRepositoryInterface::class => ProjectMembershipRepository::class,
         ContributorProfileRepositoryInterface::class => ContributorProfileRepository::class,
         ContributorConsentRepositoryInterface::class => ContributorConsentRepository::class,
+        DataRequestRepositoryInterface::class => DataRequestRepository::class,
         CategoryRepositoryInterface::class => CategoryRepository::class,
         LocalityRepositoryInterface::class => LocalityRepository::class,
         VarietyRepositoryInterface::class => VarietyRepository::class,
