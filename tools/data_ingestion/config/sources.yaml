@@ -23,6 +23,25 @@ sources:
         iso_639_3: "sym"
         asjp_id: "MAYA_SAMO"
 
+  ainsisoisje:
+    name: "Ainsi sois-je — Dictionnaire Français / Samo"
+    type: "web_dictionary"
+    homepage: "https://ainsisoisje.com/"
+    resource: "https://ainsisoisje.com/dictionnaire-samo-francais/"
+    license: "All Rights Reserved"
+    enabled: false
+    status: "rights_review_required"
+    intended_use: "local_source_inventory_and_comparison_only"
+    declared_entry_count: 126
+    variety: "unknown"
+    iso_639_3: null
+    publication_approved: false
+    training_approved: false
+    notes:
+      - "La page publique ne précise pas la variété Samo au niveau ISO."
+      - "Aucune attribution automatique vers sbd, stj ou sym."
+      - "Le RAW reste local tant que les droits de réutilisation ne sont pas clarifiés."
+
   huggingface:
     name: "Hugging Face datasets"
     type: "dataset_registry"
