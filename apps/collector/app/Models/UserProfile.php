@@ -11,7 +11,7 @@ class UserProfile extends Model
 {
     protected $fillable = [
         'user_id',
-        'country_code',
+        'country',
         'age_range',
         'profession',
         'profession_other',
