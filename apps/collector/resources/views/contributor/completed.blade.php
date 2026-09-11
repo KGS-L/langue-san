@@ -41,5 +41,15 @@
         </div>
     </div>
 </main>
+<script>
+(() => {
+    const sessionId = {{ $session->id }};
+    localStorage.removeItem('langue_san_active_session');
+
+    Object.keys(localStorage)
+        .filter(key => key.startsWith(`langue_san_draft_${sessionId}_`))
+        .forEach(key => localStorage.removeItem(key));
+})();
+</script>
 </body>
 </html>
