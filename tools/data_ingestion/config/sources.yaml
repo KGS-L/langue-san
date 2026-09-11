@@ -49,7 +49,19 @@ sources:
     license: "per-resource"
     enabled: false
     status: "resource_review_required"
-    intended_use: "to_be_evaluated"
+    intended_use: "metadata_inventory_then_per_resource_review"
+    target_iso_codes:
+      - "sbd"
+      - "stj"
+      - "sym"
+    inventory_method: "Hugging Face Hub language:<iso> metadata query"
+    content_download_enabled: false
+    publication_approved: false
+    training_approved: false
+    notes:
+      - "Chaque repo doit être étudié séparément avant téléchargement de contenu."
+      - "Un tag de langue Hugging Face est une déclaration de métadonnées et ne garantit pas la qualité ni la pureté linguistique du dataset."
+      - "La licence affichée sur le repo doit être vérifiée avec la provenance des données sources."
 
   webonary:
     name: "Webonary"
