@@ -21,17 +21,16 @@ import json
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
-from urllib.parse import quote
 
 import requests
 import yaml
+from huggingface_hub import HfApi
 
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 CONFIG_PATH = REPO_ROOT / "tools" / "data_ingestion" / "config" / "huggingface_sources.yaml"
 DEFAULT_OUTPUT_DIR = REPO_ROOT / "data" / "processed" / "huggingface"
 VIEWER_BASE = "https://datasets-server.huggingface.co"
-TARGET_ISO = {"sbd", "stj", "sym"}
 USER_AGENT = "langue-san-data-ingestion/1.0 (+hf-source-inspection)"
 
 
@@ -60,10 +59,9 @@ def should_inspect(source: dict[str, Any]) -> bool:
 
 
 def _get_json(session: requests.Session, endpoint: str, *, dataset: str, timeout: int = 90, **params: Any) -> dict[str, Any]:
-    query = {"dataset": dataset, **params}
     response = session.get(
         f"{VIEWER_BASE}/{endpoint}",
-        params=query,
+        params={"dataset": dataset, **params},
         timeout=timeout,
         headers={"User-Agent": USER_AGENT},
     )
@@ -107,13 +105,33 @@ def target_configs_for_source(source: dict[str, Any], available_configs: list[st
                 result.append(config)
         return sorted(set(result))
 
-    # Certains repos utilisent sbd-Latn au lieu de sbd_Latn.
     result = []
     for config in available_configs:
         lowered = config.lower().replace("-", "_")
         if any(lowered == iso or lowered.startswith(f"{iso}_") for iso in targets):
             result.append(config)
     return sorted(set(result))
+
+
+def infer_chikhapo_configs_from_repo_files(files: list[str], target_iso_codes: list[str]) -> list[str]:
+    """Fallback quand Dataset Viewer refuse ChiKhaPo (>4000 configs).
+
+    On ne télécharge aucun fichier : on inspecte uniquement les chemins du repo
+    et extrait les segments qui ressemblent à des configs ISO3_ISO3.
+    """
+
+    targets = {str(code).lower() for code in target_iso_codes}
+    configs: set[str] = set()
+    for path in files:
+        for segment in str(path).split("/"):
+            stem = segment.split(".", 1)[0]
+            parts = stem.split("_")
+            if len(parts) != 2:
+                continue
+            left, right = parts[0].lower(), parts[1].lower()
+            if len(left) == 3 and len(right) == 3 and ({left, right} & targets):
+                configs.add(f"{left}_{right}")
+    return sorted(configs)
 
 
 def config_sizes(size_payload: dict[str, Any]) -> dict[str, dict[str, Any]]:
@@ -164,11 +182,35 @@ def _probe_filter_presence(
     }
 
 
+def _inspect_chikhapo_fallback(source: dict[str, Any], result: dict[str, Any]) -> bool:
+    """Essaie de découvrir les configs via les chemins du Hub."""
+
+    try:
+        files = HfApi().list_repo_files(str(source["repo_id"]), repo_type="dataset")
+        configs = infer_chikhapo_configs_from_repo_files(
+            [str(item) for item in files],
+            [str(item) for item in source.get("target_iso_codes", [])],
+        )
+        result["available_config_count"] = None
+        result["target_configs"] = configs
+        result["target_config_details"] = [
+            {"config": config, "splits": [], "num_rows": None}
+            for config in configs
+        ]
+        result["inspection_method"] = "huggingface_hub_repo_file_fallback"
+        result["status"] = "inspection_success_with_fallback"
+        return True
+    except Exception as exc:
+        result["fallback_error"] = str(exc)
+        return False
+
+
 def inspect_source(source: dict[str, Any], session: requests.Session) -> dict[str, Any]:
     repo_id = str(source.get("repo_id") or "")
+    family = str(source.get("family") or "")
     result: dict[str, Any] = {
         "repo_id": repo_id,
-        "family": source.get("family"),
+        "family": family,
         "source_type": source.get("source_type"),
         "decision": source.get("decision"),
         "priority": source.get("priority"),
@@ -192,19 +234,15 @@ def inspect_source(source: dict[str, Any], session: requests.Session) -> dict[st
             sizes = {}
             result["size_error"] = str(exc)
 
-        target_config_details = []
-        for config in result["target_configs"]:
-            target_config_details.append(
-                {
-                    "config": config,
-                    "splits": split_names_for_config(splits_payload, config),
-                    **sizes.get(config, {}),
-                }
-            )
-        result["target_config_details"] = target_config_details
+        result["target_config_details"] = [
+            {
+                "config": config,
+                "splits": split_names_for_config(splits_payload, config),
+                **sizes.get(config, {}),
+            }
+            for config in result["target_configs"]
+        ]
 
-        # Datasets plats où l'ISO est une colonne plutôt qu'une config.
-        family = str(source.get("family") or "")
         if family in {"mms_ulab_v2", "panlex_snapshot"}:
             default_config = "default" if "default" in available_configs else (available_configs[0] if available_configs else None)
             if default_config:
@@ -227,8 +265,12 @@ def inspect_source(source: dict[str, Any], session: requests.Session) -> dict[st
                             )
                         )
 
+        result["inspection_method"] = "datasets_server"
         result["status"] = "inspection_success"
     except Exception as exc:
+        result["viewer_error"] = str(exc)
+        if family == "chikhapo" and _inspect_chikhapo_fallback(source, result):
+            return result
         result["status"] = "inspection_failed"
         result["error"] = str(exc)
 
@@ -245,11 +287,12 @@ def inspect_sources(
 
 
 def build_summary(results: list[dict[str, Any]], all_sources: list[dict[str, Any]]) -> dict[str, Any]:
+    success_statuses = {"inspection_success", "inspection_success_with_fallback"}
     return {
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "configured_repo_count": len(all_sources),
         "canonical_sources_inspected": len(results),
-        "inspection_success_count": sum(item.get("status") == "inspection_success" for item in results),
+        "inspection_success_count": sum(item.get("status") in success_statuses for item in results),
         "inspection_failed_count": sum(item.get("status") == "inspection_failed" for item in results),
         "duplicate_or_deferred_repo_count": len(all_sources) - len(results),
         "content_downloaded": False,
@@ -257,6 +300,7 @@ def build_summary(results: list[dict[str, Any]], all_sources: list[dict[str, Any
         "notes": [
             "Cette étape inspecte configs, tailles et présence de codes ISO sans télécharger les corpus complets.",
             "Les miroirs connus sont exclus afin d'éviter de compter plusieurs fois la même source.",
+            "ChiKhaPo utilise un fallback sur les chemins du repo si Dataset Viewer refuse ses 5506 configs.",
             "Une présence de config ou de ligne ne valide pas linguistiquement le contenu.",
         ],
     }
@@ -288,13 +332,14 @@ def main() -> None:
     print(f"Sources canoniques inspectées : {len(results)}")
     print("Résultats :")
     for item in results:
-        print(f"- {item['repo_id']} [{item['status']}]")
+        print(f"- {item['repo_id']} [{item['status']}] méthode={item.get('inspection_method', 'n/a')}")
         details = item.get("target_config_details", [])
         if details:
             for detail in details:
                 rows = detail.get("num_rows")
                 rows_text = f"{rows} lignes" if rows is not None else "taille inconnue"
-                print(f"    config {detail['config']}: {rows_text}; splits={','.join(detail.get('splits', []))}")
+                splits = ",".join(detail.get("splits", [])) or "?"
+                print(f"    config {detail['config']}: {rows_text}; splits={splits}")
         elif item.get("target_configs") == []:
             print("    aucune config SAN dédiée détectée")
         for probe in item.get("filter_probes", []):
