@@ -35,17 +35,14 @@
 
             <div class="card border-0 shadow-sm">
                 <div class="card-body p-4 p-md-5">
-                    <div class="d-flex justify-content-between gap-3 align-items-start mb-3">
-                        <div>
-                            <span class="badge bg-light text-dark border mb-2">{{ $sessionPrompt->prompt->type->value === 'word' ? 'Mot / concept' : 'Phrase' }}</span>
-                            <div class="small text-muted">Comment dites-vous en San ?</div>
-                        </div>
-                        <span class="small text-muted">{{ $sessionPrompt->prompt->code }}</span>
+                    <div class="mb-3">
+                        <span class="badge bg-light text-dark border mb-2">{{ $sessionPrompt->prompt->type->value === 'word' ? 'Mot' : 'Phrase' }}</span>
+                        <div class="small text-muted">Comment dites-vous ceci en San ?</div>
                     </div>
 
                     <h1 class="display-6 fw-bold mb-2">{{ $sessionPrompt->prompt->french_text }}</h1>
                     @if($sessionPrompt->prompt->context)
-                        <div class="alert alert-light border"><strong>Contexte :</strong> {{ $sessionPrompt->prompt->context }}</div>
+                        <div class="alert alert-light border"><strong>Précision :</strong> {{ $sessionPrompt->prompt->context }}</div>
                     @endif
 
                     <p class="small text-muted mb-4"><span class="text-danger">*</span> Donnez au moins une réponse : texte ou audio. Si vous n’êtes pas sûr, vous pouvez passer cette question.</p>
