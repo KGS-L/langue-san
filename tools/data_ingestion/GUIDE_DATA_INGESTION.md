@@ -1,95 +1,123 @@
 # Guide Data Ingestion — Langue SAN
 
-Ce document est le guide de référence pour comprendre, exécuter, contrôler et faire évoluer toute la partie **data ingestion** du projet Langue SAN.
+Ce document est le **manuel de travail principal** de `tools/data_ingestion/`.
 
-Il est volontairement pédagogique : l'objectif est qu'une personne revenant sur le projet plusieurs semaines ou plusieurs mois plus tard puisse comprendre :
+Son objectif est simple : permettre de revenir sur le projet après plusieurs semaines ou plusieurs mois et comprendre immédiatement :
 
 - ce que fait le pipeline ;
 - pourquoi chaque étape existe ;
 - quelles commandes lancer ;
-- quels fichiers sont produits ;
-- ce qui est considéré comme réussi ou échoué ;
+- quels fichiers sont générés ;
+- quel résultat est attendu ;
+- comment reconnaître un échec ;
 - ce qui est techniquement validé ;
-- ce qui nécessite encore une validation linguistique humaine ;
-- quand une donnée peut, ou non, être utilisée pour le Machine Learning.
+- ce qui doit encore être validé par des humains ;
+- à quel moment une donnée peut ou non être utilisée pour le ML.
 
 ---
 
-## 1. Objectif de `data_ingestion`
+# 1. Rôle de `data_ingestion`
 
-`tools/data_ingestion/` sert à acquérir et préparer des **ressources linguistiques externes** trouvées sur Internet ou publiées sous forme de datasets.
+`tools/data_ingestion/` sert à récupérer et préparer des **ressources linguistiques externes** déjà publiées : datasets, lexiques, corpus, API, exports structurés, etc.
 
-Exemples :
-
-- ASJP ;
-- datasets Hugging Face ;
-- corpus publics ;
-- dictionnaires ou lexiques lorsque leur licence le permet ;
-- ressources téléchargées via API ou format structuré.
-
-Ce dossier ne remplace pas le collecteur terrain Laravel.
+Il ne faut pas confondre cette partie avec le collecteur Laravel.
 
 ```text
 apps/collector/
-    = contributions de vrais locuteurs
+    contributions terrain et communautaires
 
  tools/data_ingestion/
-    = ressources externes déjà existantes
+    ressources externes déjà existantes
 
- data/
-    = données de travail, schémas et futurs datasets publiables
+ data/raw/
+    copie brute des sources récupérées
+
+ data/processed/
+    données transformées et rapports de travail
 
  ml/
-    = expériences, entraînement et évaluation ML
+    expériences, entraînement et évaluation
 ```
 
 ---
 
-## 2. Modèle mental du pipeline
+# 2. Principe central
 
-Le pipeline complet doit toujours être compris comme une succession d'étapes contrôlées :
+Une donnée récupérée sur Internet n'est pas automatiquement correcte pour notre application.
 
-```text
-Découverte d'une source
-        ↓
-Vérification licence / droits / accès
-        ↓
-Collecte technique
-        ↓
-Donnée brute RAW
-        ↓
-Normalisation
-        ↓
-Contrôle qualité technique
-        ↓
-Validation linguistique humaine si nécessaire
-        ↓
-Donnée approuvée
-        ↓
-Dataset versionné
-        ↓
-Machine Learning / traduction / apprentissage
-```
-
-Une erreur fréquente serait de penser :
+Toujours garder cette règle en tête :
 
 ```text
-"J'ai téléchargé un mot San depuis Internet"
-        =
-"J'ai une traduction San validée"
+Téléchargé
+    ≠
+Correct linguistiquement
+    ≠
+Validé humainement
+    ≠
+Autorisé pour entraînement
 ```
 
-C'est faux.
-
-La collecte technique et la validation linguistique sont deux choses différentes.
+Les étapes sont donc volontairement séparées.
 
 ---
 
-## 3. Les niveaux de données
+# 3. Pipeline général
 
-### 3.1 RAW — donnée brute
+```text
+1. Découvrir une source
+        ↓
+2. Vérifier droits / licence / accès
+        ↓
+3. Collecter techniquement
+        ↓
+4. Stocker le RAW
+        ↓
+5. Normaliser la structure
+        ↓
+6. Produire les rapports QA
+        ↓
+7. Analyser les variantes
+        ↓
+8. Ajouter des métadonnées contrôlées si utile
+        ↓
+9. Préparer la revue humaine
+        ↓
+10. Validation linguistique
+        ↓
+11. Décision dataset
+        ↓
+12. Autorisation ML éventuelle
+```
 
-La donnée est stockée telle qu'elle provient de la source.
+Aucune étape ne doit être sautée silencieusement.
+
+---
+
+# 4. Variétés SAN suivies
+
+Les trois variétés doivent rester séparées.
+
+| Variété | ISO 639-3 | Nom de travail |
+|---|---|---|
+| San Maka / San du Sud | `sbd` | `maka` |
+| San Matya | `stj` | `matya` |
+| San Maya | `sym` | `maya` |
+
+Règle :
+
+```text
+sbd != stj != sym
+```
+
+Une ressemblance entre deux formes ne permet jamais de fusionner automatiquement les variétés.
+
+---
+
+# 5. Niveaux de données
+
+## 5.1 RAW
+
+Donnée récupérée telle que fournie par la source.
 
 Exemple :
 
@@ -100,89 +128,70 @@ data/raw/asjp/asjp_v21_san_wordlists.json
 Règles :
 
 - ne pas modifier manuellement ;
-- conserver la provenance ;
-- conserver la licence ;
-- conserver les identifiants de la source ;
-- ne pas considérer la forme comme validée ;
-- ne pas commiter les données RAW dans Git.
+- conserver provenance, version et licence ;
+- conserver la notation originale ;
+- ne pas considérer la donnée comme validée ;
+- ne pas commiter le RAW dans Git.
 
-### 3.2 PROCESSED — donnée normalisée de travail
+## 5.2 PROCESSED
 
-La structure est convertie dans un format commun au projet.
+Donnée structurée selon le schéma de travail du projet.
 
 Exemple :
 
 ```text
 data/processed/asjp/
-├── asjp_v21_san_normalized.json
-├── asjp_v21_san_normalized.csv
-└── asjp_v21_report.json
 ```
 
-La normalisation signifie :
+Une normalisation peut modifier les **noms de champs et la structure**, mais pas inventer une correction linguistique.
 
-- noms de champs cohérents ;
-- variété explicitement identifiée ;
-- source et licence préservées ;
-- concepts structurés ;
-- métadonnées prêtes à être inspectées.
+## 5.3 HUMAN REVIEW
 
-Elle ne signifie PAS :
+Donnée préparée pour qu'un locuteur, validateur ou linguiste prenne une décision explicite.
 
-- orthographe San validée ;
-- traduction française validée ;
-- donnée prête pour l'entraînement.
+## 5.4 VALIDATED
 
-### 3.3 VALIDATED — donnée linguistiquement validée
+Donnée linguistiquement approuvée selon le workflow du projet.
 
-Une donnée devient linguistiquement validée après contrôle par le workflow défini par le projet : locuteurs, transcripteurs, validateurs ou spécialistes compétents.
+## 5.5 TRAINING APPROVED
 
-### 3.4 TRAINING APPROVED — donnée autorisée pour le ML
-
-Même une donnée linguistiquement correcte ne doit être intégrée à un entraînement que si :
-
-- la licence le permet ;
-- sa variété est connue ;
-- sa provenance est conservée ;
-- son statut de validation le permet ;
-- elle respecte les règles du futur dataset et de gouvernance.
+Donnée explicitement autorisée pour le ML après contrôle qualité, gouvernance, droits et split dataset.
 
 ---
 
-## 4. Statuts utilisés
+# 6. Statuts utilisés
 
-Pour suivre une source, utiliser les statuts suivants :
-
-| Statut | Signification |
+| Statut | Sens |
 |---|---|
-| `discovered` | source trouvée mais non étudiée |
-| `rights_review_required` | licence / droits à vérifier |
-| `approved_for_ingestion` | droits suffisants pour commencer l'acquisition |
-| `collection_success` | récupération technique réussie |
-| `collection_failed` | acquisition échouée |
-| `normalization_success` | conversion vers le schéma de travail réussie |
-| `qa_passed` | contrôles techniques satisfaisants |
-| `external_unverified` | donnée externe, non validée linguistiquement par Langue SAN |
-| `linguistic_validation_required` | validation humaine nécessaire |
-| `training_approved` | donnée explicitement autorisée pour usage ML |
-| `blocked` | source volontairement bloquée |
-| `rejected` | source ou donnée rejetée |
+| `discovered` | source trouvée |
+| `rights_review_required` | droits à vérifier |
+| `approved_for_ingestion` | ingestion autorisée |
+| `collection_success` | récupération réussie |
+| `collection_failed` | récupération échouée |
+| `normalization_success` | structure normalisée |
+| `qa_passed` | contrôle technique satisfaisant |
+| `external_unverified` | donnée externe non validée linguistiquement |
+| `human_review_required` | décision humaine nécessaire |
+| `linguistic_validation_required` | validation linguistique requise |
+| `training_approved` | autorisé explicitement pour ML |
+| `blocked` | ressource bloquée |
+| `rejected` | ressource ou entrée rejetée |
 
 Important :
 
 ```text
 collection_success != linguistic_validation
-
 normalization_success != training_approved
 ```
 
 ---
 
-## 5. Structure du dossier
+# 7. Structure actuelle
 
 ```text
 tools/data_ingestion/
 ├── config/
+│   ├── concepts_fr.yaml
 │   ├── languages.yaml
 │   └── sources.yaml
 │
@@ -192,53 +201,27 @@ tools/data_ingestion/
 │
 ├── processors/
 │   ├── __init__.py
-│   └── normalize.py
+│   ├── build_review_sheet.py
+│   ├── enrich_concepts.py
+│   ├── normalize.py
+│   └── qa_variants.py
 │
 ├── tests/
 │   ├── test_asjp.py
+│   ├── test_build_review_sheet.py
 │   ├── test_config.py
-│   └── test_normalize.py
+│   ├── test_enrich_concepts.py
+│   ├── test_normalize.py
+│   └── test_qa_variants.py
 │
 ├── GUIDE_DATA_INGESTION.md
 ├── README.md
 └── requirements.txt
 ```
 
-### `config/`
-
-Contient ce que le pipeline doit connaître sans le coder en dur partout.
-
-`languages.yaml` définit notamment :
-
-```text
-sbd → San Maka / San du Sud
-stj → San Matya
-sym → San Maya
-```
-
-`sources.yaml` indique quelles sources sont autorisées ou bloquées.
-
-### `collectors/`
-
-Un collector récupère une source externe et produit du RAW.
-
-Exemple :
-
-```text
-collectors/asjp.py
-```
-
-### `processors/`
-
-Les processors transforment la donnée RAW sans prétendre la corriger linguistiquement.
-
-### `tests/`
-
-Les tests vérifient que nos scripts respectent les règles définies.
-
 ---
 
-## 6. Installation locale
+# 8. Installation locale
 
 Depuis :
 
@@ -246,22 +229,16 @@ Depuis :
 ~/Bureau/langue-san/tools/data_ingestion
 ```
 
-Créer l'environnement virtuel une seule fois :
+Créer le venv une seule fois :
 
 ```bash
 python3 -m venv .venv
 ```
 
-Activer l'environnement :
+Activer :
 
 ```bash
 source .venv/bin/activate
-```
-
-Le terminal doit commencer par :
-
-```text
-(.venv)
 ```
 
 Installer les dépendances :
@@ -270,18 +247,20 @@ Installer les dépendances :
 pip install -r requirements.txt
 ```
 
-Lors des prochaines sessions, il suffit généralement de faire :
+Lors des prochaines sessions :
 
 ```bash
 cd ~/Bureau/langue-san/tools/data_ingestion
 source .venv/bin/activate
 ```
 
+Le terminal doit afficher `(.venv)`.
+
 ---
 
-## 7. Toujours lancer les tests avant une ingestion importante
+# 9. Tests
 
-Commande :
+Après chaque `git pull` qui modifie `data_ingestion`, lancer :
 
 ```bash
 pytest tests
@@ -293,41 +272,36 @@ Résultat attendu :
 ... passed
 ```
 
-Un test en échec signifie qu'il faut arrêter le pipeline et comprendre le problème avant de produire de nouvelles données.
+Si un test échoue :
+
+```text
+STOP
+→ lire l'erreur
+→ corriger avant de régénérer les données
+```
+
+Ne jamais utiliser `--break-system-packages` pour installer les dépendances du projet.
 
 ---
 
-# 8. Source ASJP — procédure complète
+# 10. Source ASJP v21
 
-ASJP est la première source externe active du projet.
+ASJP est la première source externe réellement intégrée.
 
-## 8.1 Pourquoi ASJP ?
-
-ASJP fournit des listes lexicales structurées et permet d'identifier les trois codes ISO utilisés par notre projet :
+Configuration principale :
 
 ```text
-sbd → San Maka / Southern Samo
-stj → San Matya
-sym → San Maya
+version : v21
+licence : CC-BY-4.0
+usage   : lexical_reference
+statut  : approved_for_ingestion
 ```
 
-Le pipeline utilise la version ASJP v21 sous forme CLDF structurée.
-
-Licence enregistrée :
-
-```text
-CC-BY-4.0
-```
-
-Statut de la source :
-
-```text
-approved_for_ingestion
-```
+ASJP sert ici de **référence lexicale externe**. Ce n'est pas encore notre dictionnaire San officiel.
 
 ---
 
-## 8.2 Étape A — collecte
+# 11. Étape ASJP 1 — collecte
 
 Commande :
 
@@ -335,25 +309,21 @@ Commande :
 python collectors/asjp.py
 ```
 
-Résultat attendu :
+Fichier produit :
 
 ```text
-/home/.../langue-san/data/raw/asjp/asjp_v21_san_wordlists.json
+data/raw/asjp/asjp_v21_san_wordlists.json
 ```
 
-Un résultat affichant ce chemin signifie que le téléchargement et l'extraction se sont terminés correctement.
-
-### Résultat réellement obtenu le 11 septembre 2026
+## Résultat réel obtenu le 11 septembre 2026
 
 ```text
 341 entrées
 ```
 
-Répartition :
-
 | ISO | Variété | Entrées | Concepts uniques | Formes uniques |
 |---|---|---:|---:|---:|
-| `sbd` | Maka / Southern Samo | 37 | 34 | 36 |
+| `sbd` | Maka | 37 | 34 | 36 |
 | `stj` | Matya | 129 | 78 | 111 |
 | `sym` | Maya | 175 | 88 | 150 |
 | **Total** | | **341** | | |
@@ -362,33 +332,75 @@ Listes lexicales rencontrées :
 
 ```text
 sbd
-├── SOUTHERN_SAMO       33 entrées
-└── SOUTHERN_SAMO_SAN    4 entrées
+├── SOUTHERN_SAMO       33
+└── SOUTHERN_SAMO_SAN    4
 
 stj
-├── SAMO_MATYA          34 entrées
-└── SAMO_MATYA_2        95 entrées
+├── SAMO_MATYA          34
+└── SAMO_MATYA_2        95
 
 sym
-├── MAYA_SAMO           73 entrées
-└── SAMO_MAYA           102 entrées
+├── MAYA_SAMO           73
+└── SAMO_MAYA           102
 ```
 
-### Statut
+Statut :
 
 ```text
-Collecte ASJP : VALIDÉE TECHNIQUEMENT
+collection_success ✅
 ```
-
-Cela signifie que la récupération fonctionne et que les trois variétés attendues sont présentes.
-
-Cela ne signifie pas que les 341 formes sont des orthographes San validées.
 
 ---
 
-## 8.3 Comprendre les formes ASJP
+# 12. Étape ASJP 2 — normalisation
 
-Exemples trouvés :
+Commande :
+
+```bash
+python processors/normalize.py
+```
+
+Résultat réel :
+
+```text
+Entrées normalisées : 341
+- sbd (maka): 37 entrées, 34 concepts, 36 formes
+- stj (matya): 129 entrées, 78 concepts, 111 formes
+- sym (maya): 175 entrées, 88 concepts, 150 formes
+```
+
+Sorties :
+
+```text
+data/processed/asjp/
+├── asjp_v21_san_normalized.json
+├── asjp_v21_san_normalized.csv
+└── asjp_v21_report.json
+```
+
+Le normaliseur conserve :
+
+```text
+source_form
+source_wordlist
+iso_639_3
+provenance
+licence
+```
+
+Il laisse :
+
+```text
+standard_san = null
+```
+
+jusqu'à validation linguistique.
+
+---
+
+# 13. Comprendre la notation ASJP
+
+Exemples réels :
 
 ```text
 mu
@@ -400,278 +412,338 @@ jE*
 m3
 ```
 
-Il ne faut PAS faire des remplacements automatiques comme :
+Ne jamais faire automatiquement :
 
 ```text
 5 → ?
 E → é
 C → c
-* → rien
+* → suppression
 ```
 
-sans règle linguistique documentée.
+sans règle linguistique documentée et approuvée.
 
-Ces caractères appartiennent potentiellement au système de notation utilisé par la source.
-
-Le pipeline doit donc conserver :
+La forme originale doit rester disponible dans :
 
 ```text
-source_form = valeur ASJP originale
-source_notation = asjp
-standard_san = null
-```
-
----
-
-## 8.4 Étape B — normalisation
-
-Après la collecte :
-
-```bash
-python processors/normalize.py
-```
-
-Résultat attendu :
-
-```text
-Entrées normalisées : 341
-- sbd (maka): 37 entrées, 34 concepts, 36 formes
-- stj (matya): 129 entrées, 78 concepts, 111 formes
-- sym (maya): 175 entrées, 88 concepts, 150 formes
-```
-
-Puis trois fichiers :
-
-```text
-data/processed/asjp/
-├── asjp_v21_san_normalized.json
-├── asjp_v21_san_normalized.csv
-└── asjp_v21_report.json
-```
-
-### JSON normalisé
-
-Exemple conceptuel :
-
-```json
-{
-  "source": "ASJP",
-  "source_version": "v21",
-  "variety": "matya",
-  "iso_639_3": "stj",
-  "source_wordlist": "SAMO_MATYA_2",
-  "concept_source": "*water",
-  "concept_normalized": "water",
-  "concept_fr": null,
-  "source_form": "mu",
-  "source_notation": "asjp",
-  "standard_san": null,
-  "validation_status": "external_unverified"
-}
-```
-
-Pourquoi `concept_fr` est `null` ?
-
-Parce que le pipeline n'invente pas automatiquement une traduction française de contrôle.
-
-Pourquoi `standard_san` est `null` ?
-
-Parce que la forme ASJP n'est pas automatiquement considérée comme orthographe San validée.
-
----
-
-## 8.5 Étape C — lire le rapport qualité
-
-Fichier :
-
-```text
-data/processed/asjp/asjp_v21_report.json
-```
-
-Le rapport vérifie notamment :
-
-- nombre total d'entrées ;
-- nombre d'entrées par variété ;
-- nombre de concepts distincts ;
-- nombre de formes distinctes ;
-- listes lexicales sources ;
-- doublons exacts ;
-- champs manquants ;
-- concepts possédant plusieurs formes ;
-- présence de marqueurs de notation ASJP ;
-- statut d'approbation ML.
-
-Valeur importante attendue :
-
-```json
-"training_approved": false
-```
-
-C'est volontaire.
-
----
-
-## 8.6 Plusieurs formes pour un même concept
-
-Exemple : le concept `one` peut apparaître avec plusieurs formes.
-
-Ce n'est pas automatiquement une erreur.
-
-Raisons possibles :
-
-- plusieurs listes lexicales ;
-- variantes locales ;
-- variantes de transcription ;
-- sources différentes ;
-- contexte différent ;
-- erreur historique dans une source.
-
-Donc :
-
-```text
-NE PAS dédupliquer uniquement sur concept.
-```
-
-On conserve :
-
-```text
-iso_639_3
-source_wordlist
-concept
 source_form
 ```
 
-jusqu'à investigation.
+---
+
+# 14. Étape ASJP 3 — QA des variantes
+
+Commande :
+
+```bash
+python processors/qa_variants.py
+```
+
+Résultat réel :
+
+```text
+68 groupes multi-formes
+```
+
+Par variété :
+
+```text
+sbd : 2
+stj : 35
+sym : 31
+```
+
+Par type :
+
+```text
+cross_wordlist_single_each            : 16
+cross_wordlist_with_internal_variants : 27
+internal_variants_same_wordlist       : 25
+```
+
+Sorties :
+
+```text
+data/processed/asjp/
+├── asjp_v21_variants_review.json
+├── asjp_v21_variants_review.csv
+└── asjp_v21_variants_summary.json
+```
+
+## Interprétation
+
+### `internal_variants_same_wordlist`
+
+Plusieurs formes pour un concept dans une même liste.
+
+### `cross_wordlist_single_each`
+
+Plusieurs listes donnent chacune une forme différente.
+
+### `cross_wordlist_with_internal_variants`
+
+Plusieurs listes divergent et au moins une contient plusieurs formes.
+
+C'est la catégorie la plus prioritaire pour la revue humaine.
+
+Règle :
+
+```text
+plusieurs formes != erreur automatique
+```
 
 ---
 
-# 9. Qu'est-ce qu'un échec ?
+# 15. Étape ASJP 4 — glosses françaises contrôlées
 
-## Échec de collecte
-
-Exemples :
+Configuration :
 
 ```text
-HTTP 404
-HTTP 403
-connexion impossible
-format source changé
-aucune entrée trouvée
+config/concepts_fr.yaml
 ```
 
-Statut :
+Commande :
+
+```bash
+python processors/enrich_concepts.py
+```
+
+Résultat réel obtenu :
 
 ```text
-collection_failed
+Concepts ASJP uniques : 92
+Concepts avec glose FR : 92
+Concepts sans glose FR : 0
+Entrées enrichies : 341 / 341
 ```
 
-Action : ne pas créer artificiellement de données pour compenser.
+Sorties :
 
-## Échec de structure
+```text
+data/processed/asjp/
+├── asjp_v21_san_enriched.json
+├── asjp_v21_san_enriched.csv
+└── asjp_v21_concepts_fr_report.json
+```
 
 Exemple :
 
 ```text
-le JSON ne contient plus "entries"
+concept_normalized = water
+concept_fr         = eau
+source_form        = mu
+standard_san       = null
 ```
 
-Action : vérifier si la source a changé de format.
-
-## Échec de licence
-
-Exemple : une ressource techniquement téléchargeable mais sans droit clair de réutilisation.
-
-Action :
+Cela signifie :
 
 ```text
-rights_review_required
+water → eau
 ```
 
-ou :
+est une glose de concept contrôlée par le projet.
+
+Cela ne signifie PAS encore :
 
 ```text
-blocked
+eau → mu
 ```
 
-Le fait qu'un fichier soit accessible publiquement ne signifie pas automatiquement qu'il peut être utilisé pour entraîner un modèle.
-
-## Échec linguistique
-
-Exemple : une entrée est techniquement correcte mais un validateur San indique qu'elle est incorrecte pour la variété concernée.
-
-Action : conserver la provenance et marquer la donnée comme rejetée ou nécessitant révision. Ne jamais masquer silencieusement le problème.
+est une traduction San validée.
 
 ---
 
-# 10. Qu'est-ce qui est considéré comme validé ?
+# 16. Étape ASJP 5 — préparer la revue humaine
 
-Nous avons plusieurs niveaux de validation.
+Commande :
 
-## Validation 1 — technique
+```bash
+python processors/build_review_sheet.py
+```
 
-Questions :
+Objectif : regrouper les 341 lignes par :
 
-- le téléchargement fonctionne-t-il ?
-- le fichier est-il lisible ?
-- les champs attendus existent-ils ?
-- les codes ISO attendus sont-ils présents ?
-- le nombre d'entrées est-il cohérent ?
+```text
+variété + concept
+```
 
-ASJP : **oui pour la collecte actuelle**.
+Les statistiques actuelles donnent un résultat attendu de :
 
-## Validation 2 — provenance et droits
+```text
+sbd : 34 éléments
+stj : 78 éléments
+sym : 88 éléments
+Total : 200 éléments de revue
+```
 
-Questions :
+Parmi eux :
 
-- source connue ?
-- URL enregistrée ?
-- version connue ?
-- licence connue ?
-- réutilisation compatible avec notre objectif ?
+```text
+68 multi-formes
+132 forme unique observée
+```
 
-ASJP : autorisé pour ingestion selon la configuration actuelle.
+Sorties attendues :
 
-## Validation 3 — qualité structurelle
+```text
+data/processed/asjp/review/
+├── asjp_v21_human_review.json
+├── asjp_v21_human_review.csv
+└── asjp_v21_human_review_summary.json
+```
 
-Questions :
+## Champs importants pour le validateur
 
-- pas de mélange silencieux Maka / Matya / Maya ?
-- source_wordlist conservé ?
-- doublons analysables ?
-- valeurs manquantes identifiables ?
+Le CSV rassemble :
 
-Cette étape est matérialisée par le normaliseur et le rapport QA.
+```text
+iso_639_3
+variety
+concept_en
+concept_fr
+source_wordlists
+source_forms
+variant_classification
+review_priority
+```
 
-## Validation 4 — linguistique
+et laisse à compléter :
 
-Questions :
+```text
+decision_status
+selected_source_form
+standard_san
+reviewer_notes
+linguistic_status
+```
 
-- le mot correspond-il réellement au concept ?
-- la variété est-elle correcte ?
-- l'orthographe est-elle acceptable ?
-- la forme est-elle naturelle ?
+Aucun de ces champs de décision n'est rempli automatiquement.
 
-Cette validation ne peut pas être déduite uniquement par le script.
+## Priorités
 
-## Validation 5 — ML
+```text
+high
+    cross_wordlist_with_internal_variants
 
-Questions :
+medium
+    cross_wordlist_single_each
+    internal_variants_same_wordlist
 
-- données autorisées pour training ?
-- qualité suffisante ?
-- source trop biaisée ?
-- split correct ?
-- aucune fuite train/test ?
+normal
+    une seule forme observée
+```
 
-Une source peut donc être techniquement excellente mais toujours non autorisée pour l'entraînement.
+Même une ligne `normal` doit être validée : `normal` signifie seulement qu'ASJP ne présente qu'une forme dans notre extraction.
 
 ---
 
-# 11. Procédure pour ajouter une nouvelle source
+# 17. Comment effectuer la revue humaine
 
-Chaque nouvelle source doit suivre exactement ce processus.
+Pour chaque élément :
 
-### Étape 1 — découverte
+1. vérifier que le concept français est compris ;
+2. vérifier que la variété correspond au locuteur / validateur ;
+3. examiner les formes ASJP proposées ;
+4. décider si une forme source est acceptable ;
+5. si nécessaire, proposer une orthographe San correcte ;
+6. ajouter une note lorsqu'une décision est ambiguë ;
+7. ne jamais valider une variété différente par simple ressemblance.
+
+Décisions possibles de travail :
+
+```text
+confirm_source_form
+enter_standard_form
+keep_multiple
+needs_second_review
+reject
+```
+
+Le workflow final de validation linguistique sera défini avant import de ces décisions dans un dataset validé.
+
+---
+
+# 18. Ce qui constitue un échec
+
+## Collecte
+
+```text
+HTTP 403 / 404
+connexion impossible
+aucune entrée trouvée
+structure distante modifiée
+```
+
+→ `collection_failed`
+
+## Licence
+
+Ressource accessible mais droits non clairs.
+
+→ `rights_review_required` ou `blocked`
+
+## Normalisation
+
+```text
+JSON invalide
+entries absent
+code ISO non supporté
+```
+
+→ ne pas continuer.
+
+## QA
+
+Des variantes nombreuses ne sont pas un échec en elles-mêmes.
+
+L'échec serait de les supprimer ou fusionner sans justification.
+
+## Linguistique
+
+Une forme peut être techniquement bien importée mais incorrecte pour une variété.
+
+→ conserver la provenance et marquer la décision humaine.
+
+---
+
+# 19. Ordre recommandé pour régénérer ASJP
+
+Après modification du code :
+
+```bash
+pytest tests
+python collectors/asjp.py
+python processors/normalize.py
+python processors/qa_variants.py
+python processors/enrich_concepts.py
+python processors/build_review_sheet.py
+```
+
+Chaque commande dépend de la précédente.
+
+Pipeline fichiers :
+
+```text
+ASJP distant
+    ↓
+data/raw/asjp/asjp_v21_san_wordlists.json
+    ↓
+asjp_v21_san_normalized.json
+    ↓
+asjp_v21_variants_review.json
+    ↓
+asjp_v21_san_enriched.json
+    ↓
+review/asjp_v21_human_review.csv
+```
+
+---
+
+# 20. Ajouter une nouvelle source
+
+Pour Hugging Face, Webonary ou toute autre source :
+
+## A. Découverte
 
 Documenter :
 
@@ -679,36 +751,34 @@ Documenter :
 nom
 URL
 organisation
-langues / variétés
+langues
 format
-volume approximatif
+volume
 ```
 
-### Étape 2 — droits
+## B. Droits
 
 Vérifier :
 
 ```text
 licence
 réutilisation
+redistribution
 modification
-publication
-usage commercial éventuel
+usage commercial
 usage ML
-attribution requise
+attribution
 ```
 
-### Étape 3 — configuration
+## C. Configuration
 
-Ajouter la source dans :
+Ajouter dans :
 
 ```text
 config/sources.yaml
 ```
 
-Ne pas l'activer tant que les droits ne sont pas suffisamment clairs.
-
-### Étape 4 — collector
+## D. Collector
 
 Créer :
 
@@ -716,92 +786,86 @@ Créer :
 collectors/<source>.py
 ```
 
-Il doit écrire sous :
+## E. RAW
+
+Écrire sous :
 
 ```text
 data/raw/<source>/
 ```
 
-### Étape 5 — tests
+## F. Normalisation
 
-Ajouter des tests sans dépendre d'Internet autant que possible.
+Préserver la source et la notation originale.
 
-### Étape 6 — première collecte réelle
+## G. QA
 
 Mesurer :
 
 ```text
-nombre d'entrées
-variétés trouvées
-formats
+volume
+variétés
 champs manquants
-erreurs
+doublons
+variantes
+anomalies
 ```
 
-### Étape 7 — normalisation
+## H. Revue humaine / décision
 
-Transformer vers un schéma commun en préservant la valeur source.
-
-### Étape 8 — rapport qualité
-
-Produire les statistiques et anomalies.
-
-### Étape 9 — décision
-
-Choisir :
+Choisir explicitement :
 
 ```text
-conserver comme référence
-soumettre à validation humaine
-utiliser pour enrichissement
-utiliser pour ML
-rejeter
-bloquer
+reference_only
+human_review
+validated_dataset
+rejected
+blocked
+training_approved
 ```
 
 ---
 
-# 12. Ce qu'il ne faut jamais faire
+# 21. Ce qu'il ne faut jamais faire
 
 Ne jamais :
 
-- mélanger automatiquement `sbd`, `stj` et `sym` ;
-- supprimer une forme seulement parce qu'une autre ressemble davantage à ce que l'on attend ;
-- convertir une notation phonétique en orthographe standard sans règle validée ;
-- inventer une traduction manquante et la marquer comme source originale ;
-- effacer la provenance ;
-- remplacer un fichier RAW manuellement ;
-- entraîner un modèle avec une source dont les droits ne sont pas clairs ;
-- considérer un dataset Internet comme vérité linguistique absolue.
+- mélanger `sbd`, `stj`, `sym` automatiquement ;
+- convertir la notation ASJP arbitrairement ;
+- supprimer une variante uniquement parce qu'elle paraît étrange ;
+- présenter `source_form` comme `standard_san` sans validation ;
+- inventer une traduction manquante en prétendant qu'elle vient de la source ;
+- perdre la provenance ;
+- commiter des RAW non destinés à Git ;
+- utiliser une ressource aux droits incertains pour le ML ;
+- prendre une liste Internet comme vérité linguistique absolue ;
+- activer `training_approved` par défaut.
 
 ---
 
-# 13. Tableau d'état actuel
+# 22. État réel du projet — 11 septembre 2026
 
-| Source / étape | Statut | Résultat |
+| Étape | Statut | Résultat |
 |---|---|---|
-| ASJP — découverte | `done` | source identifiée |
-| ASJP — licence | `approved_for_ingestion` | CC-BY-4.0 enregistrée |
-| ASJP — collector | `done` | `collectors/asjp.py` |
-| ASJP — collecte réelle | `collection_success` | 341 entrées |
-| ASJP — séparation variétés | `qa_passed` | sbd / stj / sym séparés |
-| ASJP — doublons exacts | `qa_passed` | aucun doublon exact détecté dans l'extraction analysée |
-| ASJP — normaliseur | `implemented` | `processors/normalize.py` |
-| ASJP — exécution normaliseur locale | `to_run` | lancer après `git pull` |
-| ASJP — validation linguistique | `not_started` | nécessaire avant normalisation orthographique |
-| ASJP — training | `not_approved` | ne pas utiliser comme corpus d'entraînement validé pour l'instant |
-| Hugging Face | `rights_review_required` | analyser dataset par dataset |
-| Webonary | `blocked_for_now` | droits / accès à vérifier |
+| ASJP découverte | ✅ | source identifiée |
+| ASJP droits | ✅ ingestion | CC-BY-4.0 enregistrée |
+| ASJP collector | ✅ | fonctionnel |
+| ASJP collecte réelle | ✅ | 341 entrées |
+| Séparation variétés | ✅ | sbd / stj / sym |
+| Normalisation | ✅ | 341 / 341 |
+| QA variantes | ✅ | 68 groupes |
+| Glosses FR | ✅ | 92 / 92 concepts, 341 / 341 entrées |
+| Préparation revue humaine | ⏳ | script prêt, exécution locale suivante |
+| Validation orthographique San | ⏳ | non commencée |
+| Validation humaine | ⏳ | non commencée |
+| Dataset validé ASJP | ❌ | pas encore |
+| Training ASJP | ❌ | non approuvé |
+| Hugging Face | ⏳ | revue ressource par ressource |
+| Webonary | ⛔ | accès / droits à clarifier |
 
 ---
 
-# 14. Prochaine étape immédiate
-
-Après récupération du dernier code :
-
-```bash
-git pull origin feat/data-ingestion
-```
+# 23. Prochaine action
 
 Depuis :
 
@@ -809,46 +873,13 @@ Depuis :
 ~/Bureau/langue-san/tools/data_ingestion
 ```
 
-activer le venv :
-
-```bash
-source .venv/bin/activate
-```
-
-lancer les tests :
+Après avoir récupéré les derniers commits :
 
 ```bash
 pytest tests
+python processors/build_review_sheet.py
 ```
 
-puis :
+Résultat attendu : environ **200 éléments de revue humaine**.
 
-```bash
-python processors/normalize.py
-```
-
-Ensuite inspecter :
-
-```text
-data/processed/asjp/asjp_v21_report.json
-```
-
-La prochaine décision sera basée sur ce rapport, pas uniquement sur le fait que le script s'est exécuté.
-
----
-
-# 15. Règle finale à retenir
-
-Le pipeline Langue SAN suit cette règle :
-
-```text
-Téléchargé
-    ≠
-Correct linguistiquement
-    ≠
-Validé
-    ≠
-Autorisé pour entraînement
-```
-
-Chaque passage d'un niveau au suivant doit être explicite, documenté et traçable.
+Une fois cette étape confirmée, la phase technique ASJP de préparation sera quasiment terminée. La prochaine grande phase ne sera plus du scraping : ce sera l'organisation de la **validation linguistique humaine**.
