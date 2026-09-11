@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Contributor;
 
+use App\Enums\PromptType;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Contributor\SkipPromptRequest;
 use App\Http\Requests\Contributor\SubmitContributionRequest;
@@ -53,7 +54,11 @@ class ContributorSessionController extends Controller
             return $this->withGuestCookie($response, $identity->guestToken, $identity->shouldSetCookie);
         }
 
-        $response = response()->view('contributor.session', [
+        $view = $current->prompt->type === PromptType::NARRATIVE
+            ? 'contributor.natural-session'
+            : 'contributor.session';
+
+        $response = response()->view($view, [
             'profile' => $identity->profile,
             'session' => $session,
             'sessionPrompt' => $current,
