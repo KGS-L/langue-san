@@ -25,7 +25,7 @@ class CollectionSessionService
 
         if ($prompts->isEmpty()) {
             throw ValidationException::withMessages([
-                'category_id' => 'Aucun nouveau prompt n’est disponible pour ce thème. Choisissez un autre thème.',
+                'category_id' => 'Aucune nouvelle question n’est disponible pour ce thème. Choisissez un autre thème.',
             ]);
         }
 
@@ -43,6 +43,22 @@ class CollectionSessionService
 
             return $session->load('category');
         });
+    }
+
+    public function activeForContributor(ContributorProfile $profile): ?CollectionSession
+    {
+        $session = $this->sessions->findOpenForContributor($profile->id);
+
+        if (! $session) {
+            return null;
+        }
+
+        if ($this->nextPrompt($session) === null) {
+            $this->completeIfFinished($session);
+            return null;
+        }
+
+        return $session;
     }
 
     public function forContributorOrFail(int $sessionId, ContributorProfile $profile): CollectionSession
