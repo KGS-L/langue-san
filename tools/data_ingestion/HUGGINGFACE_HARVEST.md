@@ -65,9 +65,34 @@ ChiKhaPo    → eng_stj + stj_eng
 
 Ces récoltes restent des données externes non validées. Elles sont stockées sous `data/raw/`, ignoré par Git.
 
+## Sonde avant récolte des sous-ensembles texte sbd
+
+Comme `/size` n'a pas fourni le volume de FineWeb2, commencer par :
+
+```bash
+python collectors/huggingface_text_subsets.py --probe-only
+```
+
+Cette commande récupère seulement **une ligne par split** et affiche le `num_rows_total` renvoyé par Dataset Viewer. Elle ne télécharge pas le corpus complet.
+
+Exemple de sortie attendue :
+
+```text
+fineweb2/sbd_Latn/train: total=...
+fineweb2/sbd_Latn/test: total=...
+finepdfs/sbd_Latn/train: total=7
+glotcc/sbd-Latn/train: total=2
+```
+
+Le rapport est écrit dans :
+
+```text
+data/raw/huggingface/huggingface_text_probe_summary.json
+```
+
 ## Récolte des sous-ensembles texte sbd
 
-Commande :
+Après vérification des volumes :
 
 ```bash
 python collectors/huggingface_text_subsets.py
@@ -110,7 +135,7 @@ python collectors/huggingface_text_subsets.py --target fineweb2_sbd
 
 ## Récolte lexicale ChiKhaPo stj ↔ anglais
 
-Avant téléchargement, on peut vérifier les chemins ciblés :
+Avant téléchargement, vérifier les chemins ciblés :
 
 ```bash
 python collectors/huggingface_chikhapo.py --list-only
