@@ -8,6 +8,7 @@
     <link rel="icon" type="image/svg+xml" href="{{ asset('assets/img/langue-san-logo.svg') }}">
     <link href="{{ asset('assets/vendor/bootstrap/css/bootstrap.min.css') }}" rel="stylesheet">
     <link href="{{ asset('assets/vendor/bootstrap-icons/bootstrap-icons.css') }}" rel="stylesheet">
+    <link href="{{ asset('assets/css/public-theme.css') }}" rel="stylesheet">
     <style>
         body { background: #f8f9fa; color: #273246; }
         .legal-nav { background: #fff; border-bottom: 1px solid #e8ebef; }
