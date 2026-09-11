@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Contributor\ContributorContextController;
 use App\Http\Controllers\Contributor\ContributorDashboardController;
+use App\Http\Controllers\Contributor\ContributorHistoryController;
 use App\Http\Controllers\Contributor\ContributorHomeController;
 use App\Http\Controllers\Contributor\ContributorProfileController;
 use App\Http\Controllers\Contributor\ContributorSessionController;
@@ -28,6 +29,7 @@ Route::middleware(['auth', 'role:contributor'])->group(function () {
 
     Route::middleware('profile.complete')->group(function () {
         Route::get('/mon-espace', ContributorDashboardController::class)->name('contributor.dashboard');
+        Route::get('/mes-contributions', ContributorHistoryController::class)->name('contributor.history');
         Route::post('/rejoindre-le-projet', [ProjectApplicationController::class, 'store'])->name('project.join.store');
     });
 });
