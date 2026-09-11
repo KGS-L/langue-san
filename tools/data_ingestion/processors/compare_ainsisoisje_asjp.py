@@ -51,6 +51,13 @@ def _text_key(value: Any) -> str:
     return " ".join(text.split())
 
 
+def _exact_form_key(value: Any) -> str:
+    """Normalisation minimale pour une égalité textuelle stricte."""
+
+    text = unicodedata.normalize("NFC", str(value or "")).casefold()
+    return " ".join(text.replace("\xa0", " ").split())
+
+
 def _form_key(value: Any) -> str:
     # Clé uniquement destinée à la similarité technique. La valeur originale
     # reste toujours conservée et n'est jamais réécrite.
@@ -120,7 +127,6 @@ def _match_concept(
     rows: list[dict[str, Any]] = []
     for key in _concept_variants(label):
         rows.extend(concept_index.get(key, []))
-    # déduplication par id ASJP
     unique = {str(row.get("id") or id(row)): row for row in rows}
     return "fuzzy_french_gloss_candidate", label, score, list(unique.values())
 
@@ -171,12 +177,12 @@ def compare_entry(
     top = candidates[:5]
     best = top[0]
 
-    exact_normalized = any(
-        _form_key(samo) == _form_key(item["source_form"])
+    exact_textual = any(
+        _exact_form_key(samo) == _exact_form_key(item["source_form"])
         for item in candidates
         if item.get("source_form")
     )
-    if exact_normalized:
+    if exact_textual:
         classification = "EXACT_FORM_MATCH"
     elif best["form_similarity"] >= 0.80:
         classification = "FORM_SIMILARITY_CANDIDATE"
