@@ -2,89 +2,252 @@
 
 > Initiative open source pour documenter, numériser et développer des ressources Français ↔ San au Burkina Faso.
 
-**Langue SAN** est un projet communautaire et open source. Son objectif est de construire progressivement des ressources linguistiques fiables pour les variétés du San, puis de les utiliser pour créer des outils numériques utiles : dictionnaire, traduction, audio, apprentissage et, à terme, modèles de traitement automatique du langage.
+**Langue SAN** est un projet communautaire et open source dont l'objectif est de constituer progressivement des ressources linguistiques fiables pour les variétés du San, puis de les utiliser pour créer des outils numériques utiles : corpus bilingues, audio, traduction, apprentissage et, à terme, modèles de traitement automatique du langage.
 
-Le projet est encore au démarrage. Toute personne peut contribuer : locuteurs San, linguistes, enseignants, développeurs, designers, data/ML engineers, associations et personnes intéressées par la préservation numérique des langues nationales.
+Le projet ne cherche pas à inventer une nouvelle langue ni à normaliser arbitrairement les usages. Il vise d'abord à **collecter, documenter, transcrire, structurer, valider et préserver** les formes réellement utilisées par les locuteurs.
 
-## Vision
+## État actuel
 
-Nous voulons rendre les langues San mieux représentées dans le numérique, tout en respectant les locuteurs, les variantes linguistiques, les règles d'écriture, la provenance des données et le consentement des contributeurs.
+Le premier collecteur web est maintenant opérationnel dans `apps/collector/`.
 
-Le projet n'a pas pour objectif d'inventer ou de normaliser arbitrairement la langue. Il cherche d'abord à **collecter, documenter, structurer, faire valider et préserver** les formes réellement utilisées par les communautés.
+Il couvre notamment :
 
-## Objectifs
+- contribution avec ou sans compte ;
+- connexion contributeur par Google ou code OTP reçu par email ;
+- profil linguistique et localité déclarée ;
+- collecte Français → San par mots et phrases ;
+- collecte de parole naturelle en San ;
+- enregistrement audio privé ;
+- rattachement des contributions anonymes au compte après connexion ;
+- espace contributeur et historique ;
+- communauté publique sur consentement explicite ;
+- candidature pour rejoindre le projet ;
+- back-office administrateur / modérateur / transcripteur / validateur ;
+- transcription ;
+- segmentation des récits naturels ;
+- double validation linguistique ;
+- exports dataset versionnés ;
+- séparation déterministe train / validation / test ;
+- tests automatisés et CI GitHub Actions.
 
-La progression prévue est simple :
+Le prochain objectif n'est plus seulement de coder : il est de faire fonctionner le système avec un **petit pilote réel**, des locuteurs et plusieurs validateurs compétents.
 
-1. construire une base lexicale Français ↔ San ;
-2. collecter des phrases courtes et naturelles ;
-3. collecter des enregistrements audio lorsque possible ;
-4. faire transcrire et valider les contributions ;
-5. construire un corpus bilingue propre ;
-6. tester des modèles de traduction sur Google Colab ;
-7. publier progressivement des outils de traduction et d'apprentissage.
+## Deux formes complémentaires de collecte
 
-### Premier jalon
+Le projet utilise deux pipelines afin de ne pas construire un corpus uniquement influencé par la structure du français.
 
-- 100 concepts validés ;
-- puis 500 concepts/mots courants ;
-- premières phrases validées ;
-- plusieurs contributions par élément ;
-- audio lorsque possible ;
-- identification claire de la variété linguistique ;
-- aucune donnée brute sensible publiée automatiquement.
+### 1. Français → San : mots, expressions et phrases
 
-Les premiers thèmes de collecte incluent : salutations, présentation/identité, famille, nombres, temps/jours, nourriture, maison, marché, déplacements, école et travail.
+Le collecteur possède actuellement **500 prompts de traduction**, organisés en **25 thèmes**.
+
+Chaque thème contient :
+
+- 14 mots ou expressions ;
+- 6 phrases ;
+- soit 20 prompts par thème.
+
+Cela représente au total :
+
+```text
+350 mots / expressions
+150 phrases
+----------------------
+500 prompts Français → San
+```
+
+Une session standard propose environ **10 éléments**, généralement **7 mots + 3 phrases**.
+
+La sélection favorise les prompts les moins couverts et évite autant que possible de redemander au même contributeur un prompt auquel il a déjà répondu. La cible initiale est de disposer de plusieurs contributions indépendantes par prompt, avec une valeur de référence de **3 contributions par élément**.
+
+Workflow :
+
+```text
+Prompt français
+      ↓
+Réponse San texte et/ou audio
+      ↓
+Transcription de travail
+      ↓
+Validation linguistique 1
+      ↓
+Validation linguistique 2
+      ↓
+Donnée approuvée
+      ↓
+Corpus Français ↔ San
+```
+
+### 2. San → San : parole naturelle
+
+Un second mode de collecte demande au locuteur de **parler librement en San**, sans traduire une phrase française mot à mot.
+
+Le catalogue contient actuellement **40 sujets de parole naturelle**, par exemple autour de la famille, du mariage, des traditions, de l'agriculture, des marchés, des récits d'enfance, des proverbes, des contes, de la vie communautaire et de la transmission de la langue.
+
+Exemple :
+
+> « Racontez en San comment se déroule traditionnellement un mariage dans votre village ou votre communauté. »
+
+Le but est de récupérer des structures spontanées et naturelles :
+
+```text
+Sujet de discussion
+      ↓
+Audio San naturel
+      ↓
+Transcription San intégrale
+      ↓
+Segmentation en phrases
+      ↓
+Traduction française de chaque segment
+      ↓
+Validation linguistique
+      ↓
+Corpus naturel San ↔ Français
+```
+
+La consigne française reste une **métadonnée d'élicitation**. Elle ne doit jamais être confondue avec la traduction du récit.
+
+Tous les segments issus d'un même récit conservent le **même `source_id` et le même split** afin d'éviter les fuites entre train, validation et test.
 
 ## Variétés du San
 
-Le projet distingue les variétés au lieu de les mélanger. Les catégories de travail initiales sont notamment :
+Le projet distingue les variétés au lieu de les mélanger.
 
-- **San Maka / San du Sud** (`sbd`) ;
-- **San Matya** (`sym`) ;
-- **San Maya** (`stj`).
+Les références de travail actuelles sont :
 
-Une localité ne doit pas être utilisée seule pour déduire automatiquement une variété. Le système pourra conserver à la fois la variété déclarée par le contributeur et celle confirmée par un validateur.
+- **San Maka / San du Sud** — ISO 639-3 `sbd` ;
+- **San Matya** — ISO 639-3 `stj` ;
+- **San Maya** — ISO 639-3 `sym`.
+
+Le formulaire public ne demande pas au contributeur de connaître les termes techniques « Maka », « Matya » ou « Maya ». Il demande plutôt **où la personne a principalement appris ou parlé le San**.
+
+Le référentiel interne peut conserver une suggestion documentée :
+
+- Toma → suggestion `San Maka / sbd` ;
+- Tougan → suggestion `San Matya / stj`.
+
+Cette suggestion sert uniquement d'aide au validateur. **La localité ne valide jamais automatiquement la variété linguistique.** Le validateur peut confirmer, modifier ou laisser la variété indéterminée.
 
 Voir [`docs/DIALECTS.md`](docs/DIALECTS.md).
 
-## Comment la collecte fonctionnera
+## Validation et qualité du corpus
 
-Une session de contribution pourra proposer environ 10 éléments, par exemple **7 mots + 3 phrases**. Pour chaque élément, le contributeur pourra :
-
-- écrire l'équivalent en San ;
-- enregistrer sa réponse en audio ;
-- ou fournir les deux.
-
-Un exemple de cycle :
+Le cycle principal des contributions est :
 
 ```text
-Contribution
-    ↓
-En attente
-    ↓
-Transcription si nécessaire
-    ↓
-Validation linguistique
-    ↓
-Deuxième validation lorsque possible
-    ↓
-Donnée approuvée
-    ↓
-Dataset exploitable
+pending
+  ↓
+transcribed
+  ↓
+validated_once
+  ↓
+approved
 ```
 
-Une contribution non validée ou dont la variété reste inconnue peut être conservée pour révision, mais ne doit pas être intégrée automatiquement au corpus d'entraînement.
+En cas de désaccord entre validateurs :
+
+```text
+validated_twice → à départager
+```
+
+Une contribution peut aussi devenir :
+
+```text
+rejected
+```
+
+Une donnée n'entre pas automatiquement dans un dataset d'entraînement simplement parce qu'elle a été collectée. Elle doit respecter les règles de consentement, de validation et de variété linguistique du corpus concerné.
+
+## Utilisateurs et rôles
+
+### Public / contributeurs
+
+Un contributeur peut commencer sans compte. Il peut ensuite se connecter par :
+
+- Google OAuth ;
+- email + code OTP à 8 chiffres.
+
+Le même email Google / OTP correspond au même compte.
+
+### Back-office
+
+Les rôles système actuels sont :
+
+- `admin` ;
+- `moderator` ;
+- `transcriber` ;
+- `validator` ;
+- `contributor`.
+
+Les professions ou domaines d'expertise — linguiste, enseignant, développeur, chercheur, ML, communication, etc. — sont séparés des rôles d'autorisation.
+
+## Exports dataset
+
+Deux exports sont séparés afin de préserver la nature des données.
+
+### Corpus élicité Français → San
+
+L'export contient notamment :
+
+- version du dataset ;
+- `source_id` pseudonymisé ;
+- split `train`, `validation` ou `test` ;
+- direction `fr-san` ;
+- code du prompt ;
+- variété validée et code ISO ;
+- texte français ;
+- contexte ;
+- texte San validé ;
+- catégorie ;
+- localité ;
+- nombre de validations ;
+- dates de soumission et validation.
+
+### Corpus naturel San → Français
+
+Chaque ligne correspond à un segment issu d'un récit naturel validé et contient notamment :
+
+- `source_id` du récit parent ;
+- position du segment ;
+- direction `san-fr` ;
+- consigne d'élicitation ;
+- variété validée ;
+- segment San ;
+- traduction française ;
+- catégorie et localité ;
+- dates de soumission et validation.
+
+Le projet doit conserver le même split pour toutes les données dérivées d'une même source.
+
+## Gouvernance des données
+
+Le fait que le **code** soit open source ne signifie pas que les **données** collectées sont automatiquement publiques.
+
+Les enregistrements audio, traductions, métadonnées et profils sont soumis à des règles spécifiques concernant :
+
+- consentement ;
+- minimisation des données personnelles ;
+- pseudonymisation ;
+- provenance ;
+- validation ;
+- retrait et correction ;
+- entraînement de modèles ;
+- publication éventuelle d'un dataset ;
+- licence du dataset.
+
+Les audios bruts et données privées ne doivent jamais être ajoutés directement à GitHub.
+
+Voir [`docs/DATA_GOVERNANCE.md`](docs/DATA_GOVERNANCE.md).
 
 ## Architecture du dépôt
 
 ```text
 langue-san/
 ├── apps/
-│   └── collector/       # futur site Laravel de collecte + dashboard admin
+│   └── collector/          # Laravel : collecte, comptes, modération, exports
 ├── data/
-│   ├── schema/          # schémas et exemples publics
-│   └── samples/         # données fictives ou explicitement publiables
+│   ├── schema/             # schémas et exemples publics
+│   └── samples/            # données fictives ou explicitement publiables
 ├── docs/
 │   ├── VISION.md
 │   ├── ROADMAP.md
@@ -92,70 +255,120 @@ langue-san/
 │   ├── DIALECTS.md
 │   └── DATA_SCHEMA.md
 ├── ml/
-│   ├── notebooks/       # futurs notebooks Google Colab
-│   └── src/             # preprocessing, entraînement, évaluation
+│   ├── notebooks/          # futurs notebooks Google Colab
+│   └── src/                # preprocessing, entraînement, évaluation
+├── CAHIER_DES_CHARGES.md
 ├── CONTRIBUTING.md
 ├── CODE_OF_CONDUCT.md
 └── LICENSE
 ```
 
-Le projet reste volontairement dans un **monorepo** au démarrage. Si certaines briques deviennent autonomes plus tard, elles pourront être séparées dans d'autres dépôts.
+Le projet reste volontairement dans un **monorepo** au démarrage.
 
-## Technologies prévues
+## Stack actuelle
 
-La première application de collecte sera développée avec **Laravel**, avec un dashboard administrateur pour la transcription, la validation, la gestion des contributions et les exports.
+### Collecteur
 
-La partie Machine Learning sera ajoutée plus tard avec principalement :
+- PHP 8.3+ ;
+- Laravel 13 ;
+- Blade ;
+- MySQL en développement principal ;
+- Bootstrap / NiceAdmin pour le back-office ;
+- Spatie Laravel Permission pour les rôles et permissions ;
+- Fortify pour l'authentification staff ;
+- Google OAuth + OTP email pour les contributeurs ;
+- stockage privé Laravel pour les audios ;
+- Resend prévu pour les emails transactionnels ;
+- PHPUnit + GitHub Actions pour les tests.
+
+### Machine Learning — phase suivante
+
+La partie ML sera ajoutée après constitution d'un corpus suffisamment validé. Elle utilisera principalement :
 
 - Python ;
 - PyTorch ;
 - Hugging Face Transformers / Datasets ;
 - Google Colab pour les premières expérimentations ;
-- métriques automatiques + validation humaine.
+- baseline dictionnaire / mémoire de traduction ;
+- modèles multilingues ou byte-level à évaluer selon la qualité du corpus ;
+- métriques automatiques complétées par une évaluation humaine.
 
-## Données et audio
+## Installation du collecteur
 
-Le fait que le **code** soit open source ne signifie pas que toutes les **données** collectées sont automatiquement publiques.
+Depuis `apps/collector/` :
 
-Les enregistrements audio, traductions, métadonnées et éventuelles données de contributeurs sont soumis à des règles spécifiques concernant :
+```bash
+composer install
+cp .env.example .env
+php artisan key:generate
+php artisan migrate --seed
+php artisan serve
+```
 
-- consentement ;
-- anonymisation ;
-- provenance ;
-- validation ;
-- réutilisation ;
-- entraînement de modèles ;
-- publication éventuelle d'un dataset.
+En environnement non `production`, le seeding peut également créer des comptes de démonstration afin de tester les interfaces. Ces comptes ne doivent pas être utilisés comme données linguistiques réelles.
 
-Les audios bruts et données privées ne doivent jamais être ajoutés directement à GitHub.
+Pour lancer les tests :
 
-Voir [`docs/DATA_GOVERNANCE.md`](docs/DATA_GOVERNANCE.md).
-
-## Contribuer
-
-Tout le monde peut participer.
-
-- **Locuteurs San** : traductions, audio, variantes, validation.
-- **Linguistes / enseignants** : orthographe, grammaire, transcription, méthodologie.
-- **Développeurs** : Laravel, UI/UX, API, audio, tests, DevOps.
-- **Data / ML** : nettoyage, préparation du corpus, entraînement, évaluation.
-- **Design / produit** : expérience de contribution, accessibilité, documentation.
-
-Consultez [`CONTRIBUTING.md`](CONTRIBUTING.md) avant de commencer.
+```bash
+php artisan test
+```
 
 ## Roadmap
 
 La feuille de route détaillée est disponible dans [`docs/ROADMAP.md`](docs/ROADMAP.md).
 
-En résumé :
+Le chemin général est maintenant :
 
 ```text
-Collecte → Validation → Dataset → Google Colab → Baseline ML → Traduction → Apprentissage
+Collecte ciblée + parole naturelle
+            ↓
+Transcription + segmentation
+            ↓
+Double validation humaine
+            ↓
+Corpus versionné
+            ↓
+Baseline ML sur Google Colab
+            ↓
+Traducteur expérimental
+            ↓
+Traduction bidirectionnelle
+            ↓
+Application d'apprentissage
 ```
+
+Le cahier des charges consolidé est disponible dans [`CAHIER_DES_CHARGES.md`](CAHIER_DES_CHARGES.md).
+
+## Prochains jalons
+
+Avant d'entraîner un modèle plus ambitieux, le projet doit notamment :
+
+- faire relire les 500 prompts français ;
+- lancer un pilote avec de vrais locuteurs ;
+- constituer un petit groupe de validateurs ;
+- confirmer la stratégie de variété pilote ;
+- tester l'enregistrement sur téléphones et réseaux instables ;
+- finaliser la procédure de retrait / correction des données ;
+- configurer Resend et Google OAuth en production ;
+- mettre en place les sauvegardes privées ;
+- produire une première version de corpus réellement validé.
+
+## Contribuer
+
+Les contributions sont ouvertes à différents profils :
+
+- **locuteurs San** : voix, vocabulaire, récits, variantes ;
+- **linguistes / enseignants** : orthographe, transcription, grammaire, validation ;
+- **développeurs** : Laravel, UI/UX, API, audio, tests, DevOps ;
+- **data / ML** : préparation du corpus, évaluation, entraînement ;
+- **chercheurs** : méthodologie, ressources, documentation ;
+- **associations / communautés** : mobilisation et gouvernance.
+
+Consultez [`CONTRIBUTING.md`](CONTRIBUTING.md) avant de commencer.
 
 ## Statut
 
-🚧 **Projet expérimental — phase de démarrage.**
+🚧 **Projet expérimental — collecteur MVP avancé, préparation du pilote terrain.**
 
 Les traductions, transcriptions et futurs modèles ne doivent pas être considérés comme des références officielles tant qu'ils n'ont pas été suffisamment validés par des locuteurs et spécialistes compétents.
 
@@ -164,16 +377,3 @@ Les traductions, transcriptions et futurs modèles ne doivent pas être considé
 Le code source de ce dépôt est publié sous **Apache License 2.0**.
 
 Les datasets, enregistrements audio et ressources tierces peuvent être soumis à des licences ou autorisations différentes. La licence du code ne s'applique pas automatiquement aux données collectées.
-
-## Rejoindre le projet
-
-Vous pouvez commencer par :
-
-- ouvrir une issue ;
-- proposer une amélioration ;
-- corriger la documentation ;
-- contribuer au futur site Laravel ;
-- aider à définir les règles de collecte et de validation ;
-- aider comme locuteur ou validateur linguistique.
-
-**Chaque contribution utile compte.**
