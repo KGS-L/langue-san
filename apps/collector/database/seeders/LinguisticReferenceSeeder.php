@@ -16,25 +16,25 @@ class LinguisticReferenceSeeder extends Seeder
                 ['iso_code' => 'sbd'],
                 [
                     'name' => 'San Maka',
-                    'description' => 'Variété linguistique de référence du projet. Cette information est utilisée côté administration et ne doit pas être imposée comme choix technique au contributeur.',
+                    'description' => 'San du Sud / Southern Samo. Variété de référence interne. Le contributeur public choisit sa localité ; la variété finale reste confirmée par validation linguistique.',
                     'is_active' => true,
                 ],
             );
 
             $matya = Variety::updateOrCreate(
-                ['iso_code' => 'sym'],
+                ['iso_code' => 'stj'],
                 [
                     'name' => 'San Matya',
-                    'description' => 'Variété linguistique de référence du projet. Cette information est utilisée côté administration et ne doit pas être imposée comme choix technique au contributeur.',
+                    'description' => 'Matya Samo. Variété de référence interne. Le contributeur public choisit sa localité ; la variété finale reste confirmée par validation linguistique.',
                     'is_active' => true,
                 ],
             );
 
             Variety::updateOrCreate(
-                ['iso_code' => 'stj'],
+                ['iso_code' => 'sym'],
                 [
                     'name' => 'San Maya',
-                    'description' => 'Variété linguistique de référence du projet. Aucune localité par défaut n’est associée tant que la correspondance n’a pas été confirmée dans le référentiel.',
+                    'description' => 'Maya Samo. Variété de référence interne. Aucune localité n’est convertie automatiquement en variété validée.',
                     'is_active' => true,
                 ],
             );
@@ -43,7 +43,9 @@ class LinguisticReferenceSeeder extends Seeder
                 ['name' => 'Toma', 'province' => 'Nayala'],
                 [
                     'suggested_variety_id' => $maka->id,
-                    'notes' => 'Correspondance proposée pour orienter la collecte. La variété finale d’une contribution reste une donnée de validation linguistique.',
+                    'suggested_variety_status' => 'research_supported',
+                    'suggested_variety_source' => 'Berthelette (2001) associe Toma/Maka au Southern Samo [sbd] ; Platiel (1974) décrit le parler Samo de Toma comme Southern Samo.',
+                    'notes' => 'Suggestion interne fondée sur la documentation. Elle sert à orienter les validateurs mais ne devient jamais automatiquement la variété validée d’une contribution.',
                     'is_active' => true,
                 ],
             );
@@ -52,7 +54,9 @@ class LinguisticReferenceSeeder extends Seeder
                 ['name' => 'Tougan', 'province' => 'Sourou'],
                 [
                     'suggested_variety_id' => $matya->id,
-                    'notes' => 'Correspondance proposée pour orienter la collecte. La variété finale d’une contribution reste une donnée de validation linguistique.',
+                    'suggested_variety_status' => 'research_supported',
+                    'suggested_variety_source' => 'Les références de classification de Matya Samo [stj] utilisent notamment « Tougan » comme nom associé à cette variété.',
+                    'notes' => 'Suggestion interne fondée sur la documentation. Elle sert à orienter les validateurs mais ne devient jamais automatiquement la variété validée d’une contribution.',
                     'is_active' => true,
                 ],
             );
