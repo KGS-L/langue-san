@@ -12,6 +12,28 @@ assert SPEC and SPEC.loader
 SPEC.loader.exec_module(collector)
 
 
+class _FakeResponse:
+    def __init__(self, payload):
+        self.payload = payload
+
+    def raise_for_status(self):
+        return None
+
+    def json(self):
+        return self.payload
+
+
+class _FakeSession:
+    def get(self, *args, **kwargs):
+        return _FakeResponse(
+            {
+                "rows": [{"row_idx": 0, "row": {"text": "abc"}}],
+                "num_rows_total": 87,
+                "partial": False,
+            }
+        )
+
+
 def test_select_targets_filters_by_key():
     targets = [
         {"key": "a", "enabled": True},
@@ -43,3 +65,16 @@ text_subsets:
         encoding="utf-8",
     )
     assert collector.load_targets(path) == [{"key": "keep", "enabled": True}]
+
+
+def test_probe_split_reports_total_without_harvest():
+    target = {
+        "repo_id": "example/repo",
+        "family": "fineweb2",
+        "config": "sbd_Latn",
+    }
+    result = collector.probe_split(target, "train", session=_FakeSession())
+    assert result["num_rows_total_reported"] == 87
+    assert result["partial"] is False
+    assert result["first_row_available"] is True
+    assert result["first_row_idx"] == 0
