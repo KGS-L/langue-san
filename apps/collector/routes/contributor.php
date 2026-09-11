@@ -4,6 +4,7 @@ use App\Http\Controllers\Contributor\ContributorContextController;
 use App\Http\Controllers\Contributor\ContributorDashboardController;
 use App\Http\Controllers\Contributor\ContributorHistoryController;
 use App\Http\Controllers\Contributor\ContributorHomeController;
+use App\Http\Controllers\Contributor\ContributorNaturalSpeechController;
 use App\Http\Controllers\Contributor\ContributorProfileController;
 use App\Http\Controllers\Contributor\ContributorSessionController;
 use App\Http\Controllers\Contributor\ContributorThemeController;
@@ -17,6 +18,9 @@ Route::post('/contribute/context', [ContributorContextController::class, 'update
 
 Route::get('/contribute/themes', [ContributorThemeController::class, 'index'])->name('contributor.themes.index');
 Route::post('/contribute/themes', [ContributorThemeController::class, 'store'])->name('contributor.themes.store');
+
+Route::get('/contribute/parole-naturelle', [ContributorNaturalSpeechController::class, 'index'])->name('contributor.natural-speech.index');
+Route::post('/contribute/parole-naturelle', [ContributorNaturalSpeechController::class, 'store'])->name('contributor.natural-speech.store');
 
 Route::get('/contribute/sessions/{session}', [ContributorSessionController::class, 'show'])->name('contributor.sessions.show');
 Route::post('/contribute/sessions/{session}/prompts/{sessionPrompt}', [ContributorSessionController::class, 'submit'])->name('contributor.sessions.submit');
