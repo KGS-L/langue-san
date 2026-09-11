@@ -21,4 +21,6 @@ interface PromptRepositoryInterface
         PromptType $type,
         int $limit,
     ): Collection;
+    public function naturalSpeechForContributor(int $contributorProfileId, int $limit = 12): Collection;
+    public function findActiveNarrative(int $promptId): ?Prompt;
 }
