@@ -20,29 +20,39 @@ stj / Matya Samo    :  7 datasets
 sym / Maya Samo     :  6 datasets
 ```
 
-Attention : Hugging Face précise que ce tableau compte les datasets **monolingues ou peu multilingues** (5 langues ou moins). Les grands datasets multilingues peuvent donc ne pas apparaître dans ces nombres.
+Attention : ces nombres ne représentent pas nécessairement des sources indépendantes. Un même repo peut couvrir plusieurs codes ISO, et certains datasets sont eux-mêmes dérivés d'autres corpus.
 
-Ces nombres sont seulement un signal de découverte et ne doivent pas être interprétés comme 29 sources indépendantes et directement exploitables.
+## 2. Inventaire réel obtenu dans le projet
 
-## 2. Méthode d'inventaire du projet
-
-Le script :
+Commande :
 
 ```bash
 python collectors/huggingface_inventory.py
 ```
 
-interroge les métadonnées du Hub avec les filtres :
+Résultat réel obtenu le 11 septembre 2026 :
 
 ```text
-language:sbd
-language:stj
-language:sym
+sbd (maka)  : 16 repos
+stj (matya) :  7 repos
+sym (maya)  :  6 repos
+
+17 datasets uniques
+0 dataset gated
 ```
 
-Il ne télécharge aucun contenu linguistique.
+Répartition des licences déclarées :
 
-Il produit :
+```text
+cc-by-4.0       : 2
+cc-by-nc-sa-4.0 : 4
+cc0-1.0         : 3
+mit             : 1
+odc-by          : 4
+other           : 3
+```
+
+L'inventaire ne télécharge aucun contenu linguistique. Il conserve uniquement les métadonnées publiques du Hub dans :
 
 ```text
 data/raw/huggingface/
@@ -51,7 +61,7 @@ data/raw/huggingface/
 └── huggingface_san_inventory_summary.json
 ```
 
-Les métadonnées conservées incluent notamment :
+Les métadonnées comprennent notamment :
 
 ```text
 repo_id
@@ -81,11 +91,52 @@ ou :
 rights_review_required
 ```
 
-si aucune licence n'est déclarée.
+si les droits sont absents ou incertains.
 
 Aucun repo n'est automatiquement approuvé pour publication ou entraînement.
 
-## 3. Candidats déjà repérés pendant la reconnaissance web
+## 3. Triage automatique des 17 repos
+
+Le script :
+
+```bash
+python processors/triage_huggingface_inventory.py
+```
+
+lit l'inventaire local et produit un ordre de priorité d'inspection :
+
+```text
+high
+medium
+low
+```
+
+Le score prend en compte uniquement des signaux techniques :
+
+```text
+nombre de codes ISO couverts
+licence déclarée
+repo gated ou privé
+tâches translation / ASR
+modalité text / audio
+mots-clés corpus / parallel / speech / etc.
+signaux faible priorité : fréquence, benchmark, tokenizer, statistiques
+```
+
+Ce score ne décide jamais qu'un dataset est linguistiquement correct ou juridiquement autorisé.
+
+Sorties :
+
+```text
+data/processed/huggingface/
+├── huggingface_san_triage.json
+├── huggingface_san_triage.csv
+└── huggingface_san_triage_summary.json
+```
+
+Après ce triage, les repos HIGH seront vérifiés manuellement sur Hugging Face avant tout téléchargement de contenu.
+
+## 4. Candidats déjà repérés pendant la reconnaissance web
 
 ### `lgi2p/finefreq`
 
@@ -115,7 +166,7 @@ Aucune entrée `stj` ou `sym` n'a été retrouvée dans le manifeste consulté l
 
 URL : `https://huggingface.co/datasets/CohereLabs/xP3x`
 
-La collection xP3x annonce 277 langues et plusieurs tâches NLP. La collection est publiée sous Apache-2.0, mais sa fiche précise que **les datasets individuels intégrés peuvent avoir des licences différentes**.
+La collection xP3x annonce de nombreuses langues et plusieurs tâches NLP. Sa fiche doit être vérifiée avec soin car les datasets individuels intégrés peuvent avoir leurs propres licences et provenances.
 
 Un fichier de langues présent dans le repo reconnaît les trois codes :
 
@@ -127,15 +178,15 @@ sym → Maya Samo
 
 Cela suffit pour le conserver comme **candidat à inspecter**, mais pas pour conclure que les trois variétés possèdent un volume utile de données dans xP3x. Il faudra vérifier les configs/sous-ensembles réellement présents et remonter à leurs sources d'origine.
 
-## 4. À ne pas confondre avec les modèles MMS
+## 5. À ne pas confondre avec les modèles MMS
 
 Des modèles comme `facebook/mms-1b-all` ou leurs conversions sont des **modèles ASR**, pas des datasets linguistiques à récolter dans cette phase.
 
 Le support de `sbd` par MMS est intéressant pour la future feuille de route audio/ASR, mais il ne doit pas être compté comme une source de corpus Hugging Face.
 
-## 5. Processus de sélection après inventaire
+## 6. Processus de sélection après inventaire
 
-Après exécution du script d'inventaire, chaque repo sera classé manuellement selon :
+Chaque repo sera examiné selon :
 
 ```text
 1. langue réellement présente
