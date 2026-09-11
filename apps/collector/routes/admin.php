@@ -15,7 +15,7 @@ use App\Http\Controllers\Admin\ValidationQueueController;
 use App\Http\Controllers\Admin\VarietyController;
 use Illuminate\Support\Facades\Route;
 
-Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:admin,moderator'])->group(function () {
+Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:admin,moderator,transcriber,validator'])->group(function () {
     Route::get('/', DashboardController::class)->name('dashboard');
     Route::resource('users', UserController::class)->except('show');
     Route::resource('categories', CategoryController::class)->except('show');
@@ -35,6 +35,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:admin,moderato
     Route::get('project-applications', [ProjectApplicationController::class, 'index'])->name('project-applications.index');
     Route::get('project-applications/{projectApplication}', [ProjectApplicationController::class, 'show'])->name('project-applications.show');
     Route::post('project-applications/{projectApplication}/review', [ProjectApplicationController::class, 'review'])->name('project-applications.review');
+    Route::post('project-applications/{projectApplication}/access', [ProjectApplicationController::class, 'updateAccess'])->name('project-applications.access.update');
 
     Route::get('exports', [ExportController::class, 'index'])->name('exports.index');
     Route::get('exports/download', [ExportController::class, 'download'])->name('exports.download');
