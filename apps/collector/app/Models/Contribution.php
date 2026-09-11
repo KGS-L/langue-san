@@ -16,6 +16,7 @@ class Contribution extends Model
         'contributor_profile_id',
         'locality_id',
         'san_text',
+        'submitted_san_text',
         'status',
         'submitted_at',
     ];
