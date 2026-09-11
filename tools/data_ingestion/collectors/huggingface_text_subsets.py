@@ -4,6 +4,9 @@ Le collecteur utilise l'API Dataset Viewer `/rows` afin de récupérer uniquemen
 les configs/splits SAN ciblés, par pages de 100 lignes maximum. Il conserve les
 lignes source avec leur index et leurs métadonnées de provenance.
 
+Avant un téléchargement complet, `--probe-only` interroge seulement la première
+ligne de chaque split pour obtenir `num_rows_total` et le statut `partial`.
+
 Cette étape est technique : aucune donnée n'est validée linguistiquement et
 aucune autorisation ML n'est accordée automatiquement.
 """
@@ -78,6 +81,52 @@ def _get_rows(
     if not isinstance(payload, dict):
         raise HuggingFaceTextHarvestError(f"Réponse /rows invalide pour {dataset}/{config}/{split}.")
     return payload
+
+
+def probe_split(
+    target: dict[str, Any],
+    split: str,
+    *,
+    session: requests.Session,
+) -> dict[str, Any]:
+    repo_id = str(target["repo_id"])
+    config = str(target["config"])
+    family = str(target["family"])
+    payload = _get_rows(
+        session,
+        dataset=repo_id,
+        config=config,
+        split=split,
+        offset=0,
+        length=1,
+    )
+    rows = payload.get("rows", [])
+    first_row_idx = None
+    if isinstance(rows, list) and rows and isinstance(rows[0], dict):
+        first_row_idx = rows[0].get("row_idx")
+    return {
+        "repo_id": repo_id,
+        "family": family,
+        "config": config,
+        "split": split,
+        "num_rows_total_reported": payload.get("num_rows_total"),
+        "partial": bool(payload.get("partial", False)),
+        "first_row_available": bool(rows),
+        "first_row_idx": first_row_idx,
+    }
+
+
+def probe_targets(
+    targets: list[dict[str, Any]],
+    *,
+    session: requests.Session | None = None,
+) -> list[dict[str, Any]]:
+    client = session or requests.Session()
+    results: list[dict[str, Any]] = []
+    for target in targets:
+        for split in target.get("splits", []):
+            results.append(probe_split(target, str(split), session=client))
+    return results
 
 
 def harvest_split(
@@ -177,6 +226,19 @@ def harvest_targets(
     return results
 
 
+def write_probe_summary(results: list[dict[str, Any]], output_root: Path = RAW_ROOT) -> Path:
+    output_root.mkdir(parents=True, exist_ok=True)
+    path = output_root / "huggingface_text_probe_summary.json"
+    payload = {
+        "generated_at": datetime.now(timezone.utc).isoformat(),
+        "probe_only": True,
+        "content_harvested": False,
+        "results": results,
+    }
+    path.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
+    return path
+
+
 def write_summary(results: list[dict[str, Any]], output_root: Path = RAW_ROOT) -> Path:
     output_root.mkdir(parents=True, exist_ok=True)
     path = output_root / "huggingface_text_harvest_summary.json"
@@ -199,9 +261,30 @@ def main() -> None:
     parser.add_argument("--config", type=Path, default=CONFIG_PATH)
     parser.add_argument("--target", nargs="*", help="Clés ciblées; défaut = toutes les cibles activées")
     parser.add_argument("--output-root", type=Path, default=RAW_ROOT)
+    parser.add_argument(
+        "--probe-only",
+        action="store_true",
+        help="Lire une seule ligne par split pour connaître le volume avant récolte complète.",
+    )
     args = parser.parse_args()
 
     targets = select_targets(load_targets(args.config), args.target)
+
+    if args.probe_only:
+        results = probe_targets(targets)
+        summary_path = write_probe_summary(results, args.output_root)
+        print(f"Splits sondés : {len(results)}")
+        for item in results:
+            total = item.get("num_rows_total_reported")
+            total_text = str(total) if total is not None else "?"
+            print(
+                f"- {item['family']}/{item['config']}/{item['split']}: "
+                f"total={total_text}, partial={item['partial']}, première_ligne={item['first_row_available']}"
+            )
+        print("Mode probe-only : aucun corpus complet n'a été récolté.")
+        print(f"Résumé : {summary_path}")
+        return
+
     results = harvest_targets(targets, output_root=args.output_root)
     summary_path = write_summary(results, args.output_root)
 
