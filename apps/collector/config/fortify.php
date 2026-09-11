@@ -11,7 +11,7 @@ return [
     'email' => 'email',
     'lowercase_usernames' => true,
     'home' => '/auth/redirect',
-    'prefix' => '',
+    'prefix' => 'staff',
     'domain' => null,
     'views' => true,
     'limiters' => ['login' => 'login', 'two-factor' => 'two-factor'],
