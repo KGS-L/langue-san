@@ -28,12 +28,15 @@ class ContributorContextController extends Controller
             $request->cookie(ContributorIdentityService::COOKIE_NAME),
         );
 
+        $nextMode = in_array($request->query('next'), ['translation', 'natural-speech'], true)
+            ? $request->query('next')
+            : 'translation';
+        $request->session()->put('contributor_next_mode', $nextMode);
+
         $response = response()->view('contributor.context', [
             'profile' => $identity->profile,
             'localities' => $localities->active(),
-            'nextMode' => in_array($request->query('next'), ['translation', 'natural-speech'], true)
-                ? $request->query('next')
-                : 'translation',
+            'nextMode' => $nextMode,
         ]);
 
         if ($identity->shouldSetCookie && $identity->guestToken) {
@@ -70,7 +73,9 @@ class ContributorContextController extends Controller
         $data = $request->validated();
         $profiles->updateContext($identity->profile, $data);
 
-        if (($data['next'] ?? null) === 'natural-speech') {
+        $nextMode = $data['next'] ?? $request->session()->pull('contributor_next_mode', 'translation');
+
+        if ($nextMode === 'natural-speech') {
             return redirect()
                 ->route('contributor.natural-speech.index')
                 ->with('success', 'Votre contexte linguistique a été enregistré. Choisissez maintenant un sujet de parole naturelle.');
