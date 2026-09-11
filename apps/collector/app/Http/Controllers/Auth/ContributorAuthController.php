@@ -108,4 +108,13 @@ class ContributorAuthController extends Controller
 
         return redirect()->route('contributor.home');
     }
+
+    public function logout(Request $request): RedirectResponse
+    {
+        Auth::logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        return redirect()->route('home');
+    }
 }
