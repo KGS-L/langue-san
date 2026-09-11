@@ -5,10 +5,23 @@ sources:
     name: "The ASJP Database"
     type: "structured_dataset"
     homepage: "https://asjp.clld.org/"
+    release: "https://zenodo.org/records/16736409"
+    version: "v21"
+    repository: "https://github.com/lexibank/asjp/tree/v21"
     license: "CC-BY-4.0"
     enabled: true
     status: "approved_for_ingestion"
     intended_use: "lexical_reference"
+    wordlists:
+      - variety: "maka"
+        iso_639_3: "sbd"
+        asjp_id: "SOUTHERN_SAMO_SAN"
+      - variety: "matya"
+        iso_639_3: "stj"
+        asjp_id: "SAMO_MATYA_2"
+      - variety: "maya"
+        iso_639_3: "sym"
+        asjp_id: "MAYA_SAMO"
 
   huggingface:
     name: "Hugging Face datasets"
