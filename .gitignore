@@ -14,11 +14,12 @@
 /storage/framework/sessions/*
 /storage/framework/views/*
 
-# Private linguistic data and audio
+# Private / working linguistic data and audio
 /apps/collector/storage/app/private/audios/
 /apps/collector/storage/app/private/datasets/
 /data/private/
 /data/raw/
+/data/processed/
 *.wav
 *.mp3
 *.m4a
