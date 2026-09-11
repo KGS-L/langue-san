@@ -20,21 +20,22 @@ class AdminUserSeeder extends Seeder
             return;
         }
 
-        $existingAdmin = User::query()->where('role', UserRole::ADMIN->value)->first();
+        $existingAdmin = User::role(UserRole::ADMIN->value)->first();
 
         if ($existingAdmin && Str::lower($existingAdmin->email) !== $email) {
             $this->command?->warn('Un administrateur existe déjà. Le seeder ne crée jamais un second administrateur.');
             return;
         }
 
-        User::updateOrCreate(
+        $user = User::updateOrCreate(
             ['email' => $email],
             [
                 'name' => env('SEED_ADMIN_NAME', 'Administrateur Langue SAN'),
                 'password' => $password,
-                'role' => UserRole::ADMIN,
                 'status' => UserStatus::ACTIVE,
             ],
         );
+
+        $user->syncRoles([UserRole::ADMIN->value]);
     }
 }
