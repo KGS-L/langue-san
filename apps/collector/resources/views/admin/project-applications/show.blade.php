@@ -22,6 +22,36 @@
                 @if($application->san_connection)<h6 class="fw-bold mt-4">Lien avec le San / communautés</h6><p style="white-space:pre-line">{{ $application->san_connection }}</p>@endif
                 <div class="row g-3 mt-1"><div class="col-md-6"><div class="small text-muted">Disponibilité</div><strong>{{ $application->availability ?: 'Non précisée' }}</strong></div><div class="col-md-6"><div class="small text-muted">Lien externe</div>@if($application->portfolio_url)<a href="{{ $application->portfolio_url }}" target="_blank" rel="noopener">Ouvrir le profil / portfolio</a>@else<strong>—</strong>@endif</div></div>
             </div></div>
+
+            @if($application->status->value === 'approved' && $application->user->projectMembership?->is_active)
+                <div class="card mt-4"><div class="card-body">
+                    <h5 class="card-title">Accès de travail</h5>
+                    <p class="text-muted">L’acceptation au projet ne donne aucun accès sensible automatiquement. Seul l’administrateur peut attribuer un rôle de transcription ou de validation.</p>
+
+                    <div class="d-flex flex-wrap gap-2 mb-3">
+                        <span class="badge bg-light text-dark border">Contributeur</span>
+                        @if($application->user->hasRole('transcriber'))<span class="badge bg-info text-dark">Transcripteur</span>@endif
+                        @if($application->user->hasRole('validator'))<span class="badge bg-success">Validateur linguistique</span>@endif
+                    </div>
+
+                    @if(auth()->user()->isAdmin())
+                        <form method="POST" action="{{ route('admin.project-applications.access.update', $application) }}">
+                            @csrf
+                            <div class="form-check mb-2">
+                                <input class="form-check-input" type="checkbox" name="roles[]" value="transcriber" id="role_transcriber" @checked($application->user->hasRole('transcriber'))>
+                                <label class="form-check-label" for="role_transcriber"><strong>Transcripteur</strong> — accès uniquement à la file des audios à transcrire.</label>
+                            </div>
+                            <div class="form-check mb-3">
+                                <input class="form-check-input" type="checkbox" name="roles[]" value="validator" id="role_validator" @checked($application->user->hasRole('validator'))>
+                                <label class="form-check-label" for="role_validator"><strong>Validateur linguistique</strong> — accès uniquement à la validation des contributions.</label>
+                            </div>
+                            <button class="btn btn-primary"><i class="bi bi-shield-check me-1"></i>Mettre à jour les accès</button>
+                        </form>
+                    @else
+                        <div class="alert alert-light border mb-0 small">Un administrateur peut modifier les accès spécialisés de ce membre.</div>
+                    @endif
+                </div></div>
+            @endif
         </div>
 
         <div class="col-lg-4">
