@@ -16,13 +16,20 @@ class EnsureUserHasRole
         abort_unless($user, 401);
 
         if ($user->status !== UserStatus::ACTIVE) {
+            $wasContributor = $user->isContributor();
             Auth::logout();
             $request->session()->invalidate();
             $request->session()->regenerateToken();
-            return redirect()->route('login')->withErrors(['email' => 'Ce compte est suspendu.']);
+
+            $route = $wasContributor ? 'contributor.auth.show' : 'login';
+
+            return redirect()->route($route)->withErrors([
+                'email' => 'Ce compte est suspendu.',
+            ]);
         }
 
-        abort_unless(in_array($user->role->value, $roles, true), 403);
+        abort_unless($user->hasAnyRole($roles), 403);
+
         return $next($request);
     }
 }
