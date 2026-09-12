@@ -139,99 +139,130 @@ DCAD-2000 : licence `other`, rights review requis
 MMS ulab  : audio non transcrit, future phase audio/ASR
 ```
 
-## Source actuelle — RefLex CLLD
+## RefLex CLLD — récolte lexicale effectuée pour Matya et Maya
 
-RefLex CLLD est la prochaine source structurée prioritaire. La base est téléchargeable et conserve les formes originales ainsi que les références de sources. Elle est sous :
+RefLex CLLD est sous :
 
 ```text
 CC-BY-NC-SA-4.0
 ```
 
-Cette licence autorise notre inventaire/recherche locale non commerciale sous ses conditions, mais **ne doit pas être interprétée comme une autorisation pour un futur usage commercial ou un entraînement commercial**.
+Les données récoltées restent donc destinées à l'inventaire/recherche locale sous les conditions de cette licence. Elles ne sont **pas** automatiquement approuvées pour publication, entraînement ou usage commercial.
 
-Cibles :
+### Ce que l'exploration réelle a montré
 
-```text
-sbd / maka  / sout2844
-stj / matya / maty1235
-sym / maya  / maya1281
-```
-
-Le collecteur est :
+`languages.csv` contient 815 languoïdes mais n'exporte pas d'ID interne ni de code ISO. Les mappings confirmés sont :
 
 ```text
-collectors/reflex_clld.py
+stj / Matya / Samo Matya / maty1235
+sym / Maya  / Samo Maya  / maya1281
 ```
 
-### Étape 1 — probe uniquement
+`San Maka / sbd / sout2844` n'a pas été trouvé dans l'index RefLex actuel et ne doit pas être remplacé par un candidat approximatif.
 
-Après mise à jour de la branche :
+Le chemin générique `/values.csv` n'était pas le bon transport. La page détail de chaque langue expose en réalité un DataTable `/units` avec un filtre interne, puis un export CSV officiel limité à 10 000 lignes.
+
+### Récolte réelle
+
+Commandes :
 
 ```bash
-cd ~/Bureau/langue-san
-git pull origin feat/data-ingestion
-
-cd tools/data_ingestion
-source .venv/bin/activate
-pytest tests
-
-python collectors/reflex_clld.py --probe-only
+python collectors/reflex_units.py --iso stj
+python collectors/reflex_units.py --iso sym
 ```
 
-Le probe doit seulement :
+Résultats observés :
 
 ```text
-languages.csv
-    ↓
-résolution des IDs internes RefLex par glottocode / ISO
-    ↓
-1 ligne de probe par variété
-    ↓
-volume exact sbd / stj / sym
+stj / Matya
+  languages.csv : 2 764 fiches dans la plus grosse/unique source
+  /units export : 2 743 lignes
+  glottocode     : maty1235
+  clld page id   : 1472
+
+sym / Maya
+  languages.csv : 2 384 fiches dans la plus grosse/unique source
+  /units export : 2 378 lignes
+  glottocode     : maya1281
+  clld page id   : 1473
 ```
 
-Il ne doit pas télécharger les lexiques complets.
+Les écarts `2764 → 2743` et `2384 → 2378` sont conservés comme observations. Ils ne doivent pas être « corrigés » ni expliqués sans preuve : le contrôle de complétude du collecteur compare le CSV au nombre réellement annoncé par le DataTable `/units`.
 
-Résumé local attendu :
+Colonnes RAW réellement obtenues :
 
 ```text
-data/raw/reflex/reflex_probe_summary.json
+Original Form
+Original Translation
+Comment
+Part of Speech
+Source
+Glottocode
+Family
+Latitude
+Longitude
 ```
 
-### Étape 2 — récolte complète
-
-**Ne pas la lancer avant validation du probe.**
-
-Lorsque les identifiants et volumes auront été vérifiés :
-
-```bash
-python collectors/reflex_clld.py
-```
-
-Sorties prévues :
+Sorties locales :
 
 ```text
 data/raw/reflex/
-├── sbd/
-│   ├── language.json
-│   └── values.csv
 ├── stj/
-│   ├── language.json
-│   └── values.csv
+│   ├── units.csv
+│   └── units_metadata.json
 ├── sym/
-│   ├── language.json
-│   └── values.csv
-└── reflex_harvest_summary.json
+│   ├── units.csv
+│   └── units_metadata.json
+└── reflex_units_harvest_summary.json
 ```
 
-Le CSV RefLex est conservé brut. Les comparaisons avec ASJP, PanLex ou ChiKhaPo viendront après la récolte et ne modifieront pas le RAW.
+Le RAW n'est ni normalisé ni dédupliqué.
+
+### QA technique RefLex
+
+Le processor :
+
+```text
+processors/qa_reflex_units.py
+```
+
+vérifie notamment :
+
+```text
+colonnes attendues
+nombre de lignes CSV ↔ compteur XHR enregistré
+SHA-256 ↔ metadata
+identité ISO / variété / glottocode
+formes vides
+traductions vides
+doublons exacts
+formes+traductions répétées
+sources observées
+POS observées
+```
+
+Il ne modifie jamais le RAW.
+
+Commande :
+
+```bash
+python processors/qa_reflex_units.py --iso stj sym
+```
+
+Rapport local :
+
+```text
+data/processed/reflex/reflex_units_qa.json
+```
+
+Une fois `all_technical_ok=true` confirmé, RefLex peut être considéré **techniquement récolté** pour `stj` et `sym`. Cela ne constitue toujours pas une validation linguistique.
 
 ## Prochaines sources après RefLex
 
 La reconnaissance détaillée se trouve dans [`REFLEX_RECON.md`](REFLEX_RECON.md). Ordre actuel :
 
 ```text
-1. RefLex CLLD
+1. Finaliser le QA RefLex stj/sym
 2. Berthelette 2001 — enquête sociolinguistique + wordlists
 3. Lexiques originaux SIL / ANTBA
 4. Dictionnaires Burkina Langues — seulement après clarification des droits
