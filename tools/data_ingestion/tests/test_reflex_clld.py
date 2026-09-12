@@ -12,8 +12,17 @@ assert SPEC and SPEC.loader
 SPEC.loader.exec_module(reflex)
 
 
-LANGUAGES_CSV = """id,name,family,glottocode,iso_639_3\n10,Southern Samo,Mande,sout2844,sbd\n20,Matya Samo,Mande,maty1235,stj\n30,Maya Samo,Mande,maya1281,sym\n"""
-VALUES_CSV = """id,name,description,language_pk\n1,foo,bar,10\n2,baz,qux,10\n"""
+# Reproduit la forme observée sur le vrai export RefLex en septembre 2026 :
+# aucun ID interne ni code ISO n'est exporté, mais le Glottocode l'est.
+LANGUAGES_CSV = """Name,Family,Glottocode,Macroarea,Number of records in biggest source,Number of sources,Latitude,Longitude
+Southern Samo,Mande,sout2844,Africa,2200,2,12.0,-2.0
+Matya Samo,Mande,maty1235,Africa,2576,2,13.0,-3.0
+Maya Samo,Mande,maya1281,Africa,1500,1,13.1,-3.1
+"""
+VALUES_CSV = """id,name,description,language_pk
+1,foo,bar,sout2844
+2,baz,qux,sout2844
+"""
 
 
 class _FakeResponse:
@@ -44,7 +53,7 @@ class _FakeSession:
             return _FakeResponse(text=LANGUAGES_CSV)
         if url.endswith("/values"):
             language = str((params or {}).get("language"))
-            totals = {"10": 2200, "20": 2576, "30": 1500}
+            totals = {"sout2844": 2200, "maty1235": 2576, "maya1281": 1500}
             return _FakeResponse(
                 payload={
                     "iTotalDisplayRecords": totals[language],
@@ -80,13 +89,36 @@ def _source():
     }
 
 
-def test_resolve_targets_uses_glottocodes():
+def test_resolve_targets_uses_glottocodes_when_id_is_not_exported():
     reader = reflex.csv.DictReader(reflex.io.StringIO(LANGUAGES_CSV))
     headers = list(reader.fieldnames or [])
     rows = [dict(row) for row in reader]
     targets = reflex.resolve_targets(_source(), headers, rows)
-    assert [item["reflex_language_id"] for item in targets] == ["10", "20", "30"]
+
+    assert [item["reflex_language_id"] for item in targets] == [
+        "sout2844",
+        "maty1235",
+        "maya1281",
+    ]
     assert [item["iso_639_3"] for item in targets] == ["sbd", "stj", "sym"]
+    assert all(
+        str(item["reflex_language_id_resolution"]).startswith("glottocode_fallback:")
+        for item in targets
+    )
+
+
+def test_resolve_targets_still_prefers_explicit_id_when_available():
+    text = "id,name,glottocode\n10,Southern Samo,sout2844\n20,Matya Samo,maty1235\n30,Maya Samo,maya1281\n"
+    reader = reflex.csv.DictReader(reflex.io.StringIO(text))
+    headers = list(reader.fieldnames or [])
+    rows = [dict(row) for row in reader]
+    targets = reflex.resolve_targets(_source(), headers, rows)
+
+    assert [item["reflex_language_id"] for item in targets] == ["10", "20", "30"]
+    assert all(
+        str(item["reflex_language_id_resolution"]).startswith("exported_column:")
+        for item in targets
+    )
 
 
 def test_probe_reports_counts_without_full_csv_download():
@@ -104,9 +136,10 @@ def test_harvest_language_preserves_csv_and_provenance(tmp_path):
         "iso_639_3": "sbd",
         "variety": "maka",
         "glottocode": "sout2844",
-        "reflex_language_id": "10",
+        "reflex_language_id": "sout2844",
+        "reflex_language_id_resolution": "glottocode_fallback:Glottocode",
         "reflex_language_name": "Southern Samo",
-        "language_row": {"id": "10", "name": "Southern Samo"},
+        "language_row": {"Name": "Southern Samo", "Glottocode": "sout2844"},
     }
     result = reflex.harvest_language(
         _source(),
@@ -115,6 +148,7 @@ def test_harvest_language_preserves_csv_and_provenance(tmp_path):
         output_root=tmp_path,
     )
     assert result["rows_written"] == 2
+    assert result["reflex_language_id_resolution"] == "glottocode_fallback:Glottocode"
     output = Path(result["output"])
     assert output.read_text(encoding="utf-8") == VALUES_CSV
     assert (tmp_path / "sbd" / "language.json").exists()
