@@ -58,28 +58,38 @@ Cette application est traitée comme une **ressource moderne distincte** tant qu
 
 ### Installateur Windows Lexique Pro récupéré localement
 
-Un installateur Windows a maintenant été téléchargé manuellement et placé localement dans le projet :
+Un installateur Windows a été téléchargé manuellement puis déplacé dans :
 
 ```text
-San Matya - Lexique Pro Setup.exe
-taille observée : ~21 MiB
+data/raw/san_matya_lexique_pro/San Matya - Lexique Pro Setup.exe
 ```
 
-Important : ce fichier est **Matya / stj**, et non San du Sud / Maka / sbd. Le dossier local ne doit donc pas rester nommé `san_sud_lexique_pro`, afin d'éviter tout mélange de variété.
+Identification statique réelle :
 
-Statut actuel de cet installateur :
+```text
+file      : PE32 executable (GUI) Intel 80386, for MS Windows, 9 sections
+installer : Inno Setup Setup Data 5.3.10 (Unicode)
+messages  : Inno Setup Messages 5.1.11 (Unicode)
+SHA-256   : 1c1ece4f0ad78e8b634c9ebb8c7ae8a97870fa1d6015cde12ba335584c9c467c
+7z        : non installé au moment du probe
+```
+
+Important : ce fichier est **Matya / stj**, et non San du Sud / Maka / sbd.
+
+Le fait qu'il s'agisse d'un installateur Inno Setup est utile : son contenu peut normalement être inspecté/extrait sans exécuter le programme Windows, avec un outil adapté tel que `innoextract`.
+
+Statut actuel :
 
 ```text
 fichier local           : présent
 exécution               : non requise
-inspection statique     : à faire
-contenu embarqué        : inconnu
+inspection PE/Inno      : terminée
+listing contenu         : à faire avec innoextract
+contenu lexical embarqué: inconnu
 relation avec 2011      : non démontrée
 licence réutilisation   : non confirmée
 bulk harvest            : non approuvé avant clarification des droits
 ```
-
-L'inspection autorisée à ce stade est uniquement technique et locale : type d'installateur, listing des fichiers embarqués, formats Lexique Pro/LIFT/XML/DB et inventaire éventuel des médias. Aucun exécutable ne doit être lancé pour cette inspection.
 
 ## 4. Séparation des domaines
 
@@ -99,7 +109,7 @@ PDF officiel 2011                    : non retrouvé à ce stade
 notice primaire ANTBA/SIL            : à retrouver
 droits de l'ouvrage 2011             : à clarifier
 application moderne                  : confirmée
-installateur Lexique Pro local       : récupéré manuellement (~21 MiB)
+installateur Lexique Pro local       : récupéré et fingerprinté
 licence de réutilisation moderne     : non confirmée
 bulk harvest                          : non approuvé
 ```
@@ -111,12 +121,13 @@ La présence locale d'un installateur ne vaut pas autorisation de republier, d'e
 Ordre de travail local :
 
 ```text
-1. renommer le dossier local en san_matya_lexique_pro
-2. calculer SHA-256 et identifier le type d'installateur
-3. lister le contenu sans exécuter le .exe
+1. installer innoextract sur Ubuntu
+2. lister le contenu sans exécuter le .exe
+3. extraire dans un sous-dossier local isolé si le listing est exploitable
 4. rechercher .lift/.xml/.db/.sqlite/.txt/.html + audio/images
-5. si données structurées trouvées : documenter structure et provenance
-6. ne pas effectuer de bulk harvest publié tant que les droits ne sont pas clarifiés
+5. identifier le format source Lexique Pro et les relations média ↔ entrées
+6. documenter structure/provenance
+7. ne pas republier les données tant que les droits ne sont pas clarifiés
 ```
 
 ## 7. Règle de vitesse
@@ -147,9 +158,11 @@ modern_android_app         = confirmed
 modern_entry_count         = 2576
 modern_image_count         = 685
 modern_support_contact     = burkinalangues@gmail.com
-modern_windows_installer   = local_file_present_approx_21MiB
+modern_windows_installer   = local_file_present
 modern_windows_filename    = San Matya - Lexique Pro Setup.exe
+modern_windows_sha256      = 1c1ece4f0ad78e8b634c9ebb8c7ae8a97870fa1d6015cde12ba335584c9c467c
+modern_windows_format      = PE32_Inno_Setup_5.3.10_unicode
 modern_license             = not_confirmed
-static_inspection          = pending
+static_inspection          = installer_identified_listing_pending
 bulk_harvest               = deferred_pending_rights
 ```
