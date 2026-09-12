@@ -31,7 +31,7 @@ sources:
     doi: "10.34847/nkl.e3cbkjzm"
     license: "CC-BY-NC-SA-4.0"
     enabled: true
-    status: "approved_for_noncommercial_research_ingestion"
+    status: "harvested_noncommercial_research_pending_qa"
     intended_use: "lexical_reference_and_source_provenance"
     publication_approved: false
     training_approved: false
@@ -45,6 +45,7 @@ sources:
       - variety: "maka"
         iso_639_3: "sbd"
         glottocode: "sout2844"
+        harvest_status: "not_found_in_languages_index"
         name_aliases:
           - "Southern Samo"
           - "Samo Southern"
@@ -55,6 +56,8 @@ sources:
       - variety: "matya"
         iso_639_3: "stj"
         glottocode: "maty1235"
+        harvest_status: "harvested_units_csv"
+        harvested_units_rows: 2743
         name_aliases:
           - "Matya Samo"
           - "Samo Matya"
@@ -62,6 +65,8 @@ sources:
       - variety: "maya"
         iso_639_3: "sym"
         glottocode: "maya1281"
+        harvest_status: "harvested_units_csv"
+        harvested_units_rows: 2378
         name_aliases:
           - "Maya Samo"
           - "Samo Maya"
@@ -74,11 +79,13 @@ sources:
       - "La licence CC-BY-NC-SA-4.0 interdit l'usage commercial sans autorisation supplémentaire : ne pas mélanger automatiquement ces données à un futur corpus commercial."
       - "Le RAW reste local; l'attribution des sources amont doit être conservée."
       - "Le languages.csv réel contient 815 lignes et les colonnes Name, Family, Glottocode, Macroarea, Number of records in biggest source, Number of sources, Latitude, Longitude."
-      - "Observation réelle : Samo Matya / maty1235 est présent avec 2764 fiches dans sa seule source RefLex."
-      - "Observation réelle : Samo Maya / maya1281 est présent avec 2384 fiches dans sa seule source RefLex."
-      - "Observation réelle : sout2844 / Southern Samo / San Maka n'a pas été trouvé dans l'index RefLex CLLD; ne pas lui attribuer un candidat approximatif."
-      - "L'endpoint /values a répondu HTTP 406 lorsqu'on forçait Accept: application/json. Pour les langues à une seule source, le probe utilise désormais le compte exact déjà fourni par languages.csv; pour les cas multi-sources il utilise une requête XHR sans forcer Accept JSON."
-      - "La récolte complète de RefLex doit être limitée aux mappings réellement résolus, par exemple --iso stj sym tant que sbd reste absent de l'index."
+      - "Samo Matya / maty1235 est présent; languages.csv annonce 2764 fiches dans sa seule source, tandis que le DataTable /units exporte 2743 unités."
+      - "Samo Maya / maya1281 est présent; languages.csv annonce 2384 fiches dans sa seule source, tandis que le DataTable /units exporte 2378 unités."
+      - "Les écarts 2764→2743 (21) et 2384→2378 (6) sont conservés comme observations; aucune explication n'est inventée avant analyse de la structure RefLex."
+      - "sout2844 / Southern Samo / San Maka n'a pas été trouvé dans l'index RefLex CLLD; ne pas lui attribuer un candidat approximatif."
+      - "La vraie récolte lexicale passe par le DataTable /units découvert depuis la page langue, puis par son export CSV officiel limité à 10000 lignes."
+      - "RAW récolté localement : stj=2743 lignes, sym=2378 lignes, 9 colonnes Original Form/Translation/Comment/POS/Source/Glottocode/Family/Latitude/Longitude."
+      - "Le QA technique RefLex doit être exécuté avant de considérer cette source terminée."
 
   ainsisoisje:
     name: "Ainsi sois-je — Dictionnaire Français / Samo"
