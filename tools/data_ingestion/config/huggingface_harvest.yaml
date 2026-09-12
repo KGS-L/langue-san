@@ -74,7 +74,7 @@ lexical_subsets:
   - key: panlex_san
     repo_id: "lbourdois/panlex"
     family: "panlex_snapshot"
-    config: "default"
+    config: "panlex"
     split: "train"
     iso_codes:
       sbd: "maka"
@@ -90,6 +90,7 @@ lexical_subsets:
     enabled: true
     notes:
       - "Snapshot Hugging Face de PanLex : ~24,6M lignes, 6152 langues."
+      - "Le Dataset Viewer expose la config `panlex` (et non `default`) avec le split `train`."
       - "Collecte ciblée via Dataset Viewer /filter : aucun téléchargement du CSV complet de 1,28 Go."
       - "Les lignes contiennent vocab, 639-3, nom anglais, var_code et nom de variante."
       - "Conserver var_code : il distingue les variantes internes PanLex et n'est pas un code ISO."
