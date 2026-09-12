@@ -88,9 +88,9 @@ lift-ranges      : 1
 audio            : 0
 ```
 
-Les 3 fichiers `.db` identifiés dans le listing appartiennent aux domaines sémantiques génériques de Lexique Pro (`xxdict2.db`, `xxdict3.db`, `xxdict4.db`) et ne sont pas, à ce stade, considérés comme le corpus lexical Matya.
+Les 3 fichiers `.db` identifiés appartiennent aux domaines sémantiques génériques de Lexique Pro (`xxdict2.db`, `xxdict3.db`, `xxdict4.db`) et ne sont pas considérés comme le corpus lexical Matya.
 
-Fichiers structurants du dictionnaire :
+Fichiers structurants :
 
 ```text
 San du Nord Matya.lpLiftEnc
@@ -101,36 +101,101 @@ San du Nord Matya - French.idx
 San du Nord Matya - English.idx
 ```
 
-Le package Windows ne contient donc **aucun fichier audio** détecté. Les données principales semblent être encapsulées dans `lpLiftEnc`/`lpConfigEnc`, accompagnées de ranges LIFT, de trois index et d'environ 695 images.
+Le package Windows ne contient aucun audio détecté.
 
-## 6. Interprétation du format Lexique Pro
+## 6. Probe final des formats
 
-Lexique Pro sait normalement importer/exporter du LIFT XML, mais une copie de distribution peut contenir un fichier protégé/chiffré `lpLiftEnc` au lieu du LIFT source. Une discussion du support SIL sur une copie de distribution chiffrée indique qu'il n'existe pas de méthode simple prévue pour récupérer le fichier source depuis cette copie.
+### `lpLiftEnc` et `lpConfigEnc`
 
-Règle du projet :
+Les deux fichiers sont détectés simplement comme `data`. Leur entête est binaire opaque, sans signature XML/LIFT ni texte structuré lisible au début. `strings` sur `lpLiftEnc` ne fournit que des fragments aléatoires non exploitables.
 
-```text
-inspection statique        : autorisée localement
-lecture des index/licence  : à faire
-contournement chiffrement  : non
-source LIFT originale      : à rechercher/privilégier
-export officiel Lexique Pro: à privilégier si disponible
-```
-
-## 7. Étape technique immédiate
-
-Faire une inspection courte et non destructive :
+Conclusion :
 
 ```text
-1. `file`, `xxd` et `strings` sur lpLiftEnc/lpConfigEnc
-2. lire le début de lift-ranges
-3. lire licence.txt
-4. inspecter le contenu des 3 fichiers idx
-5. déterminer si les idx exposent seulement les clés de recherche ou suffisamment de données lexicales
-6. si le corpus reste protégé, arrêter l'inspection et rechercher le LIFT/PDF/source 2011 ou demander une autorisation/export aux mainteneurs
+lpLiftEnc   = copie de distribution protégée/opaque
+lpConfigEnc = configuration protégée/opaque
 ```
 
-## 8. Droits et accès
+Le projet ne tente pas de contourner ou casser cette protection.
+
+### `lift-ranges`
+
+`San du Nord Matya.lift-ranges` est un document XML UTF-8 valide et lisible. Il contient les ranges LIFT génériques (étymologie, informations grammaticales, parties du discours, etc.).
+
+Ce fichier est utile pour comprendre le schéma lexical, mais **ce n'est pas le corpus d'entrées du dictionnaire**.
+
+### Index English / French / San Matya
+
+`San du Nord Matya - English.idx` est du texte ASCII lisible. Il associe des termes anglais à un ou plusieurs identifiants d'entrées, par exemple :
+
+```text
+after            307
+amulette          328
+animal            136
+celebration       61,115
+honeycomb         2736
+```
+
+`San du Nord Matya - French.idx` est également un index textuel, avec encodage ancien/non-UTF-8 pour certains caractères français. Il associe des termes français à des identifiants, par exemple :
+
+```text
+abandonner   1318
+abeille      2753
+aboyer       966
+acacia       1054
+acheter      1894
+```
+
+`San du Nord Matya - San Matya.idx` est identifié comme texte ASCII mais `strings` ne laisse apparaître, dans le probe actuel, que des identifiants numériques. Il faut encore examiner les octets/lignes brutes pour déterminer si les formes Matya sont présentes dans un encodage ou une structure que `strings` ignore.
+
+Les identifiants observés montent au moins jusqu'à ~2753. Ce nombre est intriguant car RefLex expose 2743 unités Matya, mais **un identifiant maximal n'est pas un nombre d'entrées** et cette proximité ne prouve pas encore que les deux ressources sont identiques.
+
+## 7. Licence : logiciel ≠ données lexicales
+
+`licence.txt` concerne **Lexique Pro**, copyright SIL International 2004–2010.
+
+Le texte autorise l'utilisation et la distribution gratuite du logiciel avec un lexique uniquement si le distributeur :
+
+```text
+1. est propriétaire des données lexicales
+   OU
+2. a reçu l'autorisation de les distribuer
+```
+
+La licence interdit également le reverse engineering, la décompilation et le désassemblage du logiciel.
+
+Conclusion importante :
+
+```text
+licence Lexique Pro ≠ licence des données San Matya
+```
+
+Le fichier `licence.txt` ne nous accorde pas de droit de republier, entraîner un modèle ou exploiter commercialement le contenu lexical Matya. Les droits des données restent à clarifier auprès de la source/éditeur/détenteur.
+
+## 8. Décision technique
+
+Le package Windows est utile pour :
+
+```text
+- confirmer l'existence et la structure d'un dictionnaire Matya conséquent
+- récupérer un inventaire d'environ 695 images
+- disposer des index français/anglais → identifiants
+- comprendre le schéma LIFT via lift-ranges
+- comparer ultérieurement les identifiants/glosses avec RefLex
+```
+
+Mais il ne fournit pas directement un LIFT source librement lisible. Le corpus principal reste protégé dans `lpLiftEnc`.
+
+La dernière vérification locale autorisée est donc limitée à l'encodage/structure brute des trois `.idx`, notamment l'index San Matya. Après cela, si les formes Matya ne sont pas directement accessibles, on arrête l'inspection du package et on privilégie :
+
+```text
+1. LIFT/PDF original Morris et al. 2011
+2. export officiel Lexique Pro si disponible
+3. autorisation/source fournie par les mainteneurs
+4. comparaison avec RefLex déjà récolté
+```
+
+## 9. Droits et accès
 
 État actuel :
 
@@ -140,31 +205,33 @@ PDF/LIFT original 2011         : non retrouvé à ce stade
 droits ouvrage 2011            : à clarifier
 application moderne            : confirmée
 installateur Lexique Pro       : récupéré et extrait localement
-contenu lexical embarqué       : confirmé
+contenu lexical embarqué       : confirmé mais corpus principal protégé
 images                         : 695 fichiers dans le package
 fichiers audio                 : 0 dans ce package
-licence réutilisation données  : non confirmée
+lift-ranges                    : XML lisible
+index anglais/français         : lisibles comme lookup terme → ids
+index San Matya                : probe brut encore nécessaire
+licence logiciel               : Lexique Pro freeware sous conditions
+licence données Matya          : non confirmée
 bulk harvest/publication       : non approuvés
 ```
 
-La présence d'un exécutable public ou local ne vaut pas autorisation de republier, entraîner un modèle ou exploiter commercialement les données.
-
-## 9. Règle de vitesse
+## 10. Règle de vitesse
 
 ```text
-inspection entêtes + idx + licence
+probe brut rapide de San Matya.idx
         ↓
-si données ouvertes/exportables → parser/QA
-sinon → documenter blocage
+si formes Matya lisibles → documenter structure / comparer avec RefLex
+sinon → arrêter inspection package
         ↓
-recherche courte source originale Morris et al. 2011
+recherche courte Morris et al. 2011 / LIFT / PDF / droits
         ↓
 passer à la source Maya
 ```
 
 On ne doit pas rester bloqué à essayer de casser `lpLiftEnc`.
 
-## 10. Statut actuel
+## 11. Statut actuel
 
 ```text
 discovery_historical       = confirmed
@@ -177,7 +244,7 @@ historical_place           = Tougan
 primary_digital_copy       = not_found_yet
 rights_status              = rights_review_required
 modern_android_app         = confirmed
-modern_entry_count         = 2576
+modern_entry_count_claimed = 2576
 modern_image_count_claimed = 685
 modern_support_contact     = burkinalangues@gmail.com
 modern_windows_installer   = extracted_locally
@@ -187,11 +254,14 @@ installer_sha256           = 1c1ece4f0ad78e8b634c9ebb8c7ae8a97870fa1d6015cde12ba
 extracted_file_count       = 734
 extracted_image_count      = 695
 extracted_audio_count      = 0
-embedded_main_data         = San du Nord Matya.lpLiftEnc
-embedded_config            = San du Nord Matya.lpConfigEnc
-embedded_ranges            = San du Nord Matya.lift-ranges
-embedded_indexes           = san_matya_french_english_idx_present
-static_inspection          = extracted_inventory_complete_header_probe_next
-modern_license             = not_confirmed
+embedded_main_data         = protected_opaque_lpLiftEnc
+embedded_config            = protected_opaque_lpConfigEnc
+embedded_ranges            = readable_lift_ranges_xml
+english_index              = readable_term_to_entry_ids
+french_index               = readable_legacy_encoded_term_to_entry_ids
+san_matya_index            = raw_structure_probe_pending
+software_license           = lexique_pro_only_not_data_license
+modern_data_license        = not_confirmed
+static_inspection          = almost_complete_one_idx_probe_remaining
 bulk_harvest               = deferred_pending_rights_and_source_access
 ```
