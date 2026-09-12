@@ -128,9 +128,9 @@ Le lexique historique 2003 `Boo nɛn sɛwɛ san-fransi, fransi-san` est confirm�
 
 La ressource moderne San du Sud/Webonary/app est confirmée, mais les droits de réutilisation massive restent à clarifier. On ne reste pas bloqué dessus.
 
-## Source active — Matya `stj`
+## Matya `stj` — inspection Lexique Pro clôturée
 
-Référence historique cible :
+Référence historique :
 
 ```text
 Morris, Pamela; Sama, François; Sama, Jérémie; Drabo, Jean-Pierre. 2011.
@@ -146,40 +146,47 @@ Inno Setup 5.3.10 Unicode
 SHA-256: 1c1ece4f0ad78e8b634c9ebb8c7ae8a97870fa1d6015cde12ba335584c9c467c
 ```
 
-Inventaire :
+Résultat final :
 
 ```text
 734 fichiers
 695 images
 0 audio
-1 lpLiftEnc
-1 lpConfigEnc
-1 lift-ranges
-3 idx
+lpLiftEnc / lpConfigEnc : binaires protégés/opaques
+lift-ranges             : XML LIFT lisible, ranges uniquement
+English.idx             : glosses anglais → ids
+French.idx              : glosses français → ids
+San Matya.idx           : 2 576 lignes = 2 576 ids numériques uniquement
 ```
 
-Probe final :
+L'index Matya ne contient aucune forme Matya lisible : `14 346` octets, `2 576` lignes, `0` tabulation, `0` octet NUL. Les encodages UTF-8/CP1252/Latin-1 donnent seulement les IDs. Il est donc impossible de reconstruire les paires Matya ↔ français/anglais depuis les `.idx` seuls sans accéder au corpus protégé `lpLiftEnc`.
+
+La licence présente concerne **Lexique Pro**, pas les données lexicales. Aucun nouveau volume n'est ajouté au compteur RAW. Cette piste est fermée jusqu'à obtention d'un PDF/LIFT original ou d'une autorisation/export officielle.
+
+Une recherche courte confirme via ASJP la référence Morris et al. 2011, mais n'a pas retrouvé de copie numérique primaire publique ni de licence explicite. citeturn301947search4
+
+## Source active suivante — Maya `sym`
+
+On passe maintenant à la source originale Maya. Objectifs :
 
 ```text
-lpLiftEnc / lpConfigEnc : binaires opaques/protégés
-lift-ranges             : XML LIFT lisible, métadonnées/ranges uniquement
-English.idx             : texte lisible, terme anglais → ids entrée
-French.idx              : texte encodage ancien, terme français → ids entrée
-San Matya.idx           : probe brut encore nécessaire
+1. identifier la référence primaire utilisée par RefLex / autres agrégateurs
+2. retrouver PDF/LIFT/catalogue ou ressource moderne fiable
+3. vérifier droits/licence
+4. récolter uniquement si accès et droits le permettent
+5. comparer ensuite avec RefLex sym=2 378 et Berthelette sym=912
 ```
 
-La licence trouvée dans `licence.txt` concerne **Lexique Pro**, pas les données San Matya. Elle autorise la distribution du logiciel avec un lexique seulement si le distributeur possède les données ou a reçu l'autorisation de les distribuer. Elle ne constitue donc pas une licence de réutilisation du corpus Matya.
+Glottolog confirme `Maya Samo`, ISO `sym`, Glottocode `maya1281`. citeturn350898search1
 
-Des identifiants jusqu'à environ `2753` apparaissent dans les index. C'est proche des `2743` unités Matya RefLex, mais ce n'est pas une preuve d'identité : un ID maximal n'est pas un nombre d'entrées.
-
-## Prochaine étape immédiate
+## Ordre des prochaines sources
 
 ```text
-1. probe brut rapide de San Matya.idx (encodage/structure)
-2. si les formes Matya sont lisibles → documenter et comparer avec RefLex
-3. sinon → arrêter l'inspection de lpLiftEnc, sans contournement
-4. rechercher Morris et al. 2011 / LIFT / PDF original + droits
-5. passer ensuite à la source Maya originale
+1. Source primaire Maya / sym
+2. Morse 1967 — bibliographie et droits exacts
+3. Maka moderne Webonary/app — reprendre dès clarification des droits
+4. Matya Morris et al. 2011 — reprendre uniquement si source primaire/permission obtenue
+5. Autres ressources Burkina Langues / ANTBA — droits vérifiés source par source
 ```
 
 ## Règle finale de cette branche
