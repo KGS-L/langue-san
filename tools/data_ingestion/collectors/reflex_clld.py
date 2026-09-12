@@ -1,19 +1,22 @@
-"""Récolte ciblée RefLex CLLD pour les trois variétés SAN.
+"""Récolte ciblée RefLex CLLD pour les variétés SAN.
 
-Le collecteur est volontairement prudent :
+Le collecteur reste prudent :
 
-1. `languages.csv` est utilisé pour résoudre la langue cible ;
-2. le glottocode configuré est essayé en premier ;
-3. si RefLex utilise un autre glottocode, des alias de nom peuvent être utilisés
-   uniquement pour le probe afin d'identifier la ligne candidate ;
-4. une récolte complète reste bloquée tant que ce mapping n'a pas été confirmé
-   explicitement dans la configuration.
+- `languages.csv` sert d'index d'autorité pour savoir quelles langues sont
+  réellement présentes dans la version CLLD ;
+- le glottocode configuré est essayé en premier ;
+- les alias de nom ne servent qu'au diagnostic/probe lorsque le glottocode
+  diffère ;
+- quand l'index indique exactement une source, `Number of records in biggest
+  source` est aussi le nombre total de fiches de la langue et permet un probe
+  sans télécharger le lexique ;
+- si plusieurs sources existent, un probe DataTable XHR est tenté ;
+- une récolte complète reste bloquée pour tout mapping non résolu ou nécessitant
+  une revue explicite.
 
-L'export RefLex `languages.csv` observé en septembre 2026 n'expose ni colonne ID
-interne ni code ISO. Il expose notamment `Name` et `Glottocode`.
-
-Le mode `--probe-only` ne télécharge pas les exports lexicaux complets. Il peut
-également afficher des candidats de diagnostic lorsque la résolution échoue.
+L'export RefLex observé en septembre 2026 ne contient ni ID interne ni code ISO.
+Il expose notamment `Name`, `Glottocode`, `Number of records in biggest source`
+et `Number of sources`.
 
 La base RefLex CLLD est sous CC-BY-NC-SA-4.0. Les données restent donc séparées
 d'un futur corpus commercial tant qu'aucune autorisation supplémentaire n'est
@@ -88,6 +91,11 @@ def _pick_column(headers: list[str], candidates: tuple[str, ...]) -> str | None:
     return None
 
 
+def _parse_int(value: Any) -> int | None:
+    text = str(value or "").strip().replace(" ", "").replace(",", "")
+    return int(text) if text.isdigit() else None
+
+
 def fetch_languages(
     source: dict[str, Any],
     *,
@@ -128,7 +136,7 @@ def _diagnostic_candidates(
     rows: list[dict[str, str]],
     limit: int = 12,
 ) -> list[dict[str, str]]:
-    """Retourne des lignes proches sans les considérer comme validées."""
+    """Retourne des lignes proches sans les considérer comme un mapping validé."""
 
     name_col = _pick_column(headers, ("name", "language", "language_name"))
     glottocode_col = _pick_column(headers, ("glottocode", "glotto_code", "glottocode_id"))
@@ -145,13 +153,10 @@ def _diagnostic_candidates(
     scored: list[tuple[int, dict[str, str]]] = []
     for row in rows:
         name = str(row.get(name_col) or "") if name_col else ""
-        name_norm = _normalise_text(name)
-        tokens = set(name_norm.split())
+        tokens = set(_normalise_text(name).split())
         score = 0
-
         for alias in aliases:
-            alias_norm = _normalise_text(alias)
-            if name_norm == alias_norm:
+            if _normalise_text(name) == _normalise_text(alias):
                 score = max(score, 100)
             elif _token_signature(name) == _token_signature(alias):
                 score = max(score, 95)
@@ -168,19 +173,17 @@ def _diagnostic_candidates(
             scored.append((score, row))
 
     scored.sort(key=lambda item: (-item[0], _normalise_text(str(item[1].get(name_col) or ""))))
-    result = []
-    for score, row in scored[:limit]:
-        result.append(
-            {
-                "score": str(score),
-                "name": str(row.get(name_col) or "") if name_col else "",
-                "glottocode": str(row.get(glottocode_col) or "") if glottocode_col else "",
-                "family": str(row.get(family_col) or "") if family_col else "",
-                "records_biggest_source": str(row.get(biggest_col) or "") if biggest_col else "",
-                "number_of_sources": str(row.get(sources_col) or "") if sources_col else "",
-            }
-        )
-    return result
+    return [
+        {
+            "score": str(score),
+            "name": str(row.get(name_col) or "") if name_col else "",
+            "glottocode": str(row.get(glottocode_col) or "") if glottocode_col else "",
+            "family": str(row.get(family_col) or "") if family_col else "",
+            "records_biggest_source": str(row.get(biggest_col) or "") if biggest_col else "",
+            "number_of_sources": str(row.get(sources_col) or "") if sources_col else "",
+        }
+        for score, row in scored[:limit]
+    ]
 
 
 def _resolve_one_target(
@@ -193,6 +196,8 @@ def _resolve_one_target(
     glottocode_col = _pick_column(headers, ("glottocode", "glotto_code", "glottocode_id"))
     iso_col = _pick_column(headers, ("iso_639_3", "iso639p3code", "iso6393", "iso"))
     name_col = _pick_column(headers, ("name", "language", "language_name"))
+    biggest_col = _pick_column(headers, ("number of records in biggest source",))
+    sources_col = _pick_column(headers, ("number of sources",))
 
     iso = str(target["iso_639_3"])
     configured_glottocode = str(target["glottocode"])
@@ -256,16 +261,13 @@ def _resolve_one_target(
                 "iso_639_3": iso,
                 "variety": target.get("variety"),
                 "configured_glottocode": configured_glottocode,
-                "resolution_status": "unresolved",
+                "resolution_status": "not_found_in_languages_index",
                 "mapping_review_required": True,
                 "diagnostic_candidates": _diagnostic_candidates(target, headers=headers, rows=rows),
             }
 
     row = matches[0]
-    observed_glottocode = (
-        str(row.get(glottocode_col) or "").strip() if glottocode_col is not None else ""
-    )
-
+    observed_glottocode = str(row.get(glottocode_col) or "").strip() if glottocode_col else ""
     if id_col is not None:
         language_id = str(row.get(id_col) or "").strip()
         id_resolution_method = f"exported_column:{id_col}"
@@ -280,21 +282,13 @@ def _resolve_one_target(
             "resolution_status": "resolved_row_without_usable_id",
             "mapping_review_required": True,
             "language_row": row,
-            "diagnostic_candidates": _diagnostic_candidates(target, headers=headers, rows=rows),
         }
 
-    if not language_id:
-        return {
-            "iso_639_3": iso,
-            "variety": target.get("variety"),
-            "configured_glottocode": configured_glottocode,
-            "resolution_status": "resolved_row_with_empty_id",
-            "mapping_review_required": True,
-            "language_row": row,
-        }
-
-    if observed_glottocode and observed_glottocode.casefold() != configured_glottocode.casefold():
+    if observed_glottocode.casefold() != configured_glottocode.casefold():
         mapping_review_required = True
+
+    records_biggest_source = _parse_int(row.get(biggest_col)) if biggest_col else None
+    number_of_sources = _parse_int(row.get(sources_col)) if sources_col else None
 
     return {
         "iso_639_3": iso,
@@ -308,6 +302,8 @@ def _resolve_one_target(
         "resolution_method": resolution_method,
         "resolution_status": "resolved",
         "mapping_review_required": mapping_review_required,
+        "records_biggest_source": records_biggest_source,
+        "number_of_sources": number_of_sources,
         "language_row": row,
     }
 
@@ -322,19 +318,15 @@ def resolve_targets(
             "Impossible d'identifier la colonne Glottocode dans languages.csv. "
             f"Colonnes observées : {', '.join(headers)}"
         )
-    return [
-        _resolve_one_target(target, headers=headers, rows=rows)
-        for target in source.get("targets", [])
-    ]
+    return [_resolve_one_target(target, headers=headers, rows=rows) for target in source.get("targets", [])]
 
 
 def _probe_count(payload: dict[str, Any]) -> int | None:
     for key in ("iTotalDisplayRecords", "recordsFiltered", "iTotalRecords", "recordsTotal"):
         value = payload.get(key)
-        if isinstance(value, int):
-            return value
-        if isinstance(value, str) and value.isdigit():
-            return int(value)
+        parsed = _parse_int(value)
+        if parsed is not None:
+            return parsed
     return None
 
 
@@ -358,8 +350,11 @@ def probe_language(
             "resolution_method",
             "resolution_status",
             "mapping_review_required",
+            "records_biggest_source",
+            "number_of_sources",
         )
     }
+
     if target.get("resolution_status") != "resolved":
         return {
             **base,
@@ -369,6 +364,22 @@ def probe_language(
             "diagnostic_candidates": target.get("diagnostic_candidates", []),
         }
 
+    # RefLex fournit déjà un compte exact quand une langue n'a qu'une seule
+    # source : le nombre de fiches de la plus grosse source est alors le total.
+    source_count = target.get("number_of_sources")
+    biggest = target.get("records_biggest_source")
+    if source_count == 1 and isinstance(biggest, int):
+        return {
+            **base,
+            "probe_status": "ok_from_languages_index",
+            "num_records_reported": biggest,
+            "count_source": "languages.csv_single_source",
+            "first_row_available": biggest > 0,
+        }
+
+    # Pour les langues multi-sources, CLLD sert le DataTable via une requête XHR.
+    # Ne pas forcer Accept: application/json : RefLex répond 406 à cette
+    # négociation alors que l'endpoint HTML/XHR reste le mécanisme attendu.
     url = str(source["endpoints"]["values"])
     try:
         response = session.get(
@@ -380,7 +391,7 @@ def probe_language(
                 "iDisplayLength": "1",
             },
             timeout=90,
-            headers={"Accept": "application/json"},
+            headers={"X-Requested-With": "XMLHttpRequest"},
         )
         response.raise_for_status()
         payload = response.json()
@@ -415,8 +426,9 @@ def probe_language(
 
     return {
         **base,
-        "probe_status": "ok",
+        "probe_status": "ok_from_datatable_xhr",
         "num_records_reported": total,
+        "count_source": "values_datatable_xhr",
         "first_row_available": first_row_available,
     }
 
@@ -506,6 +518,12 @@ def harvest_language(
         json.dumps(target, ensure_ascii=False, indent=2),
         encoding="utf-8",
     )
+
+    expected = (
+        target.get("records_biggest_source")
+        if target.get("number_of_sources") == 1
+        else None
+    )
     return {
         "iso_639_3": target["iso_639_3"],
         "variety": target.get("variety"),
@@ -514,6 +532,8 @@ def harvest_language(
         "reflex_language_id": target.get("reflex_language_id"),
         "reflex_language_id_resolution": target.get("reflex_language_id_resolution"),
         "rows_written": row_count,
+        "expected_rows_from_index": expected,
+        "count_matches_index": expected is None or row_count == expected,
         "columns": headers,
         "output": str(output_path),
     }
@@ -590,10 +610,12 @@ def _print_probe_item(item: dict[str, Any]) -> None:
         f"résolution={item.get('resolution_method') or '?'}, "
         f"probe={item.get('probe_status') or '?'}"
     )
-    if item.get("probe_status") == "ok":
+    if str(item.get("probe_status") or "").startswith("ok_"):
         print(
             f"  fiches={item.get('num_records_reported')}, "
+            f"source_compte={item.get('count_source')}, "
             f"première_ligne={item.get('first_row_available')}, "
+            f"sources={item.get('number_of_sources')}, "
             f"mapping_review_required={item.get('mapping_review_required')}"
         )
     elif item.get("probe_error"):
@@ -633,9 +655,11 @@ def main() -> None:
     payload = harvest(source, output_root=args.output_root, selected_iso=selected_iso)
     print("Récolte RefLex CLLD :")
     for item in payload["results"]:
+        expected = item.get("expected_rows_from_index")
+        expected_text = f" / attendu={expected}" if expected is not None else ""
         print(
-            f"- {item['iso_639_3']} ({item['variety']}): {item['rows_written']} lignes "
-            f"→ {item['output']}"
+            f"- {item['iso_639_3']} ({item['variety']}): {item['rows_written']} lignes"
+            f"{expected_text} → {item['output']}"
         )
     print(f"Métadonnées : {payload['metadata_path']}")
 
