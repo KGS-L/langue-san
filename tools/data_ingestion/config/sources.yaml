@@ -103,7 +103,7 @@ sources:
     license: "CC-BY-NC-SA-4.0 (SIL Language & Culture Archives default unless item/file states otherwise)"
     rights_status: "archive_default_noncommercial_pending_pdf_confirmation"
     enabled: false
-    status: "pdf_harvested_pending_content_inspection"
+    status: "pdf_harvested_structure_inspection_passed_wordlist_probe_ready"
     intended_use: "sociolinguistic_reference_and_locality_wordlists"
     publication_approved: false
     training_approved: false
@@ -114,6 +114,16 @@ sources:
       sha256: "efcd06c8e235df9e7334b141aaeb123064e227fab2c05d100c4a57bba7d9f196"
       raw_path: "data/raw/berthelette/SILESR2002_005.pdf"
       metadata_path: "data/raw/berthelette/metadata.json"
+    pdf_inspection:
+      actual_pages: 73
+      pages_with_extractable_text: 73
+      text_coverage_percent: 100.0
+      extracted_text_chars: 176986
+      sha256_matches_harvest_metadata: true
+      technical_ok: true
+      rights_term_pages: []
+      lexical_or_appendix_candidate_pages: [2, 3, 4, 8, 9, 10, 11, 15, 16, 19, 24, 25, 26, 32, 41]
+      note: "Le catalogue annonce 75 pages, tandis que le fichier PDF contient 73 pages physiques. L'écart est conservé comme observation et non corrigé."
     known_localities_from_bibliographic_index:
       - locality: "Toma"
         variety: "maka"
@@ -144,10 +154,12 @@ sources:
       - "Le lien PDF exact a été retrouvé via la référence PDF de la page Wikipedia Samo, qui pointe vers le stockage SIL reapdata."
       - "Le téléchargement automatisé SIL répond HTTP 403; le PDF a donc été téléchargé manuellement puis ingéré localement par le collecteur."
       - "Probe local réussi : PDF valide, 4015872 octets, SHA-256 efcd06c8e235df9e7334b141aaeb123064e227fab2c05d100c4a57bba7d9f196."
+      - "Inspection structurelle locale : 73/73 pages ont du texte extractible, 176986 caractères, SHA metadata cohérent, technical_ok=true; aucun OCR requis."
+      - "Le détecteur lexical générique signale notamment la page 41; la présence répétée des huit localités sur un long bloc de pages justifie maintenant une inspection ciblée du tableau comparatif avant parsing."
       - "Glottolog classe ce document comme overview;wordlist;socling et associe explicitement huit localités aux trois ISO sbd/stj/sym."
       - "ASJP utilise Berthelette 2001 comme source de MAYA_SAMO; les volumes ne doivent pas être additionnés comme sources indépendantes."
-      - "La règle par défaut des SIL Language & Culture Archives est CC-BY-NC-SA-4.0 sauf mention contraire dans le fichier ou la notice; confirmer dans le PDF pendant l'inspection."
-      - "Étape suivante : inspection structurelle/textuelle du PDF sans OCR avant toute extraction lexicale."
+      - "La règle par défaut des SIL Language & Culture Archives est CC-BY-NC-SA-4.0 sauf mention contraire dans le fichier ou la notice; aucune mention de droits n'a été détectée automatiquement dans le texte extrait, donc le statut reste conservateur."
+      - "Étape suivante : inspecter le bloc multi-localités en mode layout, puis seulement définir le parseur lexical."
 
   ainsisoisje:
     name: "Ainsi sois-je — Dictionnaire Français / Samo"
