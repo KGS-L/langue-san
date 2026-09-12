@@ -150,50 +150,13 @@ CC-BY-NC-SA-4.0
 
 Les données récoltées restent donc destinées à l'inventaire/recherche locale sous les conditions de cette licence. Elles ne sont **pas** automatiquement approuvées pour publication, entraînement ou usage commercial.
 
-### Résolution réelle
-
 ```text
-stj / Matya / Samo Matya / maty1235
-sym / Maya  / Samo Maya  / maya1281
+stj / Matya : 2 743 lignes /units, glottocode maty1235
+sym / Maya  : 2 378 lignes /units, glottocode maya1281
+TOTAL       : 5 121 unités lexicales RAW
 ```
 
-`San Maka / sbd / sout2844` n'a pas été trouvé dans l'index RefLex actuel et ne doit pas être remplacé par un candidat approximatif.
-
-La récolte réelle utilise le DataTable `/units` découvert depuis la page de la langue puis son export CSV officiel.
-
-### Résultats
-
-```text
-stj / Matya
-  languages.csv : 2 764 fiches dans la plus grosse/unique source
-  /units export : 2 743 lignes
-  glottocode     : maty1235
-  clld page id   : 1472
-
-sym / Maya
-  languages.csv : 2 384 fiches dans la plus grosse/unique source
-  /units export : 2 378 lignes
-  glottocode     : maya1281
-  clld page id   : 1473
-
-TOTAL RefLex RAW : 5 121 unités lexicales
-```
-
-Colonnes RAW :
-
-```text
-Original Form
-Original Translation
-Comment
-Part of Speech
-Source
-Glottocode
-Family
-Latitude
-Longitude
-```
-
-QA exécuté :
+QA :
 
 ```text
 stj : technical_ok=True
@@ -201,7 +164,9 @@ sym : technical_ok=True
 all_technical_ok=True
 ```
 
-**Statut RefLex dans cette phase : `collection_success + qa_passed` pour `stj` et `sym`.**
+`San Maka / sbd / sout2844` n'a pas été trouvé dans l'index RefLex actuel et ne doit pas être remplacé par un candidat approximatif.
+
+**Statut RefLex : `collection_success + qa_passed` pour `stj` et `sym`.**
 
 ## Volume RAW opérationnel à ce stade
 
@@ -221,21 +186,20 @@ TOTAL         14811 occurrences/lignes RAW
 
 Ce total est un **compteur de collecte**, pas un corpus final : il contient des chevauchements, des domaines spécialisés, des licences/droits différents et des données non validées linguistiquement.
 
-À ces `14 811` occurrences s'ajoute maintenant **1 document source Berthelette**, mais le PDF n'est pas compté comme des lignes lexicales tant que ses wordlists ne sont pas extraites.
+À ces `14 811` occurrences s'ajoute **1 document source Berthelette**, mais le PDF n'est pas compté comme des lignes lexicales tant que ses wordlists ne sont pas extraites.
 
 ## Source active — Berthelette 2001
 
-Reconnaissance détaillée : [`BERTHELETTE_RECON.md`](BERTHELETTE_RECON.md).
+Détails : [`BERTHELETTE_RECON.md`](BERTHELETTE_RECON.md).
 
 ```text
 John Berthelette
 Sociolinguistic survey report for the San (Samo) language
 SILESR 2002-005
-75 pages annoncées
 SIL archive entry 8983
 ```
 
-Le PDF officiel a été téléchargé manuellement puis ingéré avec succès dans le RAW :
+### PDF récolté
 
 ```text
 fichier : data/raw/berthelette/SILESR2002_005.pdf
@@ -244,59 +208,59 @@ octets  : 4015872
 SHA-256 : efcd06c8e235df9e7334b141aaeb123064e227fab2c05d100c4a57bba7d9f196
 ```
 
-Le téléchargement HTTP automatisé SIL renvoie `403`; ce point est documenté et n'est plus bloquant.
+### Inspection PDF — réussie
 
-Glottolog associe explicitement cette référence à :
-
-```text
-sbd / Maka  : Toma
-stj / Matya : Kassoum, Kouy, Toéni
-sym / Maya  : Bounou, Kiembara, Bangassogo, Lankoué
-```
-
-ASJP `MAYA_SAMO` utilise Berthelette comme source amont : les futures lignes Berthelette ne devront donc pas être additionnées naïvement aux lignes ASJP.
-
-### Étape actuelle — inspection structurelle du PDF
-
-Une nouvelle dépendance a été ajoutée :
-
-```text
-pypdf
-```
-
-Après mise à jour de la branche :
+Commande :
 
 ```bash
-pip install -r requirements.txt
-pytest tests
 python processors/inspect_berthelette_pdf.py
 ```
 
-Le processor produit :
+Résultat réel :
 
 ```text
-data/processed/berthelette/pdf_inventory.json
+pages physiques PDF : 73
+pages catalogue      : 75
+texte extractible    : 73 / 73 = 100 %
+caractères extraits  : 176 986
+SHA metadata         : OK
+technical_ok         : True
+OCR nécessaire       : non
 ```
 
-Il vérifie :
+Le décalage `75 → 73` est conservé comme observation. Aucun OCR n'est requis.
+
+Les localités connues sont retrouvées dans le texte, et leur répétition sur un long bloc autour des pages `41–64` suggère fortement un tableau comparatif multi-localités. Ce signal doit être confirmé par la structure réelle du texte avant parsing.
+
+### Étape actuelle — inspecter le bloc wordlist en mode layout
+
+Processor :
 
 ```text
-nombre réel de pages
-texte extractible par page
-SHA-256 ↔ metadata
-pages contenant droits/copyright/licence
-pages candidates wordlist/appendix/lexical
-pages contenant les localités connues
+processors/inspect_berthelette_wordlist.py
 ```
 
-Aucun OCR n'est lancé à cette étape. Les pages non extractibles seront signalées et l'OCR ne sera envisagé qu'en dernier recours, de manière ciblée.
+Commande :
 
-Après cet inventaire, on identifiera les pages et tableaux à extraire, puis on construira le collecteur lexical Berthelette en conservant au minimum `page + localité + forme + glose + provenance`.
+```bash
+python processors/inspect_berthelette_wordlist.py
+```
+
+Sorties :
+
+```text
+data/processed/berthelette/wordlist_section_inventory.json
+data/processed/berthelette/wordlist_candidate_text.txt
+```
+
+Le processor détecte les pages où plusieurs des huit localités apparaissent ensemble, regroupe les pages contiguës et extrait le texte en mode `layout` afin de préserver au mieux les colonnes. **Il ne crée encore aucune ligne lexicale finale.**
+
+Après confirmation du bloc et des colonnes, on construira le parseur RAW Berthelette avec `page + localité + forme + glose + provenance`, puis un QA technique et une comparaison avec ASJP/RefLex.
 
 ## Ordre des prochaines sources
 
 ```text
-1. Berthelette 2001 — inspection PDF puis extraction des wordlists/localités
+1. Berthelette 2001 — confirmer le bloc wordlist, parser, QA
 2. Lexiques originaux SIL / ANTBA
 3. Dictionnaires Burkina Langues — seulement après clarification des droits
 4. Textes / audio bibliques ANTBA — droits à clarifier et domaine religieux séparé
