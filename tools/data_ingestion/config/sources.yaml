@@ -45,17 +45,36 @@ sources:
       - variety: "maka"
         iso_639_3: "sbd"
         glottocode: "sout2844"
+        name_aliases:
+          - "Southern Samo"
+          - "Samo Southern"
+          - "San Maka"
+          - "Maka Samo"
+          - "Samo Maka"
+          - "San du Sud"
       - variety: "matya"
         iso_639_3: "stj"
         glottocode: "maty1235"
+        name_aliases:
+          - "Matya Samo"
+          - "Samo Matya"
+          - "San Matya"
       - variety: "maya"
         iso_639_3: "sym"
         glottocode: "maya1281"
+        name_aliases:
+          - "Maya Samo"
+          - "Samo Maya"
+          - "Mayaa Samo"
+          - "Samo Mayaa"
+          - "San Maya"
+          - "San Mayaa"
     notes:
       - "RefLex CLLD annonce des données téléchargeables et conserve les formes originales ainsi que les références de sources."
       - "La licence CC-BY-NC-SA-4.0 interdit l'usage commercial sans autorisation supplémentaire : ne pas mélanger automatiquement ces données à un futur corpus commercial."
       - "Le RAW reste local; l'attribution des sources amont doit être conservée."
-      - "Le probe doit confirmer la présence et le volume de chaque variété avant toute récolte complète."
+      - "Le languages.csv observé ne contient ni ID interne ni code ISO; la résolution commence par le glottocode puis peut utiliser les alias de nom uniquement pour le probe."
+      - "Si un alias de nom résout une ligne dont le glottocode diffère de la config, la récolte complète reste bloquée jusqu'à mise à jour explicite du mapping."
 
   ainsisoisje:
     name: "Ainsi sois-je — Dictionnaire Français / Samo"
