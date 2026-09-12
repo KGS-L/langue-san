@@ -57,17 +57,20 @@ lexical_subsets:
     enabled: true
   - family: panlex_snapshot
     repo_id: lbourdois/panlex
+    config: panlex
     enabled: true
 """.strip(),
         encoding="utf-8",
     )
-    assert panlex.load_target(path)["repo_id"] == "lbourdois/panlex"
+    target = panlex.load_target(path)
+    assert target["repo_id"] == "lbourdois/panlex"
+    assert target["config"] == "panlex"
 
 
 def test_probe_reports_target_count():
     target = {
         "repo_id": "lbourdois/panlex",
-        "config": "default",
+        "config": "panlex",
         "split": "train",
         "filter_column": "639-3",
         "iso_codes": {"sbd": "maka"},
@@ -92,7 +95,7 @@ def test_existing_state_reads_valid_jsonl(tmp_path):
 def test_harvest_iso_writes_provenance(tmp_path):
     target = {
         "repo_id": "lbourdois/panlex",
-        "config": "default",
+        "config": "panlex",
         "split": "train",
         "filter_column": "639-3",
         "iso_codes": {"sbd": "maka"},
