@@ -169,21 +169,21 @@ Cette source est citée par ASJP `SAMO_MATYA_2` et correspond à la source amont
 
 Une application moderne `San Matya de A-Z` de Burkina Langues est aussi confirmée : **2 576 entrées**, **685 images**, zone de Tougan. Sa licence de réutilisation n'est pas encore confirmée ; elle est traitée séparément de l'ouvrage 2011.
 
-Un installateur Windows a maintenant été récupéré localement :
+L'installateur Windows local a maintenant été identifié sans exécution :
 
 ```text
-San Matya - Lexique Pro Setup.exe
-~21 MiB
+fichier    : San Matya - Lexique Pro Setup.exe
+format     : PE32 GUI Intel 80386
+installateur: Inno Setup 5.3.10 Unicode
+SHA-256    : 1c1ece4f0ad78e8b634c9ebb8c7ae8a97870fa1d6015cde12ba335584c9c467c
 ```
 
-Attention : cet installateur est **Matya / stj**, pas San du Sud / Maka / sbd. Le dossier local doit donc être renommé `san_matya_lexique_pro` avant toute inspection afin d'éviter un mélange de variétés.
-
-Étape immédiate : inspection statique locale de l'installateur sans l'exécuter (`file`, SHA-256, listing 7z, recherche LIFT/XML/DB/audio/images), puis recherche courte du PDF/notice primaire Morris et al. 2011 et de ses droits. Si l'accès original ou les droits ne sont pas clarifiés rapidement, documenter puis passer à la source primaire Maya.
+Étape immédiate : installer `innoextract`, lister puis extraire statiquement le contenu dans un dossier local isolé, et rechercher LIFT/XML/DB/TXT/HTML ainsi que les médias. Aucun exécutable Windows n'est lancé. Ensuite, on documente la structure et on continue la recherche courte des droits / de la source primaire 2011.
 
 ## Ordre des prochaines sources
 
 ```text
-1. Inspecter San Matya - Lexique Pro Setup.exe sans exécution
+1. Inspecter le contenu de l'installateur Matya avec innoextract
 2. Morris et al. 2011 — source primaire Matya / droits
 3. Source Maya originale citée par RefLex
 4. Morse 1967 — bibliographie et droits exacts
