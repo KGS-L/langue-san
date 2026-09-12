@@ -53,9 +53,9 @@ contexte sociolinguistique
 
 Il est particulièrement utile pour ne pas réduire une variété entière à une seule ville moderne.
 
-## 3. Localités documentées par l'index bibliographique
+## 3. Localités et variétés
 
-Glottolog relie cette référence à :
+L'index bibliographique relie cette référence à :
 
 ```text
 sbd / Maka
@@ -73,7 +73,20 @@ sym / Maya
   Lankoué
 ```
 
-Cette correspondance est conservée comme provenance bibliographique. Lors du parsing, on garde aussi les libellés réellement présents dans le PDF page par page.
+Le PDF lui-même confirme explicitement cette correspondance à la page 64 :
+
+```text
+Toma       → variété maka
+Kouy       → variété matya
+Kassoum    → variété matya
+Toéni      → variété matya
+Bounou     → variété maya
+Kiembara   → variété maya
+Bangassogo → variété maya
+Lankoué    → variété maya
+```
+
+Cette correspondance n'est donc plus un simple `locality_hint` pour cette source : elle est une attribution explicitement documentée par Berthelette. Le futur RAW conservera malgré tout `locality + variety + iso + page` afin de préserver la provenance.
 
 ## 4. Relation avec ASJP
 
@@ -143,17 +156,10 @@ texte extractible        : 73 / 73 = 100 %
 caractères extraits      : 176 986
 SHA metadata             : OK
 technical_ok             : True
-OCR nécessaire           : non
 pages droits détectées   : aucune par recherche textuelle automatique
 ```
 
 L'écart `75 pages annoncées → 73 pages physiques` est conservé comme observation. Il n'est pas corrigé artificiellement.
-
-Pages signalées par les mots-clés génériques `wordlist/lexical/appendix/...` :
-
-```text
-2, 3, 4, 8, 9, 10, 11, 15, 16, 19, 24, 25, 26, 32, 41
-```
 
 Rapport local :
 
@@ -161,85 +167,125 @@ Rapport local :
 data/processed/berthelette/pdf_inventory.json
 ```
 
-## 8. Signal fort d'un bloc comparatif multi-localités
+## 8. Bloc lexical confirmé
 
-L'inspection a montré que les huit localités réapparaissent ensemble sur un long bloc, notamment autour des pages `41–64`.
+L'inspection ciblée a confirmé la section :
 
-Cela est cohérent avec le fait que Glottolog classe le document comme `overview;wordlist;socling`, mais ce signal ne suffit pas encore à définir automatiquement la structure des lignes.
+```text
+A Word List of Dialects in the San Region
+```
 
-On ne parse donc pas encore le tableau à l'aveugle.
+Les pages PDF `41–63` contiennent les entrées numérotées visibles `012–231`. Les identifiants observés sont continus sur ce bloc. Cela représente 220 concepts directement repérés par extraction textuelle, mais les entrées `001–011` restent à localiser/récupérer avant de fixer le nombre total de concepts.
 
-## 9. Étape actuelle — inspection ciblée du bloc wordlist
+La page 64 ne contient plus la wordlist : elle documente les lieux, enquêteurs, dates et les variétés `maka/matya/maya`.
+
+Les tableaux des pages 25–26 sur les pourcentages de similarité lexicale sont des statistiques de l'enquête et ne doivent pas être confondus avec la wordlist de formes.
+
+## 9. Problème technique actuel — police phonétique legacy
+
+Le texte français, les numéros de concepts et les noms de localités sont lisibles, mais les formes SAN phonétiques sont actuellement extraites sous forme de glyphes legacy :
+
+```text
+/G3D/G4F/G51/G05/...
+```
+
+Le mode `layout` de `pypdf` signale en plus :
+
+```text
+PDF contains an uninterpretable font. Output will be incomplete.
+```
+
+La page 64 précise que les transcriptions phonétiques suivent les standards IPA/AIP. Le problème n'est donc pas que les formes seraient absentes du PDF : le PDF contient une ancienne police/encodage dont la correspondance Unicode n'est pas directement interprétée par `pypdf`.
+
+Règle actuelle :
+
+```text
+/Gxx tokens
+    ≠ forme SAN exploitable
+```
+
+Aucun mapping ne doit être inventé à partir des codes hexadécimaux.
+
+## 10. Diagnostic police avant tout OCR
 
 Processor ajouté :
 
 ```text
-processors/inspect_berthelette_wordlist.py
+processors/diagnose_berthelette_fonts.py
 ```
 
-Il :
+Il inspecte les pages `41–64` et documente :
 
 ```text
-- extrait le texte PDF en mode layout
-- compte les localités canoniques présentes page par page
-- repère les blocs continus où plusieurs localités apparaissent ensemble
-- conserve un aperçu du début et de la fin de chaque bloc
-- écrit le texte complet candidat avec des marqueurs de page
-- ne produit encore aucune entrée lexicale finale
+/BaseFont
+/Subtype
+/Encoding
+/Differences
+/ToUnicode présent ou absent
+police embarquée ou non
+volume de tokens /G..
 ```
 
 Commande :
 
 ```bash
-python processors/inspect_berthelette_wordlist.py
+python processors/diagnose_berthelette_fonts.py
 ```
 
-Sorties :
+Sortie :
 
 ```text
-data/processed/berthelette/wordlist_section_inventory.json
-data/processed/berthelette/wordlist_candidate_text.txt
+data/processed/berthelette/font_diagnostic.json
 ```
 
-Le mode `layout` est important : il tente de conserver l'alignement des colonnes, ce qui nous permettra de savoir si le tableau peut être parsé proprement sans OCR ni reconstruction manuelle.
+Ce diagnostic ne convertit aucune forme et ne lance aucun OCR. Selon le résultat, on privilégiera dans cet ordre :
 
-## 10. Schéma lexical prévu
+```text
+1. mapping Unicode fourni/recouvrable depuis la police PDF
+2. autre moteur PDF (Poppler, etc.) si mieux interprété
+3. mapping documenté d'une police SIL legacy identifiée
+4. OCR ciblé uniquement en dernier recours
+```
 
-Le schéma final sera figé après lecture du vrai bloc de tableau. Une occurrence devra conserver au minimum :
+## 11. Schéma lexical prévu
+
+Une occurrence devra conserver au minimum :
 
 ```text
 source = Berthelette 2001
 report_id = SILESR-2002-005
 pdf_page
-section / appendix / table
+concept_id
+concept_gloss_fr
 locality
 variety_claimed_by_source
-iso_639_3                    # seulement si justifié
-concept / gloss source
+iso_639_3
 original_form
+transcription_system = IPA
 notes
 validation_status = external_unverified
 rights_status
 ```
 
-Toutes les occurrences sont conservées, même si plusieurs localités ou formes existent pour le même concept.
+Toutes les occurrences sont conservées, même si plusieurs formes existent pour le même concept/localité.
 
-## 11. Critères de réussite lexicale
+## 12. Critères de réussite lexicale
 
 ```text
 PDF officiel vérifié                    ✅
 provenance + SHA-256                    ✅
 inspection structurelle                 ✅
-texte extractible sans OCR              ✅
-bloc wordlist confirmé                  en cours
-structure des colonnes confirmée        à faire
+bloc wordlist confirmé                  ✅
+variétés confirmées dans le PDF         ✅
+formes SAN Unicode décodées             à faire
+entrées 001–011 localisées              à faire
 extraction RAW lexicale                 à faire
 QA technique lexical                    à faire
 comparaison ASJP / RefLex               à faire
 validation linguistique                 future
 ```
 
-## 12. Statut actuel
+## 13. Statut actuel
 
 ```text
 discovery               = confirmed
@@ -253,7 +299,10 @@ pdf_sha256              = efcd06c8e235df9e7334b141aaeb123064e227fab2c05d100c4a57
 pdf_pages               = 73
 pdf_text_coverage       = 100_percent
 pdf_inspection          = technical_ok
-ocr_required            = false
-wordlist_block_probe    = ready
-lexical_extraction      = not_started
+wordlist_section        = confirmed_pages_41_63_visible_ids_012_231
+locality_variety_mapping = confirmed_in_pdf_page_64
+legacy_font_issue       = confirmed_Gxx_tokens
+font_diagnostic         = ready
+ocr                     = deferred_last_resort
+lexical_extraction      = blocked_until_font_decoding
 ```
