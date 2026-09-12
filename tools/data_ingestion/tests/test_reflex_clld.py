@@ -15,23 +15,26 @@ SPEC.loader.exec_module(reflex)
 
 
 LANGUAGES_CSV = """Name,Family,Glottocode,Macroarea,Number of records in biggest source,Number of sources,Latitude,Longitude
-Southern Samo,Mande,sout2844,Africa,2200,2,12.0,-2.0
-Matya Samo,Mande,maty1235,Africa,2576,2,13.0,-3.0
+Southern Samo,Mande,sout2844,Africa,2200,1,12.0,-2.0
+Matya Samo,Mande,maty1235,Africa,2576,1,13.0,-3.0
 Maya Samo,Mande,maya1281,Africa,1500,1,13.1,-3.1
 """
 
-# Le nom contient volontairement une virgule sur la première ligne. Comme dans
-# tout CSV valide, la valeur est entourée de guillemets afin que DictReader ne
-# décale pas Family/Glottocode/Macroarea d'une colonne.
 LANGUAGES_CSV_CHANGED_GLOTTO = """Name,Family,Glottocode,Macroarea,Number of records in biggest source,Number of sources,Latitude,Longitude
-"Samo, Southern",Mande,olds1111,Africa,2200,2,12.0,-2.0
-Samo Matya,Mande,oldm2222,Africa,2576,2,13.0,-3.0
+"Samo, Southern",Mande,olds1111,Africa,2200,1,12.0,-2.0
+Samo Matya,Mande,oldm2222,Africa,2576,1,13.0,-3.0
 Samo Mayaa,Mande,oldy3333,Africa,1500,1,13.1,-3.1
 """
 
 LANGUAGES_CSV_UNRESOLVED = """Name,Family,Glottocode,Macroarea,Number of records in biggest source,Number of sources,Latitude,Longitude
 Samo North,Mande,nort0001,Africa,100,1,12.0,-2.0
 Other Language,Mande,othe0001,Africa,50,1,13.0,-3.0
+"""
+
+LANGUAGES_CSV_MULTI_SOURCE = """Name,Family,Glottocode,Macroarea,Number of records in biggest source,Number of sources,Latitude,Longitude
+Southern Samo,Mande,sout2844,Africa,1500,2,12.0,-2.0
+Matya Samo,Mande,maty1235,Africa,2576,1,13.0,-3.0
+Maya Samo,Mande,maya1281,Africa,1500,1,13.1,-3.1
 """
 
 VALUES_CSV = """id,name,description,language_pk
@@ -138,6 +141,8 @@ def test_resolve_targets_uses_configured_glottocodes_when_present():
     ]
     assert all(item["resolution_status"] == "resolved" for item in targets)
     assert all(item["mapping_review_required"] is False for item in targets)
+    assert [item["records_biggest_source"] for item in targets] == [2200, 2576, 1500]
+    assert [item["number_of_sources"] for item in targets] == [1, 1, 1]
 
 
 def test_resolve_targets_can_probe_by_exact_name_alias_when_reflex_glottocode_differs():
@@ -159,36 +164,51 @@ def test_unresolved_targets_return_diagnostic_candidates_instead_of_aborting():
     headers, rows = _read_languages(LANGUAGES_CSV_UNRESOLVED)
     targets = reflex.resolve_targets(_source(), headers, rows)
 
-    assert all(item["resolution_status"] == "unresolved" for item in targets)
+    assert all(item["resolution_status"] == "not_found_in_languages_index" for item in targets)
     sbd = targets[0]
     assert sbd["diagnostic_candidates"]
     assert sbd["diagnostic_candidates"][0]["name"] == "Samo North"
 
 
-def test_probe_reports_counts_without_full_csv_download():
+def test_probe_uses_exact_count_from_languages_index_when_only_one_source():
     session = _FakeSession()
     result = reflex.probe(_source(), session=session)
     counts = {item["iso_639_3"]: item["num_records_reported"] for item in result["results"]}
 
     assert counts == {"sbd": 2200, "stj": 2576, "sym": 1500}
-    assert all(item["probe_status"] == "ok" for item in result["results"])
+    assert all(item["probe_status"] == "ok_from_languages_index" for item in result["results"])
+    assert all(item["count_source"] == "languages.csv_single_source" for item in result["results"])
     assert result["commercial_use_approved"] is False
+    assert not any(call[0].endswith("/values") for call in session.calls)
     assert not any(call[0].endswith("values.csv") for call in session.calls)
 
 
 def test_probe_uses_observed_reflex_glottocode_for_alias_fallback():
-    totals = {"olds1111": 2200, "oldm2222": 2576, "oldy3333": 1500}
-    session = _FakeSession(LANGUAGES_CSV_CHANGED_GLOTTO, totals=totals)
+    session = _FakeSession(LANGUAGES_CSV_CHANGED_GLOTTO)
     result = reflex.probe(_source(), session=session)
 
-    assert [item["probe_status"] for item in result["results"]] == ["ok", "ok", "ok"]
+    assert [item["probe_status"] for item in result["results"]] == [
+        "ok_from_languages_index",
+        "ok_from_languages_index",
+        "ok_from_languages_index",
+    ]
     assert result["results"][0]["reflex_glottocode"] == "olds1111"
     assert result["results"][0]["mapping_review_required"] is True
 
 
+def test_probe_multisource_uses_xhr_without_forcing_json_accept():
+    session = _FakeSession(LANGUAGES_CSV_MULTI_SOURCE, totals={"sout2844": 2200})
+    result = reflex.probe(_source(), session=session, selected_iso={"sbd"})
+
+    item = result["results"][0]
+    assert item["probe_status"] == "ok_from_datatable_xhr"
+    assert item["num_records_reported"] == 2200
+    values_call = next(call for call in session.calls if call[0].endswith("/values"))
+    assert values_call[3] == {"X-Requested-With": "XMLHttpRequest"}
+
+
 def test_harvest_is_blocked_until_alias_mapping_is_confirmed():
-    totals = {"olds1111": 2200, "oldm2222": 2576, "oldy3333": 1500}
-    session = _FakeSession(LANGUAGES_CSV_CHANGED_GLOTTO, totals=totals)
+    session = _FakeSession(LANGUAGES_CSV_CHANGED_GLOTTO)
 
     with pytest.raises(reflex.RefLexHarvestError, match="mapping langue"):
         reflex.harvest(_source(), session=session)
@@ -208,6 +228,8 @@ def test_harvest_language_preserves_csv_and_provenance(tmp_path):
         "resolution_method": "configured_glottocode_or_iso",
         "resolution_status": "resolved",
         "mapping_review_required": False,
+        "records_biggest_source": 2,
+        "number_of_sources": 1,
         "language_row": {"Name": "Southern Samo", "Glottocode": "sout2844"},
     }
     result = reflex.harvest_language(
@@ -218,6 +240,8 @@ def test_harvest_language_preserves_csv_and_provenance(tmp_path):
     )
 
     assert result["rows_written"] == 2
+    assert result["expected_rows_from_index"] == 2
+    assert result["count_matches_index"] is True
     output = Path(result["output"])
     assert output.read_text(encoding="utf-8") == VALUES_CSV
     assert (tmp_path / "sbd" / "language.json").exists()
