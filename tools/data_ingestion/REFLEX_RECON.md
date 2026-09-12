@@ -1,18 +1,21 @@
-# RefLex CLLD et prochaines sources externes SAN
+# RefLex CLLD — reconnaissance et résultat final de récolte
 
-État de la reconnaissance après la phase Hugging Face. Cette note reste dans la branche `feat/data-ingestion` : elle sert à décider quoi récolter, sous quelles conditions et dans quel ordre.
+Cette note documente ce qui a réellement été observé et récolté depuis RefLex CLLD dans la branche `feat/data-ingestion`.
 
-## 1. RefLex CLLD — priorité actuelle
+## 1. Source
 
-RefLex CLLD (`https://reflex.clld.huma-num.fr/`) est une base lexicale africaine structurée et téléchargeable. La version 1.0 annonce :
+RefLex CLLD (`https://reflex.clld.huma-num.fr/`) est une base lexicale africaine structurée et téléchargeable.
+
+Version observée :
 
 ```text
+RefLex CLLD 1.0
 1 435 sources lexicales
 927 845 enregistrements lexicaux
 815 languoïdes
 ```
 
-Citation officielle :
+Citation :
 
 ```text
 Segerer G., Flavier S., Zerner J., Doan-Rabier U., 2025.
@@ -26,19 +29,21 @@ Licence :
 CC-BY-NC-SA-4.0
 ```
 
-Conséquence importante : la récolte est acceptable pour notre inventaire/recherche locale non commerciale, mais les données RefLex ne doivent pas être versées automatiquement dans un futur corpus commercial, dans un modèle commercial ou dans une distribution incompatible avec `NC`/`SA`.
+Conséquence : les données récoltées peuvent servir à notre inventaire/recherche locale non commerciale sous les conditions de cette licence, mais elles ne sont pas automatiquement approuvées pour publication commerciale, corpus commercial ou entraînement commercial.
 
-Le framework CLLD fournit des exports CSV des tables et permet de conserver les données filtrées. Le collecteur cible :
+## 2. Cibles SAN
 
 ```text
-sbd / maka  / glottocode sout2844
-stj / matya / glottocode maty1235
-sym / maya  / glottocode maya1281
+sbd / maka  / sout2844
+stj / matya / maty1235
+sym / maya  / maya1281
 ```
 
-### Première observation réelle de `languages.csv`
+Règle permanente : les trois variétés restent séparées.
 
-Le premier probe a montré que l'export actuel ne contient pas de colonne `ID` ni de code ISO. Les colonnes réellement observées sont :
+## 3. Ce que `languages.csv` a réellement montré
+
+Colonnes observées :
 
 ```text
 Name
@@ -51,57 +56,252 @@ Latitude
 Longitude
 ```
 
-La résolution des trois variétés doit donc se faire d'abord par `Glottocode`. Quand aucun ID interne n'est exporté, le collecteur utilise le glottocode correspondant comme identifiant CLLD de repli pour le probe. Cette hypothèse est volontairement vérifiée par l'appel `values` avant toute récolte complète.
+Aucune colonne ID interne CLLD et aucun code ISO ne sont exportés.
 
-### Probe
-
-```bash
-python collectors/reflex_clld.py --probe-only
-```
-
-Le probe :
-
-1. télécharge uniquement le petit index `languages.csv` ;
-2. retrouve `sbd/stj/sym` à partir de leurs glottocodes ;
-3. utilise l'ID exporté s'il existe, sinon le glottocode comme clé de repli ;
-4. demande une seule ligne au DataTable `values` afin de récupérer le nombre total de fiches pour chaque variété ;
-5. ne télécharge pas les exports lexicaux complets.
-
-Résumé local :
+Résolution :
 
 ```text
-data/raw/reflex/reflex_probe_summary.json
+sbd / Maka
+  glottocode configuré : sout2844
+  résultat             : non trouvé dans l'index actuel
+  décision             : ne pas attribuer un candidat approximatif
+
+stj / Matya
+  nom RefLex            : Samo Matya
+  glottocode            : maty1235
+  index                 : 2 764 fiches
+  nombre de sources     : 1
+
+sym / Maya
+  nom RefLex            : Samo Maya
+  glottocode            : maya1281
+  index                 : 2 384 fiches
+  nombre de sources     : 1
 ```
 
-### Récolte complète, seulement après validation du probe
+## 4. Pourquoi les premiers essais `/values` ont échoué
 
-```bash
-python collectors/reflex_clld.py
-```
-
-Sorties prévues :
+Les premiers probes supposaient que les données lexicales seraient directement disponibles via :
 
 ```text
-data/raw/reflex/
-├── sbd/
-│   ├── language.json
-│   └── values.csv
-├── stj/
-│   ├── language.json
-│   └── values.csv
-├── sym/
-│   ├── language.json
-│   └── values.csv
-└── reflex_harvest_summary.json
+/values
+/values.csv
 ```
 
-Le CSV est conservé brut. Pas de normalisation, translittération, déduplication ou fusion avec ASJP à cette étape.
+Observations réelles :
 
-## 2. Sources lexicales originales déjà reliées au SAN
+```text
+/values.csv?... → HTTP 406
+/values?language=<glottocode> → pas le bon filtre
+/values?language=<id-page-clld> → 0 ligne
+```
+
+Le problème n'était pas l'absence des données Matya/Maya. Le transport réel de la page de langue était différent.
+
+## 5. Découverte du vrai DataTable lexical
+
+Le diagnostic de la page détail Matya :
+
+```text
+/languages/1472
+```
+
+a montré deux DataTables réels :
+
+```text
+/contributions?filterLanguage=562&filterReference=
+/units?filterLanguage=562&filterSource=&filterReference=
+```
+
+Pour Matya :
+
+```text
+Contribution : Morris et al. 2011 : Matya
+compteur contribution : 2 764
+DataTable /units      : 2 743
+filtre interne        : filterLanguage=562
+```
+
+Première unité observée pendant le probe :
+
+```text
+Original Form : -bra₂
+POS           : NOM
+Source        : Morris et al. 2011 : Matya
+Glottocode    : maty1235
+```
+
+La page indique explicitement un téléchargement CSV des DataTables, limité à 10 000 lignes. Les volumes Matya/Maya restent sous cette limite.
+
+## 6. Collecteur final utilisé
+
+Collecteur :
+
+```text
+collectors/reflex_units.py
+```
+
+Principe :
+
+```text
+languages.csv
+    ↓
+résolution sûre par glottocode/nom
+    ↓
+page langue CLLD
+    ↓
+découverte dynamique du vrai sAjaxSource /units
+    ↓
+probe du compteur /units
+    ↓
+construction de /units.csv avec les mêmes filtres
+    ↓
+téléchargement RAW
+    ↓
+comparaison CSV ↔ compteur XHR
+    ↓
+metadata + SHA-256
+```
+
+Le collecteur ne normalise, ne corrige et ne déduplique aucune forme.
+
+## 7. Résultats de récolte
+
+### Matya — `stj`
+
+Commande :
+
+```bash
+python collectors/reflex_units.py --iso stj
+```
+
+Résultat :
+
+```text
+2 743 lignes
+9 colonnes
+glottocode = maty1235
+clld page id = 1472
+filterLanguage = 562
+```
+
+### Maya — `sym`
+
+Commande :
+
+```bash
+python collectors/reflex_units.py --iso sym
+```
+
+Résultat :
+
+```text
+2 378 lignes
+9 colonnes
+glottocode = maya1281
+clld page id = 1473
+filterLanguage = 563
+```
+
+### Total RefLex récolté
+
+```text
+stj : 2 743
+sym : 2 378
+-----------
+TOTAL : 5 121 unités lexicales RAW
+```
+
+Colonnes :
+
+```text
+Original Form
+Original Translation
+Comment
+Part of Speech
+Source
+Glottocode
+Family
+Latitude
+Longitude
+```
+
+## 8. Écarts de compteurs
+
+RefLex présente deux types de compteurs qui ne sont pas identiques :
+
+```text
+Matya : index langue 2 764 → /units 2 743 → écart 21
+Maya  : index langue 2 384 → /units 2 378 → écart 6
+```
+
+Décision du projet :
+
+- ne pas inventer d'explication ;
+- conserver l'écart dans les métadonnées ;
+- considérer la récolte complète lorsque le CSV correspond exactement au DataTable `/units` réellement exporté.
+
+## 9. QA technique
+
+Processor :
+
+```text
+processors/qa_reflex_units.py
+```
+
+Commande :
+
+```bash
+python processors/qa_reflex_units.py --iso stj sym
+```
+
+Résultat utilisateur confirmé :
+
+```text
+stj : technical_ok=True
+sym : technical_ok=True
+all_technical_ok=True
+```
+
+Le QA vérifie notamment :
+
+```text
+présence des 9 colonnes attendues
+volume CSV ↔ compteur XHR sauvegardé
+SHA-256 ↔ metadata
+ISO / variété / glottocode
+formes et traductions vides
+doublons exacts
+formes+traductions répétées
+sources observées
+parties du discours observées
+```
+
+Il ne modifie jamais le RAW.
+
+## 10. Statut final de RefLex pour cette phase
+
+```text
+sbd / Maka  : non récolté depuis RefLex actuel — absent de l'index
+stj / Matya : collection_success + qa_passed
+sym / Maya  : collection_success + qa_passed
+```
+
+Cela signifie uniquement : **récolte technique réussie**.
+
+Cela ne signifie pas :
+
+```text
+validation linguistique
+orthographe standard
+publication approuvée
+entraînement approuvé
+usage commercial approuvé
+```
+
+## 11. Sources lexicales originales reliées au SAN
 
 ### Southern Samo / Maka — `sbd`
-
-Référence connue :
 
 ```text
 Boo nεn sέwε san-fransi, fransi-san
@@ -109,11 +309,9 @@ Boo nεn sέwε san-fransi, fransi-san
 SIL Burkina Faso, Ouagadougou, 2003, ~120 p.
 ```
 
-Cette référence est utilisée par ASJP pour `SOUTHERN_SAMO_SAN` et est également signalée comme source RefLex dans la littérature. RefLex peut donc potentiellement nous donner une couverture beaucoup plus large que la petite liste comparative ASJP.
+Référence utilisée par ASJP pour `SOUTHERN_SAMO_SAN`.
 
 ### San Matya — `stj`
-
-Référence connue :
 
 ```text
 Morris, P., Koussoubé, M., Seme, P. (2011)
@@ -121,11 +319,9 @@ Lexique San Matya avec guide d’orthographe
 ANTBA, Tougan, Burkina Faso
 ```
 
-ASJP l'utilise pour `SAMO_MATYA_2`. Le probe RefLex doit confirmer la présence et le volume exact dans RefLex avant toute conclusion.
+RefLex expose la contribution `Morris et al. 2011 : Matya`.
 
 ### San Mayaa — `sym`
-
-Référence connue :
 
 ```text
 Morris, P., Koussoubé, M., Seme, P. (2011)
@@ -133,105 +329,48 @@ Lexique San Mayaa avec guide d’orthographe
 ANTBA, Tougan, Burkina Faso
 ```
 
-Cette ressource est explicitement signalée comme présente dans RefLex dans la littérature lexicographique consultée.
+## 12. Prochaine source : Berthelette 2001
 
-## 3. Berthelette — enquête sociolinguistique SAN
-
-Référence :
+Référence de travail :
 
 ```text
-John Berthelette (2001)
+John Berthelette
 Sociolinguistic survey report for the San (Samo) language
+travail daté 2001
 SIL Electronic Survey Reports 2002-005
-75 pages
+≈ 75 pages
 ```
 
-Le document est décrit comme contenant notamment une vue d'ensemble, des données sociolinguistiques et des listes lexicales pour plusieurs localités. Il distingue notamment Toma/Maka, plusieurs zones Matya et plusieurs zones Maya.
-
-Cette source est très utile pour :
-
-- vérifier l'attribution des variétés ;
-- conserver les formes par localité ;
-- comparer les formes anciennes avec les lexiques de 2003/2011 ;
-- éviter de réduire une variété entière à une seule localité.
-
-Avant ingestion, vérifier la notice SIL exacte et la licence attachée au fichier lui-même. Les archives SIL indiquent généralement CC-BY-NC-SA-4.0 sauf indication contraire, mais cette règle générale ne remplace pas la vérification de l'item.
-
-## 4. Dictionnaires Android — très riches mais droits à clarifier
-
-### San du Sud / Maka
-
-Application : `San dictionnaire` — Burkina Langues.
-
-La fiche publique annonce environ :
+Intérêt :
 
 ```text
-2 220 mots
-> 1 000 images
-> 2 200 fichiers audio
-San – Français – English
+localités documentées
+comparaison entre zones San
+wordlists / données lexicales potentielles
+contexte sociolinguistique
+vérification des attributions de variété
 ```
 
-C'est potentiellement une source majeure, surtout pour l'audio lexical. Aucune licence de réutilisation des contenus n'a été identifiée dans la fiche publique. Donc :
+Étapes avant ingestion :
 
 ```text
-status = rights_review_required
-pas d'extraction APK automatique
-pas de redistribution
-pas d'entraînement
+1. retrouver la notice et le fichier officiels SIL
+2. vérifier la licence exacte de l'item
+3. inspecter les annexes, tableaux et wordlists réels
+4. définir le schéma RAW avec provenance par localité
+5. ne jamais attribuer automatiquement Toma/Tougan à un ISO sans preuve
+6. récolter
+7. QA technique
 ```
 
-### San Matya
-
-Application : `San Matya de A-Z` — Burkina Langues.
-
-La fiche publique annonce :
+## 13. Ordre après Berthelette
 
 ```text
-2 576 entrées
-685 images
-Lexique San Matya – Français
-```
-
-Même règle : inventorier et contacter le détenteur/développeur avant extraction massive ou réutilisation.
-
-## 5. ANTBA — textes bibliques Matya/Mayaa
-
-ANTBA confirme ses projets de traduction San Maya et San Matya autour de Tougan. Les Nouveaux Testaments San Mayaa et Matyaa ont été dédiés le 4 mai 2024 et des applications mobiles existent.
-
-Ces textes seraient précieux pour l'alignement de phrases et l'audio, mais ils sont fortement biaisés par le domaine religieux et les droits de traduction biblique doivent être clarifiés avant copie/redistribution/entraînement.
-
-Donc :
-
-```text
-inventaire : oui
-scraping automatique : non pour l'instant
-corpus principal généraliste : non
-```
-
-## 6. Ordre recommandé après RefLex
-
-```text
-1. RefLex CLLD
-   → probe sbd/stj/sym
-   → récolte ciblée si le probe est bon
-   → QA + comparaison avec ASJP/PanLex/ChiKhaPo
-
-2. Berthelette 2001
-   → récupérer la notice/fichier officiel SIL
-   → vérifier la licence de l'item
-   → extraire les wordlists avec provenance par localité
-
-3. Lexiques originaux SIL/ANTBA
-   → chercher les PDF/exports officiels ou obtenir l'autorisation
-   → ne pas supposer qu'une application gratuite autorise l'extraction
-
-4. Applications Burkina Langues
-   → contacter pour autorisation de réutilisation des entrées et surtout des audios
-
-5. Textes/audio bibliques ANTBA
-   → seulement après clarification des droits
-   → conserver comme domaine religieux séparé
+1. Berthelette 2001
+2. lexiques originaux SIL / ANTBA
+3. applications Burkina Langues après clarification des droits
+4. textes/audio ANTBA après clarification des droits
+5. revenir à RefLex sbd seulement si une présence fiable est retrouvée
 ```
 
 ## Règle permanente
