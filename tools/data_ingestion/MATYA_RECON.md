@@ -58,40 +58,63 @@ Cette application est traitée comme une **ressource moderne distincte** tant qu
 
 ### Installateur Windows Lexique Pro récupéré localement
 
-Un installateur Windows a été téléchargé manuellement puis déplacé dans :
+Un installateur Windows a été téléchargé manuellement et placé localement dans :
 
 ```text
-data/raw/san_matya_lexique_pro/San Matya - Lexique Pro Setup.exe
+data/raw/san_matya_lexique_pro/
+└── San Matya - Lexique Pro Setup.exe
 ```
 
-Identification statique réelle :
+Identification technique :
 
 ```text
-file      : PE32 executable (GUI) Intel 80386, for MS Windows, 9 sections
-installer : Inno Setup Setup Data 5.3.10 (Unicode)
-messages  : Inno Setup Messages 5.1.11 (Unicode)
-SHA-256   : 1c1ece4f0ad78e8b634c9ebb8c7ae8a97870fa1d6015cde12ba335584c9c467c
-7z        : non installé au moment du probe
+format       : PE32 GUI Intel 80386 / Windows
+installateur : Inno Setup 5.3.10 Unicode
+SHA-256      : 1c1ece4f0ad78e8b634c9ebb8c7ae8a97870fa1d6015cde12ba335584c9c467c
 ```
 
 Important : ce fichier est **Matya / stj**, et non San du Sud / Maka / sbd.
 
-Le fait qu'il s'agisse d'un installateur Inno Setup est utile : son contenu peut normalement être inspecté/extrait sans exécuter le programme Windows, avec un outil adapté tel que `innoextract`.
+## 4. Listing statique Inno Setup — contenu lexical confirmé
 
-Statut actuel :
+`innoextract -l` révèle que l'installateur embarque bien un jeu de données Lexique Pro San Matya.
+
+Fichiers structurants identifiés :
 
 ```text
-fichier local           : présent
-exécution               : non requise
-inspection PE/Inno      : terminée
-listing contenu         : à faire avec innoextract
-contenu lexical embarqué: inconnu
-relation avec 2011      : non démontrée
-licence réutilisation   : non confirmée
-bulk harvest            : non approuvé avant clarification des droits
+San du Nord Matya.lpLiftEnc        ~1.8 MiB
+San du Nord Matya.lpConfigEnc      ~42.1 KiB
+San du Nord Matya.lift-ranges      ~1.15 MiB
+San du Nord Matya - San Matya.idx  ~14 KiB
+San du Nord Matya - French.idx     ~44.7 KiB
+San du Nord Matya - English.idx    ~2.21 KiB
 ```
 
-## 4. Séparation des domaines
+Autres éléments observés :
+
+```text
+pictures/                         nombreuses images lexicales
+Display/homebanner1.jpg
+Display/homebanner2.jpg
+Semantic Domains/xxdict2.db
+Semantic Domains/xxdict3.db
+Semantic Domains/xxdict4.db
+licence.txt                       licence du logiciel à inspecter séparément
+```
+
+La présence de `lpLiftEnc` indique très probablement un corpus LIFT encapsulé/protégé par Lexique Pro. Ce fichier ne doit pas être traité comme un LIFT XML ordinaire tant que son format réel n'a pas été inspecté. Aucun contournement de protection n'est entrepris.
+
+Le fichier `.lift-ranges` est distinct du corpus lexical principal ; il contient normalement des listes/ranges LIFT et ne doit pas être confondu avec les entrées du dictionnaire.
+
+Le premier listing montre de très nombreuses images. La présence d'audio n'est **pas encore confirmée** par ce listing partiel.
+
+## 5. Pourquoi le grep d'extensions n'a rien affiché
+
+La commande utilisée cherchait des extensions en fin de ligne (`$`), alors que `innoextract -l` ajoute après chaque chemin des guillemets, des destinations et/ou la taille du fichier. L'absence de sortie du `grep` ne signifie donc pas absence de fichiers correspondants.
+
+Le listing brut constitue la preuve de présence de `.lpLiftEnc`, `.lpConfigEnc`, `.lift-ranges`, `.idx`, `.jpg`, `.png` et `.db`.
+
+## 6. Séparation des domaines
 
 Une application biblique ANTBA en San Matya existe également. Elle relève du domaine religieux et ne doit pas être confondue avec le lexique général.
 
@@ -99,7 +122,7 @@ Une application biblique ANTBA en San Matya existe également. Elle relève du d
 lexique général ≠ texte biblique
 ```
 
-## 5. Droits et accès
+## 7. Droits et accès
 
 État actuel :
 
@@ -109,28 +132,29 @@ PDF officiel 2011                    : non retrouvé à ce stade
 notice primaire ANTBA/SIL            : à retrouver
 droits de l'ouvrage 2011             : à clarifier
 application moderne                  : confirmée
-installateur Lexique Pro local       : récupéré et fingerprinté
+installateur Lexique Pro local       : récupéré
+contenu lexical embarqué             : confirmé techniquement
 licence de réutilisation moderne     : non confirmée
 bulk harvest                          : non approuvé
 ```
 
-La présence locale d'un installateur ne vaut pas autorisation de republier, d'entraîner un modèle ou d'exploiter commercialement son contenu.
+La présence locale et l'extraction technique d'un installateur ne valent pas autorisation de republier, d'entraîner un modèle ou d'exploiter commercialement son contenu.
 
-## 6. Prochaine inspection technique
+## 8. Prochaine inspection technique
 
 Ordre de travail local :
 
 ```text
-1. installer innoextract sur Ubuntu
-2. lister le contenu sans exécuter le .exe
-3. extraire dans un sous-dossier local isolé si le listing est exploitable
-4. rechercher .lift/.xml/.db/.sqlite/.txt/.html + audio/images
-5. identifier le format source Lexique Pro et les relations média ↔ entrées
-6. documenter structure/provenance
-7. ne pas republier les données tant que les droits ne sont pas clarifiés
+1. extraire l'installateur avec innoextract dans un dossier local `extracted/`
+2. inventorier les types et nombres de fichiers réellement extraits
+3. inspecter `licence.txt`
+4. inspecter sans modification les signatures/entêtes de lpLiftEnc, lpConfigEnc, lift-ranges et idx
+5. vérifier si des fichiers audio sont effectivement présents
+6. documenter structure et relation éventuelle avec Morris et al. 2011
+7. ne pas contourner un chiffrement/protection ; si le corpus principal est protégé, privilégier une exportation prévue par Lexique Pro ou une autorisation/source originale
 ```
 
-## 7. Règle de vitesse
+## 9. Règle de vitesse
 
 ```text
 1. inspection statique courte de l'installateur local
@@ -142,7 +166,7 @@ Ordre de travail local :
 
 L'objectif est d'éviter de rester bloqué sur une source difficile d'accès.
 
-## 8. Statut actuel
+## 10. Statut actuel
 
 ```text
 discovery_historical       = confirmed
@@ -160,9 +184,15 @@ modern_image_count         = 685
 modern_support_contact     = burkinalangues@gmail.com
 modern_windows_installer   = local_file_present
 modern_windows_filename    = San Matya - Lexique Pro Setup.exe
-modern_windows_sha256      = 1c1ece4f0ad78e8b634c9ebb8c7ae8a97870fa1d6015cde12ba335584c9c467c
-modern_windows_format      = PE32_Inno_Setup_5.3.10_unicode
+installer_format           = inno_setup_5_3_10_unicode
+installer_sha256           = 1c1ece4f0ad78e8b634c9ebb8c7ae8a97870fa1d6015cde12ba335584c9c467c
+embedded_lexique_pro_data  = confirmed
+embedded_main_data         = San du Nord Matya.lpLiftEnc
+embedded_ranges            = San du Nord Matya.lift-ranges
+embedded_indexes           = san_matya_french_english_idx_present
+embedded_pictures          = confirmed_many
+embedded_audio             = not_confirmed_yet
 modern_license             = not_confirmed
-static_inspection          = installer_identified_listing_pending
+static_inspection          = listing_completed_extraction_next
 bulk_harvest               = deferred_pending_rights
 ```
