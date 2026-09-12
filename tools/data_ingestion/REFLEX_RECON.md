@@ -36,6 +36,23 @@ stj / matya / glottocode maty1235
 sym / maya  / glottocode maya1281
 ```
 
+### Première observation réelle de `languages.csv`
+
+Le premier probe a montré que l'export actuel ne contient pas de colonne `ID` ni de code ISO. Les colonnes réellement observées sont :
+
+```text
+Name
+Family
+Glottocode
+Macroarea
+Number of records in biggest source
+Number of sources
+Latitude
+Longitude
+```
+
+La résolution des trois variétés doit donc se faire d'abord par `Glottocode`. Quand aucun ID interne n'est exporté, le collecteur utilise le glottocode correspondant comme identifiant CLLD de repli pour le probe. Cette hypothèse est volontairement vérifiée par l'appel `values` avant toute récolte complète.
+
 ### Probe
 
 ```bash
@@ -45,9 +62,10 @@ python collectors/reflex_clld.py --probe-only
 Le probe :
 
 1. télécharge uniquement le petit index `languages.csv` ;
-2. résout les identifiants internes RefLex par glottocode/ISO ;
-3. demande une seule ligne au DataTable `values` afin de récupérer le nombre total de fiches pour chaque variété ;
-4. ne télécharge pas les exports lexicaux complets.
+2. retrouve `sbd/stj/sym` à partir de leurs glottocodes ;
+3. utilise l'ID exporté s'il existe, sinon le glottocode comme clé de repli ;
+4. demande une seule ligne au DataTable `values` afin de récupérer le nombre total de fiches pour chaque variété ;
+5. ne télécharge pas les exports lexicaux complets.
 
 Résumé local :
 
