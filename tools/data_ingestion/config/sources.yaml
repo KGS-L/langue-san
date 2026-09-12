@@ -103,11 +103,17 @@ sources:
     license: "CC-BY-NC-SA-4.0 (SIL Language & Culture Archives default unless item/file states otherwise)"
     rights_status: "archive_default_noncommercial_pending_pdf_confirmation"
     enabled: false
-    status: "ready_for_download_probe"
+    status: "pdf_harvested_pending_content_inspection"
     intended_use: "sociolinguistic_reference_and_locality_wordlists"
     publication_approved: false
     training_approved: false
     commercial_use_approved: false
+    harvested_pdf:
+      acquisition_method: "manual_download_then_local_ingest"
+      bytes: 4015872
+      sha256: "efcd06c8e235df9e7334b141aaeb123064e227fab2c05d100c4a57bba7d9f196"
+      raw_path: "data/raw/berthelette/SILESR2002_005.pdf"
+      metadata_path: "data/raw/berthelette/metadata.json"
     known_localities_from_bibliographic_index:
       - locality: "Toma"
         variety: "maka"
@@ -136,10 +142,12 @@ sources:
     notes:
       - "L'entrée officielle SIL Language & Culture Archives est 8983; une publication de 2017 cite encore cette URL."
       - "Le lien PDF exact a été retrouvé via la référence PDF de la page Wikipedia Samo, qui pointe vers le stockage SIL reapdata."
-      - "Dans l'environnement de recherche actuel, le lien PDF SIL répond HTTP 403 aux clients automatisés; le collecteur prévoit donc un fallback --input-file après téléchargement manuel."
+      - "Le téléchargement automatisé SIL répond HTTP 403; le PDF a donc été téléchargé manuellement puis ingéré localement par le collecteur."
+      - "Probe local réussi : PDF valide, 4015872 octets, SHA-256 efcd06c8e235df9e7334b141aaeb123064e227fab2c05d100c4a57bba7d9f196."
       - "Glottolog classe ce document comme overview;wordlist;socling et associe explicitement huit localités aux trois ISO sbd/stj/sym."
       - "ASJP utilise Berthelette 2001 comme source de MAYA_SAMO; les volumes ne doivent pas être additionnés comme sources indépendantes."
-      - "La règle par défaut des SIL Language & Culture Archives est CC-BY-NC-SA-4.0 sauf mention contraire dans le fichier ou la notice; confirmer dans le PDF une fois récupéré."
+      - "La règle par défaut des SIL Language & Culture Archives est CC-BY-NC-SA-4.0 sauf mention contraire dans le fichier ou la notice; confirmer dans le PDF pendant l'inspection."
+      - "Étape suivante : inspection structurelle/textuelle du PDF sans OCR avant toute extraction lexicale."
 
   ainsisoisje:
     name: "Ainsi sois-je — Dictionnaire Français / Samo"
