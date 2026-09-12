@@ -169,16 +169,26 @@ Cette source est citée par ASJP `SAMO_MATYA_2` et correspond à la source amont
 
 Une application moderne `San Matya de A-Z` de Burkina Langues est aussi confirmée : **2 576 entrées**, **685 images**, zone de Tougan. Sa licence de réutilisation n'est pas encore confirmée ; elle est traitée séparément de l'ouvrage 2011.
 
-Étape immédiate : recherche courte du PDF/notice primaire Morris et al. 2011 et de ses droits. Si l'accès original n'est pas retrouvé rapidement, documenter puis passer à la source primaire Maya.
+Un installateur Windows a maintenant été récupéré localement :
+
+```text
+San Matya - Lexique Pro Setup.exe
+~21 MiB
+```
+
+Attention : cet installateur est **Matya / stj**, pas San du Sud / Maka / sbd. Le dossier local doit donc être renommé `san_matya_lexique_pro` avant toute inspection afin d'éviter un mélange de variétés.
+
+Étape immédiate : inspection statique locale de l'installateur sans l'exécuter (`file`, SHA-256, listing 7z, recherche LIFT/XML/DB/audio/images), puis recherche courte du PDF/notice primaire Morris et al. 2011 et de ses droits. Si l'accès original ou les droits ne sont pas clarifiés rapidement, documenter puis passer à la source primaire Maya.
 
 ## Ordre des prochaines sources
 
 ```text
-1. Morris et al. 2011 — source primaire Matya
-2. Source Maya originale citée par RefLex
-3. Morse 1967 — bibliographie et droits exacts
-4. Maka moderne Webonary/app — reprendre dès clarification des droits
-5. Autres ressources Burkina Langues / ANTBA — droits vérifiés source par source
+1. Inspecter San Matya - Lexique Pro Setup.exe sans exécution
+2. Morris et al. 2011 — source primaire Matya / droits
+3. Source Maya originale citée par RefLex
+4. Morse 1967 — bibliographie et droits exacts
+5. Maka moderne Webonary/app — reprendre dès clarification des droits
+6. Autres ressources Burkina Langues / ANTBA — droits vérifiés source par source
 ```
 
 ## Règle finale de cette branche
