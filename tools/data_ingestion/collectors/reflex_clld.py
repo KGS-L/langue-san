@@ -3,10 +3,16 @@
 RefLex CLLD expose des index CSV via le framework CLLD. Le collecteur procède en
 deux temps :
 
-1. télécharger le petit index `languages.csv` pour résoudre les identifiants
-   internes RefLex à partir des glottocodes du projet ;
+1. télécharger le petit index `languages.csv` pour résoudre les langues à partir
+   des glottocodes du projet ;
 2. sonder le DataTable `values` avec une seule ligne afin d'obtenir le nombre de
    fiches lexicales avant toute récolte complète.
+
+L'export RefLex `languages.csv` observé en septembre 2026 n'expose ni colonne
+`id` ni colonne ISO : il fournit notamment `Name` et `Glottocode`. Quand l'ID
+interne n'est pas exporté, le collecteur utilise donc le glottocode résolu comme
+clé de langue CLLD de repli. Le probe suivant sert précisément à vérifier que
+cette clé est acceptée avant toute récolte complète.
 
 En mode récolte, le CSV `values.csv?language=<id>` est conservé tel quel sous
 `data/raw/reflex/<iso>/values.csv`. Aucune normalisation, déduplication ou
@@ -69,12 +75,20 @@ def _pick_column(headers: list[str], candidates: tuple[str, ...]) -> str | None:
     return None
 
 
-def fetch_languages(source: dict[str, Any], *, session: requests.Session | None = None) -> tuple[list[str], list[dict[str, str]]]:
+def fetch_languages(
+    source: dict[str, Any],
+    *,
+    session: requests.Session | None = None,
+) -> tuple[list[str], list[dict[str, str]]]:
     client = _session(session)
     url = str(source["endpoints"]["languages_csv"])
     response = client.get(url, timeout=90)
     response.raise_for_status()
-    text = response.content.decode("utf-8-sig") if getattr(response, "content", None) is not None else response.text
+    text = (
+        response.content.decode("utf-8-sig")
+        if getattr(response, "content", None) is not None
+        else response.text
+    )
     reader = csv.DictReader(io.StringIO(text))
     headers = list(reader.fieldnames or [])
     if not headers:
@@ -99,9 +113,10 @@ def resolve_targets(
     glottocode_col = _pick_column(headers, ("glottocode", "glotto_code", "glottocode_id"))
     iso_col = _pick_column(headers, ("iso_639_3", "iso639p3code", "iso6393", "iso"))
     name_col = _pick_column(headers, ("name", "language", "language_name"))
-    if id_col is None:
+
+    if glottocode_col is None and iso_col is None:
         raise RefLexHarvestError(
-            "Impossible d'identifier la colonne ID de languages.csv. "
+            "Impossible d'identifier une colonne Glottocode ou ISO dans languages.csv. "
             f"Colonnes observées : {', '.join(headers)}"
         )
 
@@ -127,16 +142,33 @@ def resolve_targets(
             raise RefLexHarvestError(
                 f"Résolution RefLex ambiguë pour {iso}/{glottocode}: {len(matches)} ligne(s) trouvée(s)."
             )
+
         row = matches[0]
-        language_id = str(row.get(id_col) or "").strip()
+        if id_col is not None:
+            language_id = str(row.get(id_col) or "").strip()
+            id_resolution_method = f"exported_column:{id_col}"
+        elif glottocode_col is not None:
+            # RefLex languages.csv observé n'exporte pas l'ID interne. Le
+            # glottocode est la clé stable disponible et constitue notre repli
+            # CLLD. Le probe vérifie ensuite qu'il filtre réellement `values`.
+            language_id = str(row.get(glottocode_col) or "").strip()
+            id_resolution_method = f"glottocode_fallback:{glottocode_col}"
+        else:
+            raise RefLexHarvestError(
+                f"Aucun identifiant exploitable pour {iso}/{glottocode}: "
+                "l'export ne contient ni ID ni Glottocode."
+            )
+
         if not language_id:
-            raise RefLexHarvestError(f"ID RefLex vide pour {iso}/{glottocode}.")
+            raise RefLexHarvestError(f"Identifiant RefLex vide pour {iso}/{glottocode}.")
+
         resolved.append(
             {
                 "iso_639_3": iso,
                 "variety": target.get("variety"),
                 "glottocode": glottocode,
                 "reflex_language_id": language_id,
+                "reflex_language_id_resolution": id_resolution_method,
                 "reflex_language_name": row.get(name_col) if name_col else None,
                 "language_row": row,
             }
@@ -192,13 +224,17 @@ def probe_language(
     data = payload.get("aaData", payload.get("data", []))
     first_row_available = isinstance(data, list) and bool(data)
     return {
-        **{key: target.get(key) for key in (
-            "iso_639_3",
-            "variety",
-            "glottocode",
-            "reflex_language_id",
-            "reflex_language_name",
-        )},
+        **{
+            key: target.get(key)
+            for key in (
+                "iso_639_3",
+                "variety",
+                "glottocode",
+                "reflex_language_id",
+                "reflex_language_id_resolution",
+                "reflex_language_name",
+            )
+        },
         "num_records_reported": total,
         "first_row_available": first_row_available,
     }
@@ -253,7 +289,11 @@ def harvest_language(
         timeout=180,
     )
     response.raise_for_status()
-    text = response.content.decode("utf-8-sig") if getattr(response, "content", None) is not None else response.text
+    text = (
+        response.content.decode("utf-8-sig")
+        if getattr(response, "content", None) is not None
+        else response.text
+    )
     headers, row_count = _count_csv_rows(text)
     if not headers:
         raise RefLexHarvestError(f"Export values.csv vide pour {target['iso_639_3']}.")
@@ -271,6 +311,7 @@ def harvest_language(
         "variety": target.get("variety"),
         "glottocode": target.get("glottocode"),
         "reflex_language_id": target.get("reflex_language_id"),
+        "reflex_language_id_resolution": target.get("reflex_language_id_resolution"),
         "rows_written": row_count,
         "columns": headers,
         "output": str(output_path),
@@ -338,10 +379,12 @@ def main() -> None:
         summary.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
         print("Sonde RefLex CLLD :")
         print(f"- index langues : {payload['languages_index_rows']} lignes")
+        print(f"- colonnes index : {', '.join(payload['languages_index_columns'])}")
         for item in payload["results"]:
             print(
                 f"- {item['iso_639_3']} ({item['variety']}): "
                 f"RefLex id={item['reflex_language_id']}, "
+                f"résolution={item.get('reflex_language_id_resolution') or '?'}, "
                 f"nom={item.get('reflex_language_name') or '?'}, "
                 f"fiches={item['num_records_reported']}, "
                 f"première_ligne={item['first_row_available']}"
