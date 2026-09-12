@@ -47,40 +47,28 @@ Une localité n'est jamais utilisée seule pour attribuer une variété, sauf lo
 6. `data/raw/` et `data/processed/` restent locaux et ne sont pas publiés automatiquement.
 7. `récolté` ≠ `validé linguistiquement` ≠ `approuvé pour publication` ≠ `approuvé pour entraînement`.
 
-## Installation locale
-
-Depuis `tools/data_ingestion/` :
-
-```bash
-python3 -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
-pytest tests
-```
-
 ## Sources déjà travaillées
 
 ### ASJP v21
 
 ```text
+RAW : 341 occurrences
+sbd : 37
+stj : 129
+sym : 175
 licence : CC-BY-4.0
-RAW     : 341 occurrences
-sbd     : 37
-stj     : 129
-sym     : 175
 ```
 
 ### Ainsi sois-je
 
 ```text
-copyright site         : All Rights Reserved
-variété exacte         : inconnue
 occurrences récupérées : 125
 paires uniques         : 124
-publication / ML       : non approuvés
+copyright               : All Rights Reserved
+variété exacte          : inconnue
 ```
 
-### Hugging Face — bloc texte/lexique ciblé terminé
+### Hugging Face
 
 ```text
 Taxi1500 / sbd : 7 919
@@ -91,9 +79,7 @@ GlotCC / sbd    : 2
 FineWeb2 / sbd  : 4
 ```
 
-PanLex et ChiKhaPo se chevauchent fortement sur `stj`; leurs volumes ne représentent pas des sources indépendantes.
-
-### RefLex CLLD — Matya et Maya
+### RefLex CLLD
 
 ```text
 stj / Matya : 2 743
@@ -102,9 +88,7 @@ TOTAL       : 5 121
 QA          : technical_ok=True
 ```
 
-`San Maka / sbd / sout2844` n'a pas été trouvé dans l'index RefLex actuel.
-
-### Berthelette 2001 — récolte lexicale techniquement clôturée
+### Berthelette 2001
 
 ```text
 concepts                       : 220 (012–231)
@@ -114,11 +98,10 @@ stj / Matya                    : 679
 sym / Maya                     : 912
 anomalies structurelles        : 0
 formes source vides conservées : 8
-groupes multi-formes           : 53
 technical_ok                   : True
 ```
 
-Les concepts `001–011` n'ont pas été retrouvés dans le PDF disponible et ne bloquent plus la récolte. Le décodage des polices Type3 SIL IPA93 a atteint 100 % sans OCR.
+Berthelette est techniquement clôturé. Les concepts `001–011` n'ont pas été retrouvés dans le PDF disponible et ne bloquent plus la récolte.
 
 ## Volume RAW opérationnel
 
@@ -137,23 +120,13 @@ Berthelette     1814
 TOTAL          16625 occurrences/lignes RAW
 ```
 
-Ce total est un **compteur de collecte** : il contient des chevauchements, des licences différentes, des domaines spécialisés et des données non validées linguistiquement.
+Ce total est un compteur de collecte contenant des chevauchements, licences différentes et données non validées linguistiquement.
 
-## Maka `sbd` — reconnaissance mise en attente sur les droits
+## Maka `sbd`
 
-Le lexique historique 2003 `Boo nɛn sɛwɛ san-fransi, fransi-san` est confirmé bibliographiquement, mais aucun exemplaire numérique officiel de cette édition n'a été retrouvé rapidement.
+Le lexique historique 2003 `Boo nɛn sɛwɛ san-fransi, fransi-san` est confirmé bibliographiquement, mais aucun exemplaire numérique officiel n'a été retrouvé rapidement.
 
-Une ressource moderne Southern San existe : Webonary `Dictionnaire San du sud`, une application `San dictionnaire` et une version Windows. L'application annonce environ **2 220 mots**, plus de **1 000 images** et plus de **2 200 fichiers audio**. Le Webonary affiche `© 2021 SIL International®`, sans licence de réutilisation explicite retrouvée à ce stade.
-
-Donc :
-
-```text
-Maka moderne = ressource confirmée
-bulk harvest = différé
-raison        = droits/licence non clarifiés
-```
-
-On ne reste pas bloqué dessus.
+La ressource moderne San du Sud/Webonary/app est confirmée, mais les droits de réutilisation massive restent à clarifier. On ne reste pas bloqué dessus.
 
 ## Source active — Matya `stj`
 
@@ -165,9 +138,7 @@ Lexique San Matya avec guide d'orthographe.
 Tougan, Burkina Faso: ANTBA.
 ```
 
-Une application moderne `San Matya de A-Z` de Burkina Langues est également confirmée et annonce **2 576 entrées** et **685 images**.
-
-Un installateur Windows Lexique Pro a été récupéré puis extrait statiquement avec `innoextract`, sans exécuter le programme :
+Un installateur Windows Lexique Pro a été récupéré et extrait statiquement :
 
 ```text
 San Matya - Lexique Pro Setup.exe
@@ -175,41 +146,40 @@ Inno Setup 5.3.10 Unicode
 SHA-256: 1c1ece4f0ad78e8b634c9ebb8c7ae8a97870fa1d6015cde12ba335584c9c467c
 ```
 
-Inventaire réel après extraction :
+Inventaire :
 
 ```text
-734 fichiers au total
-695 images (675 jpg + 16 png + 3 jpeg + 1 jfif)
+734 fichiers
+695 images
 0 audio
-3 idx
-3 db de domaines sémantiques Lexique Pro
 1 lpLiftEnc
 1 lpConfigEnc
 1 lift-ranges
+3 idx
 ```
 
-Fichiers principaux :
+Probe final :
 
 ```text
-San du Nord Matya.lpLiftEnc
-San du Nord Matya.lpConfigEnc
-San du Nord Matya.lift-ranges
-San du Nord Matya - San Matya.idx
-San du Nord Matya - French.idx
-San du Nord Matya - English.idx
+lpLiftEnc / lpConfigEnc : binaires opaques/protégés
+lift-ranges             : XML LIFT lisible, métadonnées/ranges uniquement
+English.idx             : texte lisible, terme anglais → ids entrée
+French.idx              : texte encodage ancien, terme français → ids entrée
+San Matya.idx           : probe brut encore nécessaire
 ```
 
-Le package Windows contient donc le dictionnaire et ses images, mais **aucun audio**. Le corpus principal semble être une copie de distribution Lexique Pro protégée au format `lpLiftEnc`; on ne tente pas de contourner cette protection. La prochaine inspection est limitée aux entêtes, index, ranges et licence afin de savoir si une partie des données est lisible directement. Sinon, on cherchera un LIFT/PDF original ou une exportation autorisée.
+La licence trouvée dans `licence.txt` concerne **Lexique Pro**, pas les données San Matya. Elle autorise la distribution du logiciel avec un lexique seulement si le distributeur possède les données ou a reçu l'autorisation de les distribuer. Elle ne constitue donc pas une licence de réutilisation du corpus Matya.
 
-## Ordre des prochaines sources
+Des identifiants jusqu'à environ `2753` apparaissent dans les index. C'est proche des `2743` unités Matya RefLex, mais ce n'est pas une preuve d'identité : un ID maximal n'est pas un nombre d'entrées.
+
+## Prochaine étape immédiate
 
 ```text
-1. Inspecter rapidement lpLiftEnc/lpConfigEnc/lift-ranges/idx/licence sans contournement
-2. Morris et al. 2011 — source primaire Matya / droits / LIFT ou PDF original
-3. Source Maya originale citée par RefLex
-4. Morse 1967 — bibliographie et droits exacts
-5. Maka moderne Webonary/app — reprendre dès clarification des droits
-6. Autres ressources Burkina Langues / ANTBA — droits vérifiés source par source
+1. probe brut rapide de San Matya.idx (encodage/structure)
+2. si les formes Matya sont lisibles → documenter et comparer avec RefLex
+3. sinon → arrêter l'inspection de lpLiftEnc, sans contournement
+4. rechercher Morris et al. 2011 / LIFT / PDF original + droits
+5. passer ensuite à la source Maya originale
 ```
 
 ## Règle finale de cette branche
