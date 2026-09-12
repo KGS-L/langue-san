@@ -53,7 +53,7 @@ text_subsets:
     training_approved: false
     enabled: true
     notes:
-      - "7919 lignes détectées lors de l'inspection du Dataset Viewer."
+      - "7919 lignes récoltées localement avec reprise après rate-limit HTTP 429."
       - "Récolte locale acceptée pour inventaire/recherche malgré la licence de contenu non clarifiée."
       - "Ne pas committer, republier ou redistribuer le RAW tant que les droits amont ne sont pas clarifiés."
       - "Domaine biblique fortement biaisé : à conserver séparément des corpus généraux."
@@ -71,10 +71,32 @@ lexical_subsets:
     local_only: true
     enabled: true
 
+  - key: panlex_san
+    repo_id: "lbourdois/panlex"
+    family: "panlex_snapshot"
+    config: "default"
+    split: "train"
+    iso_codes:
+      sbd: "maka"
+      stj: "matya"
+      sym: "maya"
+    filter_column: "639-3"
+    license: "cc0-1.0"
+    rights_status: "dataset_cc0_upstream_provenance_preserved"
+    snapshot_date: "2024-01-01"
+    local_only: true
+    publication_approved: false
+    training_approved: false
+    enabled: true
+    notes:
+      - "Snapshot Hugging Face de PanLex : ~24,6M lignes, 6152 langues."
+      - "Collecte ciblée via Dataset Viewer /filter : aucun téléchargement du CSV complet de 1,28 Go."
+      - "Les lignes contiennent vocab, 639-3, nom anglais, var_code et nom de variante."
+      - "Conserver var_code : il distingue les variantes internes PanLex et n'est pas un code ISO."
+      - "La licence du snapshot est CC0, mais la provenance lexicale amont doit rester documentée."
+
 blocked_or_deferred:
   - repo_id: "openbmb/DCAD-2000"
     reason: "License is declared as other; rights review required before harvest."
-  - repo_id: "lbourdois/panlex"
-    reason: "Useful CC0 vocabulary snapshot, but target-row extraction strategy still pending."
   - repo_id: "espnet/mms_ulab_v2"
     reason: "Unlabeled audio; defer to the future audio/ASR acquisition phase."
