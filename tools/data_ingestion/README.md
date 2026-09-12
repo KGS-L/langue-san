@@ -77,8 +77,6 @@ stj     : 129
 sym     : 175
 ```
 
-La notation ASJP est conservée avec la provenance de chaque wordlist. Les processors de normalisation technique, QA des variantes et enrichissement des concepts sont disponibles.
-
 ### Ainsi sois-je — récolte locale candidate
 
 ```text
@@ -91,64 +89,22 @@ doublon observé             : Noir → Ti (2 occurrences)
 publication / entraînement  : non approuvés
 ```
 
-Le RAW reste local. La comparaison avec ASJP est heuristique et ne permet aucune attribution automatique vers `sbd`, `stj` ou `sym`.
-
 ### Hugging Face — bloc texte/lexique ciblé terminé
 
 Détails complets dans [`HUGGINGFACE_HARVEST.md`](HUGGINGFACE_HARVEST.md).
 
 ```text
-Taxi1500 / sbd
-  7 919 / 7 919 lignes
-  domaine biblique
-  droits amont à clarifier
-
-ChiKhaPo / stj ↔ eng
-  872 lignes RAW
-  QA technique OK
-  406 formes Matya uniques observées
-
-PanLex / sbd stj sym
-  sbd : 11
-  stj : 408
-  sym : 1
-  QA technique OK
-
-PanLex ↔ ChiKhaPo stj
-  chevauchement : 406 formes
-  couverture ChiKhaPo par PanLex : 100 %
-  → ne pas additionner naïvement les volumes
-
-FinePDFs / sbd
-  7 / 7 lignes
-
-GlotCC / sbd
-  2 / 2 lignes
-
-FineWeb2 / sbd
-  4 lignes depuis 1 Parquet
-  6 651 caractères de texte
-  QA technique OK
+Taxi1500 / sbd  : 7 919 lignes
+ChiKhaPo / stj  : 872 lignes RAW
+PanLex           : 420 lignes RAW
+FinePDFs / sbd  : 7 lignes
+GlotCC / sbd    : 2 lignes
+FineWeb2 / sbd  : 4 lignes
 ```
 
-FineWeb2 a nécessité un fallback direct vers le Parquet du Hub car Dataset Viewer `/rows` renvoyait HTTP 500. Sur la révision récoltée, `train` existe mais le `test` annoncé dans les métadonnées n'est pas présent physiquement.
+PanLex et ChiKhaPo se chevauchent fortement sur `stj`; leurs volumes ne doivent pas être additionnés comme s'il s'agissait de sources indépendantes.
 
-Restent volontairement différés :
-
-```text
-DCAD-2000 : licence `other`, rights review requis
-MMS ulab  : audio non transcrit, future phase audio/ASR
-```
-
-## RefLex CLLD — récolte + QA terminés pour Matya et Maya
-
-RefLex CLLD est sous :
-
-```text
-CC-BY-NC-SA-4.0
-```
-
-Les données récoltées restent donc destinées à l'inventaire/recherche locale sous les conditions de cette licence. Elles ne sont **pas** automatiquement approuvées pour publication, entraînement ou usage commercial.
+### RefLex CLLD — récolte + QA terminés pour Matya et Maya
 
 ```text
 stj / Matya : 2 743 lignes /units, glottocode maty1235
@@ -164,9 +120,7 @@ sym : technical_ok=True
 all_technical_ok=True
 ```
 
-`San Maka / sbd / sout2844` n'a pas été trouvé dans l'index RefLex actuel et ne doit pas être remplacé par un candidat approximatif.
-
-**Statut RefLex : `collection_success + qa_passed` pour `stj` et `sym`.**
+`San Maka / sbd / sout2844` n'a pas été trouvé dans l'index RefLex actuel.
 
 ## Volume RAW opérationnel à ce stade
 
@@ -184,9 +138,7 @@ RefLex         5121
 TOTAL         14811 occurrences/lignes RAW
 ```
 
-Ce total est un **compteur de collecte**, pas un corpus final : il contient des chevauchements, des domaines spécialisés, des licences/droits différents et des données non validées linguistiquement.
-
-À ces `14 811` occurrences s'ajoute **1 document source Berthelette**, mais le PDF n'est pas compté comme des lignes lexicales tant que ses wordlists ne sont pas extraites.
+Ce total est un **compteur de collecte**, pas un corpus final. À ces `14 811` occurrences s'ajoute **1 document source Berthelette**, mais le PDF n'est pas encore compté comme lignes lexicales tant que ses wordlists ne sont pas parsées.
 
 ## Source active — Berthelette 2001
 
@@ -199,68 +151,96 @@ SILESR 2002-005
 SIL archive entry 8983
 ```
 
-### PDF récolté
+### PDF récolté et inspecté
 
 ```text
-fichier : data/raw/berthelette/SILESR2002_005.pdf
-méthode : manual_download_then_local_ingest
-octets  : 4015872
-SHA-256 : efcd06c8e235df9e7334b141aaeb123064e227fab2c05d100c4a57bba7d9f196
+fichier                : data/raw/berthelette/SILESR2002_005.pdf
+octets                 : 4 015 872
+SHA-256                : efcd06c8e235df9e7334b141aaeb123064e227fab2c05d100c4a57bba7d9f196
+pages physiques        : 73
+texte extractible      : 73 / 73
+caractères extraits    : 176 986
+technical_ok           : True
 ```
 
-### Inspection PDF — réussie
+La page 64 confirme explicitement :
 
-Commande :
+```text
+Toma       → maka  → sbd
+Kouy       → matya → stj
+Kassoum    → matya → stj
+Toéni      → matya → stj
+Bounou     → maya  → sym
+Kiembara   → maya  → sym
+Bangassogo → maya  → sym
+Lankoué    → maya  → sym
+```
+
+### Wordlist confirmée
+
+La section `A Word List of Dialects in the San Region` est localisée aux pages PDF `41–63`. Les identifiants visibles vont actuellement de `012` à `231`. Les entrées `001–011` restent à localiser.
+
+Les formes phonétiques ne sont pas absentes : elles sont encodées dans des polices Type3 legacy sans `/ToUnicode`, ce qui donne avec `pypdf` des séquences comme :
+
+```text
+/G3D/G4F/G51/G05/...
+```
+
+Diagnostic réel :
+
+```text
+31 polices uniques
+31 sans /ToUnicode
+/T9 à /T33 : Type3
+15 606 occurrences de tokens /G..
+60 glyphes /G.. différents
+```
+
+### Décodage SIL IPA93 — probe actuel
+
+Le mapping candidat est :
+
+```text
+code_IPA93 = int(hex_du_nom_Gxx, 16) + 0x1E
+```
+
+Des glyphes sentinelles donnent correctement `[` `]` `m` `o` `g` `u` `l` `ŋ` `ɑ` et des diacritiques IPA93.
+
+Exemple :
+
+```text
+/G3D/G4F/G51/G05/G49/G57/G05/G4E/G51/G05/G3F
+→ [mōgūlō]
+```
+
+Le processor suivant valide maintenant le mapping sur tout le bloc lexical :
 
 ```bash
-python processors/inspect_berthelette_pdf.py
+pip install -r requirements.txt
+pytest tests
+python processors/decode_berthelette_ipa93.py
 ```
 
-Résultat réel :
+Sortie :
 
 ```text
-pages physiques PDF : 73
-pages catalogue      : 75
-texte extractible    : 73 / 73 = 100 %
-caractères extraits  : 176 986
-SHA metadata         : OK
-technical_ok         : True
-OCR nécessaire       : non
+data/processed/berthelette/ipa93_decode_probe.json
 ```
 
-Le décalage `75 → 73` est conservé comme observation. Aucun OCR n'est requis.
-
-Les localités connues sont retrouvées dans le texte, et leur répétition sur un long bloc autour des pages `41–64` suggère fortement un tableau comparatif multi-localités. Ce signal doit être confirmé par la structure réelle du texte avant parsing.
-
-### Étape actuelle — inspecter le bloc wordlist en mode layout
-
-Processor :
+On attend :
 
 ```text
-processors/inspect_berthelette_wordlist.py
+sentinelles OK = True
+couverture décodage >= 99 %
+technical_ok = True
 ```
 
-Commande :
-
-```bash
-python processors/inspect_berthelette_wordlist.py
-```
-
-Sorties :
-
-```text
-data/processed/berthelette/wordlist_section_inventory.json
-data/processed/berthelette/wordlist_candidate_text.txt
-```
-
-Le processor détecte les pages où plusieurs des huit localités apparaissent ensemble, regroupe les pages contiguës et extrait le texte en mode `layout` afin de préserver au mieux les colonnes. **Il ne crée encore aucune ligne lexicale finale.**
-
-Après confirmation du bloc et des colonnes, on construira le parseur RAW Berthelette avec `page + localité + forme + glose + provenance`, puis un QA technique et une comparaison avec ASJP/RefLex.
+Si ce probe passe, on construit directement le parseur RAW Berthelette avec `concept + page + localité + variété + ISO + séquence legacy + forme Unicode + provenance`, puis le QA technique. Aucun OCR ne sera nécessaire si la couverture est suffisante.
 
 ## Ordre des prochaines sources
 
 ```text
-1. Berthelette 2001 — confirmer le bloc wordlist, parser, QA
+1. Berthelette 2001 — valider IPA93, parser, QA
 2. Lexiques originaux SIL / ANTBA
 3. Dictionnaires Burkina Langues — seulement après clarification des droits
 4. Textes / audio bibliques ANTBA — droits à clarifier et domaine religieux séparé
