@@ -4,7 +4,7 @@ Ce dossier regroupe les outils utilisés pour **découvrir, récupérer, invento
 
 > Guide général : [`GUIDE_DATA_INGESTION.md`](GUIDE_DATA_INGESTION.md)  
 > État Hugging Face : [`HUGGINGFACE_HARVEST.md`](HUGGINGFACE_HARVEST.md)  
-> Reconnaissance RefLex et prochaines sources : [`REFLEX_RECON.md`](REFLEX_RECON.md)
+> Reconnaissance RefLex : [`REFLEX_RECON.md`](REFLEX_RECON.md)
 
 ## Périmètre de `feat/data-ingestion`
 
@@ -139,7 +139,7 @@ DCAD-2000 : licence `other`, rights review requis
 MMS ulab  : audio non transcrit, future phase audio/ASR
 ```
 
-## RefLex CLLD — récolte lexicale effectuée pour Matya et Maya
+## RefLex CLLD — récolte terminée pour Matya et Maya
 
 RefLex CLLD est sous :
 
@@ -149,7 +149,7 @@ CC-BY-NC-SA-4.0
 
 Les données récoltées restent donc destinées à l'inventaire/recherche locale sous les conditions de cette licence. Elles ne sont **pas** automatiquement approuvées pour publication, entraînement ou usage commercial.
 
-### Ce que l'exploration réelle a montré
+### Résolution réelle
 
 `languages.csv` contient 815 languoïdes mais n'exporte pas d'ID interne ni de code ISO. Les mappings confirmés sont :
 
@@ -160,7 +160,7 @@ sym / Maya  / Samo Maya  / maya1281
 
 `San Maka / sbd / sout2844` n'a pas été trouvé dans l'index RefLex actuel et ne doit pas être remplacé par un candidat approximatif.
 
-Le chemin générique `/values.csv` n'était pas le bon transport. La page détail de chaque langue expose en réalité un DataTable `/units` avec un filtre interne, puis un export CSV officiel limité à 10 000 lignes.
+Le chemin générique `/values.csv` n'était pas le bon transport. La page détail de chaque langue expose un DataTable `/units` avec un filtre interne, puis un export CSV officiel limité à 10 000 lignes.
 
 ### Récolte réelle
 
@@ -171,7 +171,7 @@ python collectors/reflex_units.py --iso stj
 python collectors/reflex_units.py --iso sym
 ```
 
-Résultats observés :
+Résultats :
 
 ```text
 stj / Matya
@@ -185,11 +185,13 @@ sym / Maya
   /units export : 2 378 lignes
   glottocode     : maya1281
   clld page id   : 1473
+
+TOTAL RefLex RAW : 5 121 unités lexicales
 ```
 
-Les écarts `2764 → 2743` et `2384 → 2378` sont conservés comme observations. Ils ne doivent pas être « corrigés » ni expliqués sans preuve : le contrôle de complétude du collecteur compare le CSV au nombre réellement annoncé par le DataTable `/units`.
+Les écarts `2764 → 2743` et `2384 → 2378` sont conservés comme observations. Ils ne doivent pas être « corrigés » ni expliqués sans preuve : le contrôle de complétude compare le CSV au nombre réellement annoncé par le DataTable `/units`.
 
-Colonnes RAW réellement obtenues :
+Colonnes RAW obtenues :
 
 ```text
 Original Form
@@ -216,37 +218,20 @@ data/raw/reflex/
 └── reflex_units_harvest_summary.json
 ```
 
-Le RAW n'est ni normalisé ni dédupliqué.
-
-### QA technique RefLex
-
-Le processor :
-
-```text
-processors/qa_reflex_units.py
-```
-
-vérifie notamment :
-
-```text
-colonnes attendues
-nombre de lignes CSV ↔ compteur XHR enregistré
-SHA-256 ↔ metadata
-identité ISO / variété / glottocode
-formes vides
-traductions vides
-doublons exacts
-formes+traductions répétées
-sources observées
-POS observées
-```
-
-Il ne modifie jamais le RAW.
+### QA technique RefLex — validé
 
 Commande :
 
 ```bash
 python processors/qa_reflex_units.py --iso stj sym
+```
+
+Résultat observé :
+
+```text
+stj : technical_ok=True
+sym : technical_ok=True
+all_technical_ok=True
 ```
 
 Rapport local :
@@ -255,21 +240,64 @@ Rapport local :
 data/processed/reflex/reflex_units_qa.json
 ```
 
-Une fois `all_technical_ok=true` confirmé, RefLex peut être considéré **techniquement récolté** pour `stj` et `sym`. Cela ne constitue toujours pas une validation linguistique.
+Le QA vérifie notamment les colonnes, les volumes, le SHA-256, les glottocodes, les métadonnées, les formes/traductions vides, les sources, les POS et les doublons. Il ne modifie jamais le RAW.
 
-## Prochaines sources après RefLex
+**Statut RefLex dans cette phase : `collection_success + qa_passed` pour `stj` et `sym`.** La validation linguistique reste future.
 
-La reconnaissance détaillée se trouve dans [`REFLEX_RECON.md`](REFLEX_RECON.md). Ordre actuel :
+## Volume RAW opérationnel à ce stade
+
+Compteur des occurrences/lignes RAW effectivement récoltées :
 
 ```text
-1. Finaliser le QA RefLex stj/sym
-2. Berthelette 2001 — enquête sociolinguistique + wordlists
-3. Lexiques originaux SIL / ANTBA
-4. Dictionnaires Burkina Langues — seulement après clarification des droits
-5. Textes / audio bibliques ANTBA — droits à clarifier et domaine religieux séparé
+ASJP           341
+Ainsi sois-je  125
+Taxi1500      7919
+ChiKhaPo       872
+PanLex         420
+FinePDFs         7
+GlotCC           2
+FineWeb2          4
+RefLex         5121
+------------------
+TOTAL         14811 occurrences/lignes RAW
 ```
 
-Les applications de dictionnaire sont potentiellement très riches, notamment en audio, mais une application gratuite n'est pas une licence de réutilisation. Aucun scraping APK massif ne doit être lancé sans autorisation claire.
+Ce total est un **compteur de collecte**, pas un corpus final : il contient des chevauchements, des domaines spécialisés, des licences/droits différents et des données non validées linguistiquement.
+
+## Source actuelle — Berthelette 2001
+
+Prochaine source à traiter :
+
+```text
+John Berthelette
+Sociolinguistic survey report for the San (Samo) language
+travail daté 2001 / SIL Electronic Survey Reports 2002-005
+≈ 75 pages
+```
+
+Objectifs :
+
+```text
+1. retrouver la notice et le fichier officiels SIL
+2. vérifier la licence exacte de l'item
+3. inspecter les tableaux/listes lexicales réellement présents
+4. conserver les localités et leur provenance
+5. ne jamais transformer automatiquement une localité en variété ISO
+6. récolter uniquement ce que les droits et le format permettent
+7. produire un QA technique séparé
+```
+
+Berthelette est particulièrement utile pour documenter les localités et comparer les formes entre zones San, donc pour éviter de réduire `maka`, `matya` ou `maya` à une seule localité.
+
+## Ordre des prochaines sources
+
+```text
+1. Berthelette 2001 — enquête sociolinguistique + wordlists
+2. Lexiques originaux SIL / ANTBA
+3. Dictionnaires Burkina Langues — seulement après clarification des droits
+4. Textes / audio bibliques ANTBA — droits à clarifier et domaine religieux séparé
+5. RefLex sbd — seulement si une présence/source fiable est retrouvée ultérieurement
+```
 
 ## Règle finale de cette branche
 
