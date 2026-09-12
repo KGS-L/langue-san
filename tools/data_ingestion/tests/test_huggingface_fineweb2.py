@@ -1,6 +1,8 @@
 from importlib.util import module_from_spec, spec_from_file_location
 from pathlib import Path
 
+from huggingface_hub.errors import RemoteEntryNotFoundError
+
 
 ROOT = Path(__file__).resolve().parents[1]
 SPEC = spec_from_file_location(
@@ -47,6 +49,19 @@ class _FakeApi:
         ]
 
 
+class _FakeApiMissingTest(_FakeApi):
+    def list_repo_tree(self, repo_id, path_in_repo=None, recursive=False, revision=None, repo_type=None):
+        if path_in_repo == "data/sbd_Latn/test":
+            raise RemoteEntryNotFoundError("missing test split")
+        return super().list_repo_tree(
+            repo_id,
+            path_in_repo=path_in_repo,
+            recursive=recursive,
+            revision=revision,
+            repo_type=repo_type,
+        )
+
+
 def test_load_target_finds_fineweb2(tmp_path):
     path = tmp_path / "harvest.yaml"
     path.write_text(
@@ -89,3 +104,16 @@ def test_probe_reports_revision_files_and_size():
     assert result["content_downloaded"] is False
     assert result["splits"][0]["file_count"] == 2
     assert result["splits"][0]["total_size_bytes"] == 200
+
+
+def test_probe_marks_missing_split_instead_of_aborting():
+    target = {
+        "repo_id": "HuggingFaceFW/fineweb-2",
+        "config": "sbd_Latn",
+        "iso_639_3": "sbd",
+        "variety": "maka",
+    }
+    result = fineweb2.probe(target, ["train", "test"], api=_FakeApiMissingTest())
+    assert result["splits"][0]["status"] == "available"
+    assert result["splits"][1]["status"] == "missing_on_revision"
+    assert result["splits"][1]["available"] is False
