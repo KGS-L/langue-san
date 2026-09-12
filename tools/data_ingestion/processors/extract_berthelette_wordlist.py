@@ -9,8 +9,7 @@ Préconditions techniques déjà validées :
 Le script extrait uniquement le bloc actuellement visible `012–231`.
 Il conserve la représentation legacy `/Gxx`, la transcription Unicode source,
 la localité et la provenance. Il ne corrige pas la langue, ne déduplique pas
-les variantes et ne fabrique pas les concepts `001–011`, absents du bloc
-textuellement repéré dans le PDF actuel.
+les variantes et ne fabrique pas les concepts `001–011`.
 """
 
 from __future__ import annotations
@@ -19,7 +18,7 @@ import argparse
 import csv
 import json
 import re
-from collections import Counter, defaultdict
+from collections import Counter
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -42,12 +41,8 @@ except ModuleNotFoundError:  # exécution directe depuis processors/
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 DEFAULT_PDF = REPO_ROOT / "data" / "raw" / "berthelette" / "SILESR2002_005.pdf"
-DEFAULT_CSV = (
-    REPO_ROOT / "data" / "processed" / "berthelette" / "wordlist_occurrences_012_231.csv"
-)
-DEFAULT_SUMMARY = (
-    REPO_ROOT / "data" / "processed" / "berthelette" / "wordlist_occurrences_012_231_summary.json"
-)
+DEFAULT_CSV = REPO_ROOT / "data" / "processed" / "berthelette" / "wordlist_occurrences_012_231.csv"
+DEFAULT_SUMMARY = REPO_ROOT / "data" / "processed" / "berthelette" / "wordlist_occurrences_012_231_summary.json"
 
 SOURCE_NAME = "Berthelette 2001"
 REPORT_ID = "SILESR-2002-005"
@@ -69,22 +64,10 @@ LOCALITY_INFO: dict[str, dict[str, str | tuple[str, ...]]] = {
 }
 
 CSV_FIELDS = [
-    "source",
-    "report_id",
-    "pdf_page",
-    "concept_source_page",
-    "concept_id",
-    "concept_gloss_fr",
-    "locality",
-    "variety_claimed_by_source",
-    "iso_639_3",
-    "raw_legacy_glyphs",
-    "decoded_transcription_source",
-    "original_form_ipa",
-    "transcription_system",
-    "validation_status",
-    "rights_status",
-    "source_order",
+    "source", "report_id", "pdf_page", "concept_source_page", "concept_id",
+    "concept_gloss_fr", "locality", "variety_claimed_by_source", "iso_639_3",
+    "raw_legacy_glyphs", "decoded_transcription_source", "original_form_ipa",
+    "transcription_system", "validation_status", "rights_status", "source_order",
 ]
 
 
@@ -93,22 +76,28 @@ class BertheletteWordlistExtractError(RuntimeError):
 
 
 def _localities_in_order(line: str) -> list[str]:
-    """Retourne les localités reconnues dans leur ordre d'apparition."""
+    """Retourne les localités reconnues dans leur ordre d'apparition.
+
+    `pypdf` colle parfois la localité au dernier glyphe Type3, par exemple
+    `/G3FBangassogo`. On masque d'abord les tokens `/Gxx`, puis on cherche les
+    localités dans le texte restant. Cela évite de perdre ces lignes sans
+    relâcher les frontières de mots sur le texte linguistique ordinaire.
+    """
+    searchable = GLYPH_RE.sub(" ", line or "")
     hits: list[tuple[int, str]] = []
+
     for canonical, info in LOCALITY_INFO.items():
         aliases = info["aliases"]
         assert isinstance(aliases, tuple)
         best: int | None = None
         for alias in aliases:
-            # Tolérer un ou plusieurs espaces dans les alias comme `Toé ni`.
             pattern = re.escape(alias).replace(r"\ ", r"\s+")
-            match = re.search(rf"(?<!\w){pattern}(?!\w)", line, flags=re.IGNORECASE)
+            match = re.search(rf"(?<!\w){pattern}(?!\w)", searchable, flags=re.IGNORECASE)
             if match and (best is None or match.start() < best):
                 best = match.start()
         if best is not None:
             hits.append((best, canonical))
 
-    # Une localité n'est ajoutée qu'une fois par ligne, même si un alias se répète.
     return [canonical for _, canonical in sorted(hits, key=lambda item: item[0])]
 
 
@@ -135,7 +124,6 @@ def parse_page_texts(
     expected_start_id: int = 12,
     expected_end_id: int = 231,
 ) -> dict[str, Any]:
-    """Parse des textes déjà extraits ; séparé du PDF pour faciliter les tests."""
     rows: list[dict[str, Any]] = []
     anomalies: list[dict[str, Any]] = []
     concepts: dict[int, dict[str, Any]] = {}
@@ -150,16 +138,14 @@ def parse_page_texts(
     def record_dangling(reason: str, page: int, line_no: int) -> None:
         nonlocal pending_tokens
         if pending_tokens:
-            anomalies.append(
-                {
-                    "type": "dangling_glyphs",
-                    "reason": reason,
-                    "page": page,
-                    "line": line_no,
-                    "concept_id": current_id,
-                    "raw_legacy_glyphs": "".join(pending_tokens),
-                }
-            )
+            anomalies.append({
+                "type": "dangling_glyphs",
+                "reason": reason,
+                "page": page,
+                "line": line_no,
+                "concept_id": current_id,
+                "raw_legacy_glyphs": "".join(pending_tokens),
+            })
             pending_tokens = []
 
     for page_no, text in page_texts:
@@ -173,10 +159,7 @@ def parse_page_texts(
                     current_gloss = concept_match.group(2).strip()
                     current_concept_page = page_no
                     last_form = None
-                    concepts.setdefault(
-                        concept_id,
-                        {"gloss": current_gloss, "first_page": page_no},
-                    )
+                    concepts.setdefault(concept_id, {"gloss": current_gloss, "first_page": page_no})
                     continue
 
             if current_id is None or current_gloss is None:
@@ -195,60 +178,53 @@ def parse_page_texts(
                 try:
                     form = _form_from_tokens(pending_tokens)
                 except BertheletteIPA93DecodeError as exc:
-                    anomalies.append(
-                        {
-                            "type": "decode_error",
-                            "page": page_no,
-                            "line": line_no,
-                            "concept_id": current_id,
-                            "message": str(exc),
-                            "raw_legacy_glyphs": "".join(pending_tokens),
-                        }
-                    )
+                    anomalies.append({
+                        "type": "decode_error",
+                        "page": page_no,
+                        "line": line_no,
+                        "concept_id": current_id,
+                        "message": str(exc),
+                        "raw_legacy_glyphs": "".join(pending_tokens),
+                    })
                 pending_tokens = []
                 if form is not None:
                     last_form = form
             elif last_form is not None:
-                # Le PDF regroupe parfois plusieurs localités sous une même forme :
-                # les localités suivantes n'ont alors aucun glyphe répété.
+                # Une transcription peut être partagée par plusieurs localités.
                 form = last_form
 
             if form is None:
-                anomalies.append(
-                    {
-                        "type": "locality_without_form",
-                        "page": page_no,
-                        "line": line_no,
-                        "concept_id": current_id,
-                        "localities": localities,
-                        "text": line.strip(),
-                    }
-                )
+                anomalies.append({
+                    "type": "locality_without_form",
+                    "page": page_no,
+                    "line": line_no,
+                    "concept_id": current_id,
+                    "localities": localities,
+                    "text": line.strip(),
+                })
                 continue
 
             for locality in localities:
                 info = LOCALITY_INFO[locality]
                 source_order += 1
-                rows.append(
-                    {
-                        "source": SOURCE_NAME,
-                        "report_id": REPORT_ID,
-                        "pdf_page": page_no,
-                        "concept_source_page": current_concept_page,
-                        "concept_id": f"{current_id:03d}",
-                        "concept_gloss_fr": current_gloss,
-                        "locality": locality,
-                        "variety_claimed_by_source": info["variety"],
-                        "iso_639_3": info["iso"],
-                        "raw_legacy_glyphs": form["raw_legacy_glyphs"],
-                        "decoded_transcription_source": form["decoded_transcription_source"],
-                        "original_form_ipa": form["original_form_ipa"],
-                        "transcription_system": TRANSCRIPTION_SYSTEM,
-                        "validation_status": VALIDATION_STATUS,
-                        "rights_status": RIGHTS_STATUS,
-                        "source_order": source_order,
-                    }
-                )
+                rows.append({
+                    "source": SOURCE_NAME,
+                    "report_id": REPORT_ID,
+                    "pdf_page": page_no,
+                    "concept_source_page": current_concept_page,
+                    "concept_id": f"{current_id:03d}",
+                    "concept_gloss_fr": current_gloss,
+                    "locality": locality,
+                    "variety_claimed_by_source": info["variety"],
+                    "iso_639_3": info["iso"],
+                    "raw_legacy_glyphs": form["raw_legacy_glyphs"],
+                    "decoded_transcription_source": form["decoded_transcription_source"],
+                    "original_form_ipa": form["original_form_ipa"],
+                    "transcription_system": TRANSCRIPTION_SYSTEM,
+                    "validation_status": VALIDATION_STATUS,
+                    "rights_status": RIGHTS_STATUS,
+                    "source_order": source_order,
+                })
 
     if pending_tokens:
         last_page = page_texts[-1][0] if page_texts else 0
@@ -260,7 +236,7 @@ def parse_page_texts(
 
     by_locality = Counter(row["locality"] for row in rows)
     by_iso = Counter(row["iso_639_3"] for row in rows)
-    pair_counts: dict[tuple[str, str], int] = Counter(
+    pair_counts: Counter[tuple[str, str]] = Counter(
         (row["concept_id"], row["locality"]) for row in rows
     )
     multi_form_pairs = [
@@ -269,14 +245,19 @@ def parse_page_texts(
         if count > 1
     ]
 
-    decode_errors = [item for item in anomalies if item["type"] == "decode_error"]
-    rows_without_form = [row for row in rows if not str(row["original_form_ipa"]).strip()]
+    source_blank_rows = [row for row in rows if not str(row["original_form_ipa"]).strip()]
+    structural_anomalies = [
+        item for item in anomalies
+        if item["type"] in {"dangling_glyphs", "decode_error", "locality_without_form"}
+    ]
 
+    # Les formes explicitement vides `[]` sont des données source incomplètes :
+    # elles restent dans le RAW et sont comptées séparément, mais ne signifient
+    # pas à elles seules que le parseur a échoué.
     technical_ok = (
         bool(rows)
         and not missing_ids
-        and not decode_errors
-        and not rows_without_form
+        and not structural_anomalies
         and observed_ids == expected_ids
     )
 
@@ -295,11 +276,13 @@ def parse_page_texts(
             "multi_form_concept_locality_groups": multi_form_pairs,
             "anomaly_count": len(anomalies),
             "anomalies": anomalies,
-            "rows_without_form": len(rows_without_form),
+            "rows_without_form": len(source_blank_rows),
+            "source_blank_form_count": len(source_blank_rows),
             "technical_ok": technical_ok,
             "notes": [
                 "Les concepts 001–011 ne sont pas fabriqués : ils ne font pas partie du bloc 012–231 textuellement confirmé dans le PDF actuel.",
                 "Plusieurs occurrences pour un même concept/localité sont conservées comme variantes source, sans déduplication.",
+                "Les transcriptions source explicitement vides sont conservées et comptées au lieu d'être supprimées.",
                 "La transcription Unicode est un décodage technique SIL IPA93 ; elle n'est pas une validation linguistique.",
             ],
         },
@@ -348,7 +331,6 @@ def extract_pdf(
     }
     summary_path.parent.mkdir(parents=True, exist_ok=True)
     summary_path.write_text(json.dumps(summary, ensure_ascii=False, indent=2), encoding="utf-8")
-
     return {"rows": parsed["rows"], "summary": summary}
 
 
@@ -373,7 +355,8 @@ def main() -> None:
     print(f"- occurrences : {summary['occurrence_count']}")
     print(f"- par ISO : {summary['counts_by_iso']}")
     print(f"- par localité : {summary['counts_by_locality']}")
-    print(f"- anomalies : {summary['anomaly_count']}")
+    print(f"- anomalies structurelles : {summary['anomaly_count']}")
+    print(f"- formes source vides conservées : {summary['source_blank_form_count']}")
     print(f"- groupes multi-formes : {len(summary['multi_form_concept_locality_groups'])}")
     print(f"- technical_ok : {summary['technical_ok']}")
     print(f"CSV : {summary['csv_output']}")
