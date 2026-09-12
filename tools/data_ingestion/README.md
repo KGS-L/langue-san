@@ -35,7 +35,7 @@ San Matya             : stj
 San Maya              : sym
 ```
 
-Toma et Tougan sont uniquement des indices géographiques. Une localité ne valide jamais automatiquement une variété.
+Toma et Tougan sont uniquement des indices géographiques. Une localité ne valide jamais automatiquement une variété, sauf lorsqu'une source linguistique/bibliographique explicite documente elle-même cette correspondance et que cette provenance est conservée.
 
 ## Principes
 
@@ -140,7 +140,7 @@ DCAD-2000 : licence `other`, rights review requis
 MMS ulab  : audio non transcrit, future phase audio/ASR
 ```
 
-## RefLex CLLD — récolte terminée pour Matya et Maya
+## RefLex CLLD — récolte + QA terminés pour Matya et Maya
 
 RefLex CLLD est sous :
 
@@ -152,8 +152,6 @@ Les données récoltées restent donc destinées à l'inventaire/recherche local
 
 ### Résolution réelle
 
-`languages.csv` contient 815 languoïdes mais n'exporte pas d'ID interne ni de code ISO. Les mappings confirmés sont :
-
 ```text
 stj / Matya / Samo Matya / maty1235
 sym / Maya  / Samo Maya  / maya1281
@@ -161,18 +159,9 @@ sym / Maya  / Samo Maya  / maya1281
 
 `San Maka / sbd / sout2844` n'a pas été trouvé dans l'index RefLex actuel et ne doit pas être remplacé par un candidat approximatif.
 
-Le chemin générique `/values.csv` n'était pas le bon transport. La page détail de chaque langue expose un DataTable `/units` avec un filtre interne, puis un export CSV officiel limité à 10 000 lignes.
+La récolte réelle utilise le DataTable `/units` découvert depuis la page de la langue puis son export CSV officiel.
 
-### Récolte réelle
-
-Commandes :
-
-```bash
-python collectors/reflex_units.py --iso stj
-python collectors/reflex_units.py --iso sym
-```
-
-Résultats :
+### Résultats
 
 ```text
 stj / Matya
@@ -190,9 +179,7 @@ sym / Maya
 TOTAL RefLex RAW : 5 121 unités lexicales
 ```
 
-Les écarts `2764 → 2743` et `2384 → 2378` sont conservés comme observations. Ils ne doivent pas être « corrigés » ni expliqués sans preuve : le contrôle de complétude compare le CSV au nombre réellement annoncé par le DataTable `/units`.
-
-Colonnes RAW obtenues :
+Colonnes RAW :
 
 ```text
 Original Form
@@ -206,28 +193,7 @@ Latitude
 Longitude
 ```
 
-Sorties locales :
-
-```text
-data/raw/reflex/
-├── stj/
-│   ├── units.csv
-│   └── units_metadata.json
-├── sym/
-│   ├── units.csv
-│   └── units_metadata.json
-└── reflex_units_harvest_summary.json
-```
-
-### QA technique RefLex — validé
-
-Commande :
-
-```bash
-python processors/qa_reflex_units.py --iso stj sym
-```
-
-Résultat observé :
+QA exécuté :
 
 ```text
 stj : technical_ok=True
@@ -235,19 +201,9 @@ sym : technical_ok=True
 all_technical_ok=True
 ```
 
-Rapport local :
-
-```text
-data/processed/reflex/reflex_units_qa.json
-```
-
-Le QA vérifie notamment les colonnes, les volumes, le SHA-256, les glottocodes, les métadonnées, les formes/traductions vides, les sources, les POS et les doublons. Il ne modifie jamais le RAW.
-
-**Statut RefLex dans cette phase : `collection_success + qa_passed` pour `stj` et `sym`.** La validation linguistique reste future.
+**Statut RefLex dans cette phase : `collection_success + qa_passed` pour `stj` et `sym`.**
 
 ## Volume RAW opérationnel à ce stade
-
-Compteur des occurrences/lignes RAW effectivement récoltées :
 
 ```text
 ASJP           341
@@ -265,35 +221,70 @@ TOTAL         14811 occurrences/lignes RAW
 
 Ce total est un **compteur de collecte**, pas un corpus final : il contient des chevauchements, des domaines spécialisés, des licences/droits différents et des données non validées linguistiquement.
 
-## Source actuelle — Berthelette 2001
+## Source active — Berthelette 2001
 
 Reconnaissance détaillée : [`BERTHELETTE_RECON.md`](BERTHELETTE_RECON.md).
 
 ```text
 John Berthelette
 Sociolinguistic survey report for the San (Samo) language
-travail daté 2001 / SIL Electronic Survey Reports 2002-005
-≈ 75 pages
+SILESR 2002-005
+75 pages
+SIL archive entry 8983
 ```
 
-Objectifs :
+La notice SIL officielle et l'URL du PDF original ont été identifiées. Le document est intéressant à la fois pour le contexte sociolinguistique et pour ses wordlists/localités.
+
+Glottolog associe explicitement cette référence à :
 
 ```text
-1. retrouver la notice et le fichier officiels SIL
-2. vérifier la licence exacte de l'item
-3. inspecter les tableaux/listes lexicales réellement présents
-4. conserver les localités et leur provenance
-5. ne jamais transformer automatiquement une localité en variété ISO
-6. récolter uniquement ce que les droits et le format permettent
-7. produire un QA technique séparé
+sbd / Maka  : Toma
+stj / Matya : Kassoum, Kouy, Toéni
+sym / Maya  : Bounou, Kiembara, Bangassogo, Lankoué
 ```
 
-Berthelette est particulièrement utile pour documenter les localités et comparer les formes entre zones San, donc pour éviter de réduire `maka`, `matya` ou `maya` à une seule localité.
+ASJP `MAYA_SAMO` utilise Berthelette comme source amont : les futures lignes Berthelette ne devront donc pas être additionnées naïvement aux lignes ASJP.
+
+### Collecteur
+
+```text
+collectors/berthelette.py
+```
+
+Il télécharge/ingère uniquement le **PDF original** et conserve son SHA-256 et sa provenance. L'extraction des wordlists viendra après inspection du PDF.
+
+Après `git pull` et `pytest tests` :
+
+```bash
+python collectors/berthelette.py --probe-only
+```
+
+Si le serveur SIL autorise le téléchargement depuis la machine locale, le probe valide le PDF sans écrire de RAW. On pourra ensuite lancer :
+
+```bash
+python collectors/berthelette.py
+```
+
+Si SIL répond HTTP 403, télécharger manuellement le fichier officiel `SILESR2002_005.pdf` depuis l'entrée SIL 8983 / le lien PDF, puis :
+
+```bash
+python collectors/berthelette.py --input-file ~/Téléchargements/SILESR2002_005.pdf
+```
+
+Sorties de récolte :
+
+```text
+data/raw/berthelette/
+├── SILESR2002_005.pdf
+└── metadata.json
+```
+
+Droits de travail actuels : la règle par défaut des SIL Language & Culture Archives est `CC-BY-NC-SA-4.0` sauf indication contraire de l'item/fichier. Le PDF doit donc encore être inspecté avant de figer son statut juridique précis dans le projet.
 
 ## Ordre des prochaines sources
 
 ```text
-1. Berthelette 2001 — enquête sociolinguistique + wordlists
+1. Berthelette 2001 — PDF, inspection, wordlists/localités, QA
 2. Lexiques originaux SIL / ANTBA
 3. Dictionnaires Burkina Langues — seulement après clarification des droits
 4. Textes / audio bibliques ANTBA — droits à clarifier et domaine religieux séparé
