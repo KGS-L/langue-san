@@ -1,10 +1,10 @@
-# Lexique San Maka / Southern Samo 2003 — reconnaissance
+# San Maka / Southern Samo `sbd` — reconnaissance
 
-Cette note suit la source prioritaire ouverte après la clôture technique de Berthelette 2001.
+Cette note suit la priorité Maka ouverte après la clôture technique de Berthelette 2001.
 
-## 1. Ressource cible
+## 1. Lexique historique cible
 
-Référence bibliographique actuellement confirmée par plusieurs sources secondaires et par ASJP :
+Référence bibliographique confirmée par ASJP et plusieurs bibliographies linguistiques :
 
 ```text
 SIL Burkina Faso. 2003.
@@ -13,7 +13,7 @@ Boo nɛn sɛwɛ san-fransi, fransi-san
 Ouagadougou: SIL Burkina Faso.
 ```
 
-Variété cible :
+Variété :
 
 ```text
 Southern Samo / San Maka / San du Sud
@@ -21,78 +21,130 @@ ISO 639-3 : sbd
 Glottocode : sout2844
 ```
 
-## 2. Pourquoi cette source est prioritaire
+ASJP `SOUTHERN_SAMO_SAN` cite explicitement `Burkina 2003` et ce lexique comme sa source.
 
-ASJP `SOUTHERN_SAMO_SAN` cite explicitement `Burkina 2003` et ce lexique comme source. RefLex ne fournit actuellement pas de récolte équivalente pour `sbd` dans son index utilisé par le projet.
-
-Cette source est donc plus intéressante qu'un nouvel agrégateur pour renforcer la couverture originale Maka.
-
-## 3. Informations bibliographiques secondaires
+## 2. Informations bibliographiques secondaires
 
 Des bibliographies secondaires décrivent :
 
 ```text
 édition préliminaire
+première impression : premier trimestre 2003
 Ouagadougou
 SIL
-2003
 environ 120 pages
 San → français : environ pages 29–78
 français → San : environ pages 79–120
 ```
 
-Une attribution à `Anne-Marie Giménez` apparaît dans certaines bibliographies secondaires. Elle n'est pas considérée ici comme auteur/compilateur confirmé tant qu'une notice primaire ou le document original n'a pas été retrouvé.
+Une attribution à `Anne-Marie Giménez` apparaît dans une bibliographie secondaire, tandis que d'autres références traitent l'ouvrage comme anonyme/SIL Burkina. Elle n'est donc pas promue comme auteur/compilateur confirmé sans notice primaire.
 
-## 4. État de l'accès
+Le PDF officiel ou une notice SIL primaire de l'édition 2003 n'ont pas été retrouvés dans la recherche initiale.
 
-Reconnaissance initiale :
+## 3. Découverte importante : dictionnaire San du Sud actuel
 
-```text
-référence bibliographique : confirmée
-association à sbd         : confirmée via ASJP
-source originale numérique: non retrouvée à ce stade
-PDF officiel              : non retrouvé
-notice SIL primaire       : non retrouvée à ce stade
-droits/licence            : à clarifier
-```
-
-Aucun contenu lexical n'est récolté tant que l'exemplaire original ou une source numérique fiable et les conditions de réutilisation ne sont pas identifiés.
-
-## 5. Règle de vitesse
-
-On ne doit pas rester bloqué plusieurs cycles sur cette ressource.
+Une ressource actuelle existe sur Webonary :
 
 ```text
-1. recherche courte notice/PDF/catalogue
-2. si accès fiable trouvé → vérifier droits → collecteur/extraction
-3. si accès non trouvé → documenter le blocage
-4. passer immédiatement à la source primaire suivante
+Dictionnaire San du sud
+https://www.webonary.work/san-sud/
+ISO : sbd
+Toma / Makaa
+Copyright affiché : © 2021 SIL International®
 ```
 
-Les candidats suivants sont les sources originales Matya/Maya exposées par RefLex, notamment `Morris et al. 2011 : Matya`.
+Le site permet de parcourir les entrées Southern San, English et French et affiche également un menu `Download`. Son introduction confirme `sbd` et le dialecte Toma/Makaa.
 
-## 6. Provenance de reconnaissance
+Une application Android actuelle publiée par **Burkina Langues** existe également :
 
-Points confirmés :
+```text
+nom : San dictionnaire
+package : com.dict.toma.san
+variété : San du sud / mà kaa
+volume annoncé : environ 2 220 mots
+contenu annoncé : >1 000 images et >2 200 fichiers audio
+```
 
-- ASJP `SOUTHERN_SAMO_SAN` donne `ISO sbd`, `Glottocode sout2844` et cite `Burkina 2003 — Boo nεn sέwε san-fransi, fransi-san [Lexique san–français, français–san]. SIL Burkina Faso.`
-- Une bibliographie RefLex publiée cite également `SIL Burkina. (2003). Boo nɛn sɛwɛ san-fransi, fransi-san` pour Southern Samo.
-- D'autres bibliographies linguistiques décrivent une édition préliminaire d'environ 120 pages.
+Une version Windows `San du sud - Lexique Pro Setup.exe` est aussi proposée publiquement sur le site Mooré Burkina Faso.
 
-Ces références servent uniquement à identifier la source. Elles ne remplacent pas le livre original pour la récolte lexicale.
+Ces ressources modernes sont très prometteuses pour le projet, notamment pour l'audio, mais **elles ne sont pas automatiquement assimilées à l'édition 2003** : le lien généalogique exact entre les bases doit être documenté.
+
+## 4. Droits : point bloquant actuel
+
+Le Webonary Southern San affiche :
+
+```text
+Dictionnaire San du sud © 2021 SIL International®
+```
+
+Aucune mention Creative Commons n'a été retrouvée lors du premier contrôle automatique de la page d'introduction. Webonary permet à chaque dictionnaire de définir sa propre politique de copyright/licence ; on ne peut donc pas déduire une licence à partir de la plateforme seule.
+
+Pour l'instant :
+
+```text
+rights_status           = copyright_visible_license_not_confirmed
+publication_approved    = false
+training_approved       = false
+commercial_use_approved = false
+bulk_harvest_approved   = false
+```
+
+Contact public associé aux applications Burkina Langues :
+
+```text
+burkinalangues@gmail.com
+```
+
+Avant une récolte massive du Webonary, de l'application ou des fichiers audio, il faut retrouver la page Copyright exacte ou obtenir une autorisation explicite.
+
+## 5. Stratégie de vitesse
+
+Cette source ne doit pas devenir un nouveau Berthelette de plusieurs cycles.
+
+```text
+1. édition 2003 : bibliographie confirmée, accès numérique original non retrouvé
+2. ressource moderne sbd : Webonary + application + version Windows confirmées
+3. droits modernes : non suffisamment explicites pour bulk harvest
+4. documenter et contacter si nécessaire
+5. continuer immédiatement sur la source primaire suivante pendant l'attente
+```
+
+Donc la reconnaissance Maka n'est pas abandonnée, mais elle passe en **rights/access pending** pendant que l'ingestion continue ailleurs.
+
+## 6. Source suivante
+
+Priorité suivante :
+
+```text
+Morris et al. 2011
+Lexique San Matya avec guide d'orthographe
+Tougan, Burkina Faso
+ANTBA
+ISO : stj
+```
+
+ASJP `SAMO_MATYA_2` cite explicitement cette source. Une application actuelle `San Matya de A-Z` de Burkina Langues annonce environ 2 576 entrées et 685 images ; elle sera traitée comme ressource moderne distincte tant que sa provenance/licence exacte n'est pas clarifiée.
 
 ## 7. Statut actuel
 
 ```text
-discovery             = confirmed
-variety                = maka
-iso_639_3              = sbd
-glottocode             = sout2844
-bibliographic_year     = 2003
-publisher              = SIL Burkina Faso
-approximate_pages      = 120
-primary_catalog_record = not_found_yet
-official_digital_copy  = not_found_yet
-rights_status          = rights_review_required
-lexical_harvest        = not_started
+discovery_2003               = confirmed
+variety                       = maka
+iso_639_3                     = sbd
+glottocode                    = sout2844
+bibliographic_year            = 2003
+publisher                     = SIL Burkina Faso
+approximate_pages             = 120
+primary_2003_catalog_record   = not_found_yet
+official_2003_digital_copy    = not_found_yet
+modern_webonary               = confirmed
+modern_android_app            = confirmed
+modern_windows_dictionary     = confirmed
+modern_volume_announced       = about_2220_words
+modern_audio_announced        = more_than_2200_files
+modern_copyright              = SIL_International_2021
+modern_explicit_license       = not_confirmed
+rights_status                 = copyright_visible_license_not_confirmed
+lexical_bulk_harvest          = deferred_pending_rights
+next_source                   = Morris_et_al_2011_Matya
 ```
