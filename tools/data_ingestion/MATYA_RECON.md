@@ -37,7 +37,7 @@ Cette ressource permettrait de :
 - améliorer la documentation des droits
 ```
 
-## 3. Ressource numérique actuelle identifiée
+## 3. Ressources numériques actuelles identifiées
 
 Une application Android actuelle existe sur Google Play :
 
@@ -55,6 +55,31 @@ support : burkinalangues@gmail.com
 Le descriptif la présente comme `Lexique San Matya - Français`.
 
 Cette application est traitée comme une **ressource moderne distincte** tant que sa relation exacte avec l'ouvrage Morris et al. 2011 n'est pas démontrée.
+
+### Installateur Windows Lexique Pro récupéré localement
+
+Un installateur Windows a maintenant été téléchargé manuellement et placé localement dans le projet :
+
+```text
+San Matya - Lexique Pro Setup.exe
+taille observée : ~21 MiB
+```
+
+Important : ce fichier est **Matya / stj**, et non San du Sud / Maka / sbd. Le dossier local ne doit donc pas rester nommé `san_sud_lexique_pro`, afin d'éviter tout mélange de variété.
+
+Statut actuel de cet installateur :
+
+```text
+fichier local           : présent
+exécution               : non requise
+inspection statique     : à faire
+contenu embarqué        : inconnu
+relation avec 2011      : non démontrée
+licence réutilisation   : non confirmée
+bulk harvest            : non approuvé avant clarification des droits
+```
+
+L'inspection autorisée à ce stade est uniquement technique et locale : type d'installateur, listing des fichiers embarqués, formats Lexique Pro/LIFT/XML/DB et inventaire éventuel des médias. Aucun exécutable ne doit être lancé pour cette inspection.
 
 ## 4. Séparation des domaines
 
@@ -74,24 +99,39 @@ PDF officiel 2011                    : non retrouvé à ce stade
 notice primaire ANTBA/SIL            : à retrouver
 droits de l'ouvrage 2011             : à clarifier
 application moderne                  : confirmée
-licence de réutilisation de l'app     : non confirmée
+installateur Lexique Pro local       : récupéré manuellement (~21 MiB)
+licence de réutilisation moderne     : non confirmée
 bulk harvest                          : non approuvé
 ```
 
-Aucun APK, exécutable ou contenu lexical moderne ne doit être récolté massivement avant clarification des droits.
+La présence locale d'un installateur ne vaut pas autorisation de republier, d'entraîner un modèle ou d'exploiter commercialement son contenu.
 
-## 6. Règle de vitesse
+## 6. Prochaine inspection technique
+
+Ordre de travail local :
 
 ```text
-1. recherche courte du PDF / catalogue / notice primaire 2011
-2. si trouvé : droits → extraction
-3. sinon : documenter le blocage
-4. passer à la source primaire Maya suivante
+1. renommer le dossier local en san_matya_lexique_pro
+2. calculer SHA-256 et identifier le type d'installateur
+3. lister le contenu sans exécuter le .exe
+4. rechercher .lift/.xml/.db/.sqlite/.txt/.html + audio/images
+5. si données structurées trouvées : documenter structure et provenance
+6. ne pas effectuer de bulk harvest publié tant que les droits ne sont pas clarifiés
+```
+
+## 7. Règle de vitesse
+
+```text
+1. inspection statique courte de l'installateur local
+2. recherche courte du PDF / catalogue / notice primaire 2011
+3. si structure exploitable + droits suffisants : collecteur/extraction
+4. sinon : documenter le blocage
+5. passer à la source primaire Maya suivante
 ```
 
 L'objectif est d'éviter de rester bloqué sur une source difficile d'accès.
 
-## 7. Statut actuel
+## 8. Statut actuel
 
 ```text
 discovery_historical       = confirmed
@@ -107,6 +147,9 @@ modern_android_app         = confirmed
 modern_entry_count         = 2576
 modern_image_count         = 685
 modern_support_contact     = burkinalangues@gmail.com
+modern_windows_installer   = local_file_present_approx_21MiB
+modern_windows_filename    = San Matya - Lexique Pro Setup.exe
 modern_license             = not_confirmed
+static_inspection          = pending
 bulk_harvest               = deferred_pending_rights
 ```
