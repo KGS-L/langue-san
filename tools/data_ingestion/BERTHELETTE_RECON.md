@@ -1,4 +1,4 @@
-# Berthelette 2001 — reconnaissance, récolte et inspection
+# Berthelette 2001 — reconnaissance, récolte et décodage lexical
 
 Cette note documente la source Berthelette utilisée après la clôture technique de RefLex `stj/sym`.
 
@@ -35,64 +35,26 @@ https://www.sil.org/system/files/reapdata/82/40/67/82406717915460712209214978734
 
 Le téléchargement automatisé SIL renvoie HTTP 403. Le PDF a donc été téléchargé manuellement puis ingéré localement.
 
-## 2. Pourquoi cette source est importante
+## 2. Localités et variétés
 
-Le rapport est à la fois sociolinguistique et lexical. Il permet de conserver les données avec leur contexte géographique :
-
-```text
-localité / village
-    ↓
-forme lexicale observée
-    ↓
-glose / concept source
-    ↓
-comparaison entre sites
-    ↓
-contexte sociolinguistique
-```
-
-Il est particulièrement utile pour ne pas réduire une variété entière à une seule ville moderne.
-
-## 3. Localités et variétés
-
-L'index bibliographique relie cette référence à :
+Le PDF confirme explicitement à la page 64 :
 
 ```text
-sbd / Maka
-  Toma
-
-stj / Matya
-  Kassoum
-  Kouy
-  Toéni
-
-sym / Maya
-  Bounou
-  Kiembara
-  Bangassogo
-  Lankoué
+Toma       → variété maka  → sbd
+Kouy       → variété matya → stj
+Kassoum    → variété matya → stj
+Toéni      → variété matya → stj
+Bounou     → variété maya  → sym
+Kiembara   → variété maya  → sym
+Bangassogo → variété maya  → sym
+Lankoué    → variété maya  → sym
 ```
 
-Le PDF lui-même confirme explicitement cette correspondance à la page 64 :
+Cette correspondance n'est donc plus un simple `locality_hint` pour Berthelette. Le futur RAW conservera malgré tout `locality + variety + iso + page` afin de préserver la provenance.
 
-```text
-Toma       → variété maka
-Kouy       → variété matya
-Kassoum    → variété matya
-Toéni      → variété matya
-Bounou     → variété maya
-Kiembara   → variété maya
-Bangassogo → variété maya
-Lankoué    → variété maya
-```
-
-Cette correspondance n'est donc plus un simple `locality_hint` pour cette source : elle est une attribution explicitement documentée par Berthelette. Le futur RAW conservera malgré tout `locality + variety + iso + page` afin de préserver la provenance.
-
-## 4. Relation avec ASJP
+## 3. Relation avec ASJP
 
 ASJP cite Berthelette 2001 comme source de `MAYA_SAMO / sym`.
-
-Donc :
 
 ```text
 Berthelette + ASJP
@@ -101,7 +63,7 @@ Berthelette + ASJP
 
 Une comparaison de chevauchement sera faite après extraction.
 
-## 5. Droits
+## 4. Droits
 
 La règle générale des SIL Language & Culture Archives est `CC-BY-NC-SA-4.0` sauf indication contraire de l'item/fichier.
 
@@ -114,15 +76,7 @@ training_approved       = false
 commercial_use_approved = false
 ```
 
-## 6. Récolte PDF — réussie
-
-Collecteur :
-
-```text
-collectors/berthelette.py
-```
-
-Résultat local :
+## 5. Récolte PDF — réussie
 
 ```text
 méthode   : manual_download_then_local_ingest
@@ -139,7 +93,7 @@ data/raw/berthelette/
 └── metadata.json
 ```
 
-## 7. Inspection structurelle — réussie
+## 6. Inspection structurelle — réussie
 
 Processor :
 
@@ -159,93 +113,130 @@ technical_ok             : True
 pages droits détectées   : aucune par recherche textuelle automatique
 ```
 
-L'écart `75 pages annoncées → 73 pages physiques` est conservé comme observation. Il n'est pas corrigé artificiellement.
+L'écart `75 pages annoncées → 73 pages physiques` est conservé comme observation et n'est pas corrigé artificiellement.
 
-Rapport local :
+## 7. Bloc lexical confirmé
 
-```text
-data/processed/berthelette/pdf_inventory.json
-```
-
-## 8. Bloc lexical confirmé
-
-L'inspection ciblée a confirmé la section :
+La section utile est :
 
 ```text
 A Word List of Dialects in the San Region
 ```
 
-Les pages PDF `41–63` contiennent les entrées numérotées visibles `012–231`. Les identifiants observés sont continus sur ce bloc. Cela représente 220 concepts directement repérés par extraction textuelle, mais les entrées `001–011` restent à localiser/récupérer avant de fixer le nombre total de concepts.
+Les pages PDF `41–63` contiennent les entrées numérotées visibles `012–231`. Les identifiants observés sont continus sur ce bloc. Les entrées `001–011` restent à localiser/récupérer avant de fixer le nombre total de concepts.
 
-La page 64 ne contient plus la wordlist : elle documente les lieux, enquêteurs, dates et les variétés `maka/matya/maya`.
+La page 64 documente ensuite les lieux, enquêteurs, dates et variétés. Les tableaux des pages 25–26 concernent les pourcentages de similarité lexicale et ne doivent pas être confondus avec la wordlist de formes.
 
-Les tableaux des pages 25–26 sur les pourcentages de similarité lexicale sont des statistiques de l'enquête et ne doivent pas être confondus avec la wordlist de formes.
+## 8. Diagnostic de la police legacy — terminé
 
-## 9. Problème technique actuel — police phonétique legacy
-
-Le texte français, les numéros de concepts et les noms de localités sont lisibles, mais les formes SAN phonétiques sont actuellement extraites sous forme de glyphes legacy :
-
-```text
-/G3D/G4F/G51/G05/...
-```
-
-Le mode `layout` de `pypdf` signale en plus :
-
-```text
-PDF contains an uninterpretable font. Output will be incomplete.
-```
-
-La page 64 précise que les transcriptions phonétiques suivent les standards IPA/AIP. Le problème n'est donc pas que les formes seraient absentes du PDF : le PDF contient une ancienne police/encodage dont la correspondance Unicode n'est pas directement interprétée par `pypdf`.
-
-Règle actuelle :
-
-```text
-/Gxx tokens
-    ≠ forme SAN exploitable
-```
-
-Aucun mapping ne doit être inventé à partir des codes hexadécimaux.
-
-## 10. Diagnostic police avant tout OCR
-
-Processor ajouté :
+Processor :
 
 ```text
 processors/diagnose_berthelette_fonts.py
 ```
 
-Il inspecte les pages `41–64` et documente :
+Résultat réel sur les pages `41–64` :
 
 ```text
-/BaseFont
-/Subtype
-/Encoding
-/Differences
-/ToUnicode présent ou absent
-police embarquée ou non
-volume de tokens /G..
+polices uniques              : 31
+polices sans /ToUnicode      : 31
+polices Type3 de wordlist    : /T9 à /T33
+occurrences de tokens /G..   : 15 606
+glyphes /G.. uniques         : 60
+problème Unicode probable    : True
+OCR utilisé                  : non
+```
+
+Les polices `/T9` à `/T33` sont des polices Type3. Leur `/Encoding /Differences` réencode les glyphes avec de petits codes internes (`1`, `2`, `3`, ...). Ces valeurs internes **ne sont pas** les codes IPA93 et ne doivent pas être utilisées directement comme caractères.
+
+## 9. Découverte du mapping SIL IPA93
+
+Le probe manuel a montré une relation stable entre le nom des glyphes `/Gxx` et les codes d'accès historiques SIL IPA93 :
+
+```text
+code_IPA93 = int(hex_du_nom_Gxx, 16) + 0x1E
+```
+
+Exemples sentinelles :
+
+```text
+/G3D → 0x3D + 0x1E = 91  → [
+/G3F → 0x3F + 0x1E = 93  → ]
+/G4F → 0x4F + 0x1E = 109 → m
+/G51 → 0x51 + 0x1E = 111 → o
+/G49 → 0x49 + 0x1E = 103 → g
+/G57 → 0x57 + 0x1E = 117 → u
+/G4E → 0x4E + 0x1E = 108 → l
+/G30 → 0x30 + 0x1E = 78  → ŋ
+/G23 → 0x23 + 0x1E = 65  → ɑ
+/G06 → 0x06 + 0x1E = 36  → accent grave combinant
+```
+
+La première séquence observée :
+
+```text
+/G3D/G4F/G51/G05/G49/G57/G05/G4E/G51/G05/G3F
+```
+
+se décode donc techniquement en :
+
+```text
+[mōgūlō]
+```
+
+Ce résultat est une **conversion d'encodage**, pas une validation linguistique de la forme.
+
+Le mapping Unicode utilisé pour le probe est fourni par le package open source `ipa2unicode` 1.3, qui implémente la table SIL IPA93 et est distribué sous licence MIT. Le projet conserve la provenance de cette dépendance et ne copie pas de fichier de police.
+
+## 10. Étape actuelle — valider le décodage sur tout le bloc
+
+Processor ajouté :
+
+```text
+processors/decode_berthelette_ipa93.py
+```
+
+Dépendance :
+
+```text
+ipa2unicode==1.3
 ```
 
 Commande :
 
 ```bash
-python processors/diagnose_berthelette_fonts.py
+python processors/decode_berthelette_ipa93.py
 ```
 
-Sortie :
+Sortie locale :
 
 ```text
-data/processed/berthelette/font_diagnostic.json
+data/processed/berthelette/ipa93_decode_probe.json
 ```
 
-Ce diagnostic ne convertit aucune forme et ne lance aucun OCR. Selon le résultat, on privilégiera dans cet ordre :
+Le processor :
 
 ```text
-1. mapping Unicode fourni/recouvrable depuis la police PDF
-2. autre moteur PDF (Poppler, etc.) si mieux interprété
-3. mapping documenté d'une police SIL legacy identifiée
-4. OCR ciblé uniquement en dernier recours
+1. lit les pages 41–63
+2. détecte toutes les séquences /Gxx
+3. calcule le code IPA93 avec l'offset 0x1E
+4. convertit chaque code en Unicode via la table IPA93
+5. mesure la couverture de décodage
+6. vérifie les glyphes sentinelles
+7. montre des exemples Unicode
+8. ne crée encore aucun dataset lexical final
+9. ne lance aucun OCR
 ```
+
+Critère de passage à l'extraction :
+
+```text
+sentinelles OK = True
+couverture de décodage >= 99 %
+technical_ok = True
+```
+
+Si ce probe passe, on construit directement le parseur RAW concept/localité/forme sans OCR.
 
 ## 11. Schéma lexical prévu
 
@@ -260,8 +251,9 @@ concept_gloss_fr
 locality
 variety_claimed_by_source
 iso_639_3
-original_form
-transcription_system = IPA
+raw_glyph_sequence
+original_form_unicode
+transcription_system = SIL_IPA93_to_Unicode_IPA
 notes
 validation_status = external_unverified
 rights_status
@@ -277,7 +269,9 @@ provenance + SHA-256                    ✅
 inspection structurelle                 ✅
 bloc wordlist confirmé                  ✅
 variétés confirmées dans le PDF         ✅
-formes SAN Unicode décodées             à faire
+diagnostic Type3 /Gxx                   ✅
+mapping candidat SIL IPA93 identifié    ✅
+validation globale du décodage          à faire
 entrées 001–011 localisées              à faire
 extraction RAW lexicale                 à faire
 QA technique lexical                    à faire
@@ -288,21 +282,24 @@ validation linguistique                 future
 ## 13. Statut actuel
 
 ```text
-discovery               = confirmed
-bibliographic_reference = confirmed
-sil_archive_entry       = confirmed_8983
-official_pdf_url        = identified
-automated_web_access    = HTTP_403
-pdf_harvest             = success_manual_ingest
-pdf_bytes               = 4015872
-pdf_sha256              = efcd06c8e235df9e7334b141aaeb123064e227fab2c05d100c4a57bba7d9f196
-pdf_pages               = 73
-pdf_text_coverage       = 100_percent
-pdf_inspection          = technical_ok
-wordlist_section        = confirmed_pages_41_63_visible_ids_012_231
+discovery                = confirmed
+bibliographic_reference  = confirmed
+sil_archive_entry        = confirmed_8983
+official_pdf_url         = identified
+automated_web_access     = HTTP_403
+pdf_harvest              = success_manual_ingest
+pdf_bytes                = 4015872
+pdf_sha256               = efcd06c8e235df9e7334b141aaeb123064e227fab2c05d100c4a57bba7d9f196
+pdf_pages                = 73
+pdf_text_coverage        = 100_percent
+pdf_inspection           = technical_ok
+wordlist_section         = confirmed_pages_41_63_visible_ids_012_231
 locality_variety_mapping = confirmed_in_pdf_page_64
-legacy_font_issue       = confirmed_Gxx_tokens
-font_diagnostic         = ready
-ocr                     = deferred_last_resort
-lexical_extraction      = blocked_until_font_decoding
+legacy_font_issue        = confirmed_type3_without_tounicode
+legacy_glyph_tokens      = 15606
+legacy_unique_glyphs     = 60
+ipa93_mapping_candidate  = hex_glyph_plus_0x1E
+ipa93_decode_probe       = ready
+ocr                      = deferred_last_resort
+lexical_extraction       = pending_decode_probe
 ```
