@@ -13,15 +13,15 @@ espnet/mms_ulab_v2
   → différé à la phase audio/ASR
 
 lbourdois/panlex
-  aucune config SAN dédiée
-  filtres ISO sbd/stj/sym non résolus via Dataset Viewer
-  → extraction ciblée à traiter séparément
+  snapshot lexical CC0
+  ~24,6M lignes / 6152 langues
+  → collecte ciblée sbd/stj/sym via /filter, sans télécharger le CSV complet
 
 ec5ug/chikhapo
   fallback Hub réussi
   eng_stj détecté
   stj_eng détecté
-  → première cible lexicale Matya
+  → récolté et QA technique validé
 
 HuggingFaceFW/fineweb-2
   sbd_Latn détecté
@@ -40,7 +40,7 @@ cis-lmu/GlotCC-V1
 
 cis-lmu/Taxi1500-RawData
   sbd_Latn : 7 919 lignes
-  → récolte locale activée, mais droits amont à clarifier et domaine biblique à isoler
+  → récolte locale complète, droits amont à clarifier et domaine biblique à isoler
 
 openbmb/DCAD-2000
   sbd_Latn : 3 lignes
@@ -63,27 +63,23 @@ FinePDFs    → sbd_Latn
 GlotCC-V1   → sbd-Latn
 Taxi1500    → sbd_Latn / split taxi1500
 ChiKhaPo    → eng_stj + stj_eng
+PanLex      → lignes 639-3=sbd/stj/sym
 ```
 
 Ces récoltes restent des données externes non validées. Elles sont stockées sous `data/raw/`, ignoré par Git.
 
-Important pour Taxi1500 : le projet Langue SAN est actuellement non commercial, mais cela ne remplace pas une licence explicite du contenu source. Le RAW Taxi1500 est donc accepté pour **récolte locale, inventaire et recherche technique**, avec `rights_review_required_local_research_only`. Il ne doit pas être commité, republié ou redistribué tant que les droits amont ne sont pas clarifiés.
+## Taxi1500 sbd — récolté
 
-## Récolte Taxi1500 sbd
+Résultat réel :
 
-Sonde ciblée :
-
-```bash
-python collectors/huggingface_text_subsets.py --target taxi1500_sbd --probe-only
+```text
+7919 / 7919 lignes
+partial = false
 ```
 
-Récolte complète des 7 919 lignes :
+La première tentative a subi un HTTP 429 après 6100 lignes. Le collecteur a ensuite repris automatiquement au bon offset et récupéré les 1819 lignes restantes.
 
-```bash
-python collectors/huggingface_text_subsets.py --target taxi1500_sbd
-```
-
-Sortie attendue :
+Sortie :
 
 ```text
 data/raw/huggingface/taxi1500/sbd_Latn/taxi1500.jsonl
@@ -92,14 +88,113 @@ data/raw/huggingface/taxi1500/sbd_Latn/taxi1500.jsonl
 Le corpus reste étiqueté :
 
 ```text
-iso_639_3       = sbd
-variety         = maka
-rights_status   = rights_review_required_local_research_only
-domain          = religious_bible_text
+iso_639_3         = sbd
+variety           = maka
+rights_status     = rights_review_required_local_research_only
+domain            = religious_bible_text
 validation_status = external_unverified
 ```
 
 Le domaine biblique doit rester séparé des futurs corpus généraux pour éviter qu'il ne domine les données du projet.
+
+## ChiKhaPo stj ↔ anglais — récolté et QA technique validé
+
+Fichiers récoltés :
+
+```text
+data/raw/huggingface/chikhapo/
+├── eng_stj/eng_stj.jsonl
+├── stj_eng/stj_eng.jsonl
+└── metadata.json
+```
+
+Révision Hugging Face :
+
+```text
+f9b2a2b609a0bc4613a9d599d5195e82ccb0e658
+```
+
+Résultat QA :
+
+```text
+eng_stj
+  lignes            : 466
+  JSON valides      : 466
+  sources uniques   : 466
+  traductions       : 528
+  doublons exacts   : 0
+  technical_ok      : true
+
+stj_eng
+  lignes            : 406
+  JSON valides      : 406
+  sources uniques   : 406
+  traductions       : 528
+  doublons exacts   : 0
+  technical_ok      : true
+
+Total lignes        : 872
+Tous techniquement OK : true
+```
+
+Le nombre de traductions est identique dans les deux sens (528), mais le nombre de mots sources diffère car plusieurs traductions peuvent être regroupées sur une même entrée. Cela n'est pas une anomalie technique.
+
+Le repo ChiKhaPo est sous licence MIT, mais ses lexiques agrègent notamment PanLex, GATITOS et IDS. Le RAW reste local avec le statut :
+
+```text
+upstream_source_provenance_review_required
+```
+
+## PanLex — prochaine récolte ciblée
+
+Le snapshot `lbourdois/panlex` contient environ 24,6 millions de lignes. Le projet ne télécharge pas le CSV complet de 1,28 Go.
+
+Le collecteur :
+
+```bash
+python collectors/huggingface_panlex.py --probe-only
+```
+
+utilise Dataset Viewer `/filter` sur :
+
+```text
+"639-3"='sbd'
+"639-3"='stj'
+"639-3"='sym'
+```
+
+pour connaître les volumes exacts avant récolte.
+
+Les colonnes source conservées sont :
+
+```text
+vocab
+639-3
+639-3_english_name
+var_code
+english_name_var
+```
+
+`var_code` est conservé tel quel : il s'agit d'un identifiant de variante PanLex, pas d'un code ISO international.
+
+Après validation du probe :
+
+```bash
+python collectors/huggingface_panlex.py --request-delay 1
+```
+
+Sorties :
+
+```text
+data/raw/huggingface/panlex/
+├── sbd/train.jsonl
+├── stj/train.jsonl
+├── sym/train.jsonl
+├── panlex_probe_summary.json
+└── panlex_harvest_summary.json
+```
+
+Le collecteur possède retry/backoff et reprise après interruption/rate-limit.
 
 ## Autres sous-ensembles texte sbd
 
@@ -113,62 +208,12 @@ python collectors/huggingface_text_subsets.py --target fineweb2_sbd --probe-only
 
 Le Dataset Viewer de FineWeb2 a renvoyé une erreur HTTP 500 sur `/rows` lors du premier probe. Cela n'invalide pas la config `sbd_Latn`; un fallback Parquet/Hub pourra être ajouté si l'erreur persiste.
 
-Chaque ligne récoltée conserve :
-
-```text
-repo_id
-family
-config
-split
-row_idx
-iso_639_3
-variety
-license
-rights_status
-validation_status
-source_row
-```
-
-## Récolte lexicale ChiKhaPo stj ↔ anglais
-
-Les chemins ciblés ont été confirmés :
-
-```text
-data/eng_stj.jsonl
-data/stj_eng.jsonl
-```
-
-Téléchargement local :
-
-```bash
-python collectors/huggingface_chikhapo.py
-```
-
-Sortie :
-
-```text
-data/raw/huggingface/chikhapo/
-├── eng_stj/
-├── stj_eng/
-└── metadata.json
-```
-
-Le repo ChiKhaPo est sous licence MIT, mais ses lexiques agrègent notamment PanLex, GATITOS et IDS. Le RAW reste local avec le statut :
-
-```text
-upstream_source_provenance_review_required
-```
-
-## Sources volontairement bloquées ou différées
+## Sources volontairement différées
 
 ```text
 DCAD-2000
   3 lignes sbd
   licence `other`
-
-PanLex
-  snapshot CC0 intéressant
-  extraction ciblée sbd/stj/sym à développer séparément
 
 MMS ulab
   audio non transcrit
