@@ -1,26 +1,29 @@
 """Fallback XHR ciblé pour RefLex CLLD.
 
-Pourquoi ce collecteur séparé ?
---------------------------------
-L'index RefLex expose bien `languages.csv`, mais l'URL
-`/values.csv?language=<glottocode>` répond actuellement HTTP 406 pour les valeurs
-lexicales. Le framework CLLD sert toutefois les DataTables via des requêtes XHR
-(`X-Requested-With: XMLHttpRequest` + `sEcho`). Ce module utilise ce transport
-sans prétendre qu'il s'agit d'un export DB canonique.
+RefLex expose `languages.csv`, mais l'export `/values.csv` répond actuellement
+HTTP 406 pour les valeurs lexicales. Les DataTables CLLD restent accessibles via
+XHR. Attention : le paramètre `language=` des DataTables CLLD attend l'ID interne
+de la ressource Language, pas nécessairement son glottocode.
 
-Règles de sécurité :
-- uniquement les mappings RefLex déjà résolus sans revue requise ;
-- vérification du nombre total annoncé avant récolte complète ;
-- si le filtre `language=` n'est pas appliqué (total inattendu), arrêt immédiat ;
-- RAW conservé tel que renvoyé par le DataTable sous `datatable_row` ;
-- aucune normalisation, déduplication ou validation linguistique ;
-- licence RefLex : CC-BY-NC-SA-4.0, usage commercial non approuvé.
+Ce collecteur :
+- résout d'abord la langue dans `languages.csv` par glottocode/nom ;
+- interroge ensuite le DataTable `/languages` pour récupérer l'ID interne CLLD
+  depuis le lien `/languages/<id>` de la ligne correspondante ;
+- utilise cet ID interne pour sonder puis paginer `/values` ;
+- vérifie le total attendu avant toute récolte complète ;
+- conserve les lignes DataTable brutes sans normalisation ni déduplication.
+
+Licence RefLex : CC-BY-NC-SA-4.0. Aucun usage commercial n'est déduit de cette
+récolte.
 """
 
 from __future__ import annotations
 
 import argparse
+import html
 import json
+import re
+import unicodedata
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -39,6 +42,9 @@ RAW_ROOT = REPO_ROOT / "data" / "raw" / "reflex"
 USER_AGENT = "langue-san-data-ingestion/1.0 (+reflex-clld-xhr-fallback)"
 DEFAULT_PAGE_SIZE = 500
 MAX_PAGE_SIZE = 1000
+LANGUAGE_INDEX_PAGE_SIZE = 1000
+LANGUAGE_HREF_RE = re.compile(r"/languages/([^\"'/?#<>]+)")
+TAG_RE = re.compile(r"<[^>]+>")
 
 
 class RefLexXHRError(RuntimeError):
@@ -74,38 +80,27 @@ def _rows(payload: dict[str, Any]) -> list[Any]:
 
 
 def _expected_count(target: dict[str, Any]) -> int | None:
-    # Dans l'index RefLex, si Number of sources == 1, le nombre de fiches de la
-    # plus grosse source est nécessairement le total de la langue.
     if target.get("number_of_sources") == 1:
         value = target.get("records_biggest_source")
         return value if isinstance(value, int) else _parse_int(value)
     return None
 
 
-def _request_page(
-    source: dict[str, Any],
-    target: dict[str, Any],
-    *,
+def _xhr_headers() -> dict[str, str]:
+    return {
+        "X-Requested-With": "XMLHttpRequest",
+        "Accept": "application/json, text/javascript, */*; q=0.01",
+    }
+
+
+def _request_json(
     session: requests.Session,
-    start: int,
-    length: int,
-    echo: int,
+    url: str,
+    *,
+    params: dict[str, str],
+    timeout: int = 90,
 ) -> dict[str, Any]:
-    url = str(source["endpoints"]["values"])
-    response = session.get(
-        url,
-        params={
-            "language": target["reflex_language_id"],
-            "sEcho": str(echo),
-            "iDisplayStart": str(start),
-            "iDisplayLength": str(length),
-        },
-        timeout=90,
-        headers={
-            "X-Requested-With": "XMLHttpRequest",
-            "Accept": "application/json, text/javascript, */*; q=0.01",
-        },
-    )
+    response = session.get(url, params=params, timeout=timeout, headers=_xhr_headers())
     response.raise_for_status()
     try:
         payload = response.json()
@@ -120,14 +115,148 @@ def _request_page(
     return payload
 
 
+def _languages_url(source: dict[str, Any]) -> str:
+    endpoints = source.get("endpoints", {})
+    if endpoints.get("languages"):
+        return str(endpoints["languages"])
+    csv_url = str(endpoints.get("languages_csv") or "")
+    if csv_url.endswith(".csv"):
+        return csv_url[:-4]
+    raise RefLexXHRError("Endpoint RefLex /languages introuvable dans la configuration.")
+
+
+def _request_language_index(
+    source: dict[str, Any],
+    *,
+    session: requests.Session,
+) -> tuple[list[Any], int | None]:
+    payload = _request_json(
+        session,
+        _languages_url(source),
+        params={
+            "sEcho": "1",
+            "iDisplayStart": "0",
+            "iDisplayLength": str(LANGUAGE_INDEX_PAGE_SIZE),
+            "__eid__": "Languages",
+        },
+    )
+    rows = _rows(payload)
+    return rows, _reported_total(payload)
+
+
+def _iter_strings(value: Any):
+    if isinstance(value, str):
+        yield value
+    elif isinstance(value, dict):
+        for key, item in value.items():
+            yield str(key)
+            yield from _iter_strings(item)
+    elif isinstance(value, (list, tuple)):
+        for item in value:
+            yield from _iter_strings(item)
+    elif value is not None:
+        yield str(value)
+
+
+def _row_blob(row: Any) -> str:
+    return " ".join(_iter_strings(row))
+
+
+def _normalise_text(value: str) -> str:
+    value = TAG_RE.sub(" ", html.unescape(str(value or "")))
+    ascii_text = (
+        unicodedata.normalize("NFKD", value)
+        .encode("ascii", "ignore")
+        .decode("ascii")
+        .casefold()
+    )
+    return " ".join(re.findall(r"[a-z0-9]+", ascii_text))
+
+
+def _extract_language_ids(row: Any) -> list[str]:
+    found: list[str] = []
+    for text in _iter_strings(row):
+        for match in LANGUAGE_HREF_RE.findall(html.unescape(text)):
+            if match not in found:
+                found.append(match)
+    return found
+
+
+def resolve_clld_language_id(target: dict[str, Any], language_rows: list[Any]) -> dict[str, Any]:
+    """Résout l'ID interne CLLD depuis la ligne XHR de `/languages`."""
+
+    glottocode = str(target.get("reflex_glottocode") or target.get("configured_glottocode") or "")
+    name = str(target.get("reflex_language_name") or "")
+    glotto_matches = [row for row in language_rows if glottocode and glottocode.casefold() in _row_blob(row).casefold()]
+
+    matches = glotto_matches
+    method = "languages_xhr_glottocode"
+    if not matches and name:
+        name_norm = _normalise_text(name)
+        matches = [row for row in language_rows if name_norm and name_norm in _normalise_text(_row_blob(row))]
+        method = "languages_xhr_name"
+
+    if not matches:
+        raise RefLexXHRError(
+            f"{target.get('iso_639_3')}: aucune ligne du DataTable /languages ne correspond à "
+            f"{name or '?'} / {glottocode or '?'}"
+        )
+
+    ids: list[str] = []
+    for row in matches:
+        for language_id in _extract_language_ids(row):
+            if language_id not in ids:
+                ids.append(language_id)
+
+    if len(ids) != 1:
+        preview = json.dumps(matches[:3], ensure_ascii=False)[:800]
+        raise RefLexXHRError(
+            f"{target.get('iso_639_3')}: ID interne CLLD ambigu ou absent dans /languages "
+            f"(ids={ids}). Aperçu={preview}"
+        )
+
+    return {
+        **target,
+        "clld_language_id": ids[0],
+        "clld_language_id_resolution": method,
+    }
+
+
+def _request_page(
+    source: dict[str, Any],
+    target: dict[str, Any],
+    *,
+    session: requests.Session,
+    start: int,
+    length: int,
+    echo: int,
+) -> dict[str, Any]:
+    language_id = target.get("clld_language_id")
+    if not language_id:
+        raise RefLexXHRError(
+            f"{target.get('iso_639_3')}: ID interne CLLD non résolu avant appel /values."
+        )
+    return _request_json(
+        session,
+        str(source["endpoints"]["values"]),
+        params={
+            "language": str(language_id),
+            "sEcho": str(echo),
+            "iDisplayStart": str(start),
+            "iDisplayLength": str(length),
+            "__eid__": "Values",
+        },
+    )
+
+
 def resolve_selected_targets(
     source: dict[str, Any],
     *,
     selected_iso: set[str],
     session: requests.Session,
 ) -> list[dict[str, Any]]:
-    headers, language_rows = reflex.fetch_languages(source, session=session)
-    targets = reflex.resolve_targets(source, headers, language_rows)
+    headers, language_rows_csv = reflex.fetch_languages(source, session=session)
+    targets = reflex.resolve_targets(source, headers, language_rows_csv)
     targets = [item for item in targets if item.get("iso_639_3") in selected_iso]
     if not targets:
         raise RefLexXHRError("Aucune cible RefLex résolue pour les codes ISO demandés.")
@@ -135,19 +264,21 @@ def resolve_selected_targets(
     problems = []
     for target in targets:
         if target.get("resolution_status") != "resolved":
-            problems.append(
-                f"{target.get('iso_639_3')}: mapping={target.get('resolution_status')}"
-            )
+            problems.append(f"{target.get('iso_639_3')}: mapping={target.get('resolution_status')}")
         elif target.get("mapping_review_required"):
-            problems.append(
-                f"{target.get('iso_639_3')}: mapping_review_required=true"
-            )
+            problems.append(f"{target.get('iso_639_3')}: mapping_review_required=true")
     if problems:
         raise RefLexXHRError(
-            "Récolte XHR bloquée tant que le mapping n'est pas confirmé : "
-            + "; ".join(problems)
+            "Récolte XHR bloquée tant que le mapping n'est pas confirmé : " + "; ".join(problems)
         )
-    return targets
+
+    language_rows_xhr, total = _request_language_index(source, session=session)
+    if total is not None and total > LANGUAGE_INDEX_PAGE_SIZE:
+        raise RefLexXHRError(
+            f"Index /languages trop grand pour une résolution sûre : total={total}, "
+            f"limite={LANGUAGE_INDEX_PAGE_SIZE}."
+        )
+    return [resolve_clld_language_id(target, language_rows_xhr) for target in targets]
 
 
 def probe_target(
@@ -156,25 +287,19 @@ def probe_target(
     *,
     session: requests.Session,
 ) -> dict[str, Any]:
-    payload = _request_page(
-        source,
-        target,
-        session=session,
-        start=0,
-        length=1,
-        echo=1,
-    )
+    payload = _request_page(source, target, session=session, start=0, length=1, echo=1)
     rows = _rows(payload)
     reported = _reported_total(payload)
     expected = _expected_count(target)
     filter_verified = expected is None or reported == expected
-
     preview = rows[0] if rows else None
     return {
         "iso_639_3": target.get("iso_639_3"),
         "variety": target.get("variety"),
         "reflex_language_name": target.get("reflex_language_name"),
-        "reflex_language_id": target.get("reflex_language_id"),
+        "reflex_glottocode": target.get("reflex_glottocode"),
+        "clld_language_id": target.get("clld_language_id"),
+        "clld_language_id_resolution": target.get("clld_language_id_resolution"),
         "expected_count": expected,
         "reported_count": reported,
         "filter_verified": filter_verified,
@@ -194,13 +319,12 @@ def probe(
 ) -> dict[str, Any]:
     client = _session(session)
     targets = resolve_selected_targets(source, selected_iso=selected_iso, session=client)
-    results = [probe_target(source, target, session=client) for target in targets]
     return {
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "source": source.get("name"),
         "license": source.get("license"),
         "transport": "clld_datatable_xhr",
-        "results": results,
+        "results": [probe_target(source, target, session=client) for target in targets],
     }
 
 
@@ -220,82 +344,83 @@ def harvest_target(
     output_dir.mkdir(parents=True, exist_ok=True)
     output_path = output_dir / "values_datatable.jsonl"
     temp_path = output_dir / "values_datatable.jsonl.tmp"
-
     total_reported: int | None = None
     written = 0
     start = 0
     echo = 1
 
-    with temp_path.open("w", encoding="utf-8") as handle:
-        while True:
-            payload = _request_page(
-                source,
-                target,
-                session=session,
-                start=start,
-                length=page_size,
-                echo=echo,
-            )
-            rows = _rows(payload)
-            reported = _reported_total(payload)
-            if reported is None:
-                raise RefLexXHRError(
-                    f"{target['iso_639_3']}: total filtré absent de la réponse XHR."
+    try:
+        with temp_path.open("w", encoding="utf-8") as handle:
+            while True:
+                payload = _request_page(
+                    source,
+                    target,
+                    session=session,
+                    start=start,
+                    length=page_size,
+                    echo=echo,
                 )
-
-            if total_reported is None:
-                total_reported = reported
-                if expected is not None and total_reported != expected:
+                rows = _rows(payload)
+                reported = _reported_total(payload)
+                if reported is None:
                     raise RefLexXHRError(
-                        f"{target['iso_639_3']}: filtre language non vérifié : "
-                        f"attendu={expected}, XHR={total_reported}. Récolte annulée."
+                        f"{target['iso_639_3']}: total filtré absent de la réponse XHR."
                     )
-            elif reported != total_reported:
-                raise RefLexXHRError(
-                    f"{target['iso_639_3']}: le total XHR a changé pendant la pagination "
-                    f"({total_reported} -> {reported})."
-                )
-
-            if not rows:
-                if written < total_reported:
+                if total_reported is None:
+                    total_reported = reported
+                    if expected is not None and total_reported != expected:
+                        raise RefLexXHRError(
+                            f"{target['iso_639_3']}: filtre language non vérifié : "
+                            f"attendu={expected}, XHR={total_reported}. Récolte annulée."
+                        )
+                elif reported != total_reported:
                     raise RefLexXHRError(
-                        f"{target['iso_639_3']}: pagination interrompue à {written}/{total_reported}."
+                        f"{target['iso_639_3']}: le total XHR a changé pendant la pagination "
+                        f"({total_reported} -> {reported})."
                     )
-                break
 
-            for row in rows:
-                record = {
-                    "source": "RefLex CLLD",
-                    "transport": "clld_datatable_xhr",
-                    "iso_639_3": target.get("iso_639_3"),
-                    "variety": target.get("variety"),
-                    "reflex_language_name": target.get("reflex_language_name"),
-                    "reflex_language_id": target.get("reflex_language_id"),
-                    "configured_glottocode": target.get("configured_glottocode"),
-                    "reflex_glottocode": target.get("reflex_glottocode"),
-                    "license": source.get("license"),
-                    "validation_status": "external_unverified",
-                    "publication_approved": source.get("publication_approved", False),
-                    "training_approved": source.get("training_approved", False),
-                    "commercial_use_approved": source.get("commercial_use_approved", False),
-                    "datatable_index": written,
-                    "datatable_row": row,
-                }
-                handle.write(json.dumps(record, ensure_ascii=False) + "\n")
-                written += 1
+                if not rows:
+                    if written < total_reported:
+                        raise RefLexXHRError(
+                            f"{target['iso_639_3']}: pagination interrompue à {written}/{total_reported}."
+                        )
+                    break
 
-            if written >= total_reported:
-                break
-            if len(rows) == 0:
-                raise RefLexXHRError(
-                    f"{target['iso_639_3']}: aucune progression pendant la pagination."
-                )
-            start += len(rows)
-            echo += 1
+                for row in rows:
+                    record = {
+                        "source": "RefLex CLLD",
+                        "transport": "clld_datatable_xhr",
+                        "iso_639_3": target.get("iso_639_3"),
+                        "variety": target.get("variety"),
+                        "reflex_language_name": target.get("reflex_language_name"),
+                        "configured_glottocode": target.get("configured_glottocode"),
+                        "reflex_glottocode": target.get("reflex_glottocode"),
+                        "clld_language_id": target.get("clld_language_id"),
+                        "license": source.get("license"),
+                        "validation_status": "external_unverified",
+                        "publication_approved": source.get("publication_approved", False),
+                        "training_approved": source.get("training_approved", False),
+                        "commercial_use_approved": source.get("commercial_use_approved", False),
+                        "datatable_index": written,
+                        "datatable_row": row,
+                    }
+                    handle.write(json.dumps(record, ensure_ascii=False) + "\n")
+                    written += 1
+
+                if written >= total_reported:
+                    break
+                start += len(rows)
+                echo += 1
+    except Exception:
+        if temp_path.exists():
+            temp_path.unlink()
+        raise
 
     if total_reported is None:
         raise RefLexXHRError(f"{target['iso_639_3']}: aucune page XHR reçue.")
     if written != total_reported:
+        if temp_path.exists():
+            temp_path.unlink()
         raise RefLexXHRError(
             f"{target['iso_639_3']}: lignes écrites={written}, total XHR={total_reported}."
         )
@@ -308,19 +433,20 @@ def harvest_target(
             "variety",
             "configured_glottocode",
             "reflex_glottocode",
-            "reflex_language_id",
+            "clld_language_id",
+            "clld_language_id_resolution",
             "reflex_language_name",
             "records_biggest_source",
             "number_of_sources",
         )
     }
     (output_dir / "language_xhr.json").write_text(
-        json.dumps(language_meta, ensure_ascii=False, indent=2),
-        encoding="utf-8",
+        json.dumps(language_meta, ensure_ascii=False, indent=2), encoding="utf-8"
     )
     return {
         "iso_639_3": target.get("iso_639_3"),
         "variety": target.get("variety"),
+        "clld_language_id": target.get("clld_language_id"),
         "expected_count": expected,
         "reported_count": total_reported,
         "rows_written": written,
@@ -374,7 +500,7 @@ def _preview(value: Any, limit: int = 500) -> str:
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description="Probe/récolte RefLex via DataTable XHR lorsque values.csv répond 406"
+        description="Probe/récolte RefLex via DataTable XHR avec résolution de l'ID interne CLLD"
     )
     parser.add_argument("--config", type=Path, default=CONFIG_PATH)
     parser.add_argument("--iso", nargs="+", required=True, help="Ex. --iso stj ou --iso stj sym")
@@ -396,6 +522,7 @@ def main() -> None:
         for item in payload["results"]:
             print(
                 f"- {item['iso_639_3']} ({item['variety']}): "
+                f"glottocode={item['reflex_glottocode']}, clld_id={item['clld_language_id']}, "
                 f"attendu={item['expected_count']}, XHR={item['reported_count']}, "
                 f"filtre_vérifié={item['filter_verified']}, "
                 f"première_ligne={item['first_row_available']}, "
@@ -403,7 +530,7 @@ def main() -> None:
             )
             if item["first_row_available"]:
                 print(f"  aperçu={_preview(item['first_row_preview'])}")
-        print("Mode probe-only : une seule ligne demandée par langue, aucun corpus complet écrit.")
+        print("Mode probe-only : aucun corpus complet écrit.")
         return
 
     payload = harvest(
@@ -415,9 +542,8 @@ def main() -> None:
     print("Récolte RefLex via DataTable XHR :")
     for item in payload["results"]:
         print(
-            f"- {item['iso_639_3']} ({item['variety']}): "
-            f"{item['rows_written']} / {item['reported_count']} lignes "
-            f"→ {item['output']}"
+            f"- {item['iso_639_3']} ({item['variety']}), clld_id={item['clld_language_id']}: "
+            f"{item['rows_written']} / {item['reported_count']} lignes → {item['output']}"
         )
     print(f"Résumé : {payload['summary_path']}")
 
