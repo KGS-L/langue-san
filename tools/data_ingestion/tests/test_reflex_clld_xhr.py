@@ -1,10 +1,19 @@
 from importlib.util import module_from_spec, spec_from_file_location
 from pathlib import Path
+import sys
 
 import pytest
 
 
 ROOT = Path(__file__).resolve().parents[1]
+# Le module XHR importe le collecteur frère `reflex_clld`. Lors d'un chargement
+# via spec_from_file_location, Python n'ajoute pas automatiquement le dossier
+# tools/data_ingestion à sys.path, contrairement à l'exécution CLI habituelle.
+# On reproduit donc explicitement le contexte d'import du projet avant d'exécuter
+# le module sous test.
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
 SPEC = spec_from_file_location(
     "reflex_clld_xhr",
     ROOT / "collectors" / "reflex_clld_xhr.py",
