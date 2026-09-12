@@ -76,16 +76,10 @@ sources:
           - "San Mayaa"
     notes:
       - "RefLex CLLD annonce des données téléchargeables et conserve les formes originales ainsi que les références de sources."
-      - "La licence CC-BY-NC-SA-4.0 interdit l'usage commercial sans autorisation supplémentaire : ne pas mélanger automatiquement ces données à un futur corpus commercial."
-      - "Le RAW reste local; l'attribution des sources amont doit être conservée."
-      - "Le languages.csv réel contient 815 lignes et les colonnes Name, Family, Glottocode, Macroarea, Number of records in biggest source, Number of sources, Latitude, Longitude."
-      - "Samo Matya / maty1235 est présent; languages.csv annonce 2764 fiches dans sa seule source, tandis que le DataTable /units exporte 2743 unités."
-      - "Samo Maya / maya1281 est présent; languages.csv annonce 2384 fiches dans sa seule source, tandis que le DataTable /units exporte 2378 unités."
-      - "Les écarts 2764→2743 (21) et 2384→2378 (6) sont conservés comme observations; aucune explication n'est inventée avant analyse de la structure RefLex."
-      - "sout2844 / Southern Samo / San Maka n'a pas été trouvé dans l'index RefLex CLLD; ne pas lui attribuer un candidat approximatif."
-      - "La vraie récolte lexicale passe par le DataTable /units découvert depuis la page langue, puis par son export CSV officiel limité à 10000 lignes."
-      - "RAW récolté localement : stj=2743 lignes, sym=2378 lignes, 9 colonnes Original Form/Translation/Comment/POS/Source/Glottocode/Family/Latitude/Longitude."
-      - "QA technique exécuté sur stj et sym : les deux sont technical_ok=true."
+      - "La licence CC-BY-NC-SA-4.0 interdit l'usage commercial sans autorisation supplémentaire."
+      - "RAW récolté localement : stj=2743 lignes, sym=2378 lignes."
+      - "QA technique stj/sym : technical_ok=true."
+      - "sout2844 / Southern Samo / San Maka n'a pas été trouvé dans l'index RefLex actuel."
 
   berthelette:
     name: "Berthelette 2001 — Sociolinguistic survey report for the San (Samo) language"
@@ -103,7 +97,7 @@ sources:
     license: "CC-BY-NC-SA-4.0 (SIL Language & Culture Archives default unless item/file states otherwise)"
     rights_status: "archive_default_noncommercial_pending_pdf_confirmation"
     enabled: false
-    status: "pdf_harvested_structure_inspection_passed_wordlist_probe_ready"
+    status: "harvested_lexical_extraction_qa_passed_noncommercial_research"
     intended_use: "sociolinguistic_reference_and_locality_wordlists"
     publication_approved: false
     training_approved: false
@@ -122,9 +116,38 @@ sources:
       sha256_matches_harvest_metadata: true
       technical_ok: true
       rights_term_pages: []
-      lexical_or_appendix_candidate_pages: [2, 3, 4, 8, 9, 10, 11, 15, 16, 19, 24, 25, 26, 32, 41]
-      note: "Le catalogue annonce 75 pages, tandis que le fichier PDF contient 73 pages physiques. L'écart est conservé comme observation et non corrigé."
-    known_localities_from_bibliographic_index:
+      note: "Le catalogue annonce 75 pages, tandis que le fichier PDF contient 73 pages physiques. L'écart est conservé comme observation."
+    lexical_extraction:
+      wordlist_title: "A Word List of Dialects in the San Region"
+      pages: [41, 63]
+      visible_concept_start: 12
+      visible_concept_end: 231
+      visible_concept_count: 220
+      missing_visible_concepts: []
+      concepts_001_011_status: "not_found_in_available_pdf_not_invented"
+      occurrence_count: 1814
+      counts_by_iso:
+        sbd: 223
+        stj: 679
+        sym: 912
+      counts_by_locality:
+        Bangassogo: 226
+        Bounou: 228
+        Kassoum: 224
+        Kiembara: 229
+        Kouy: 228
+        Lankoué: 229
+        Toma: 223
+        Toéni: 227
+      structural_anomaly_count: 0
+      source_blank_form_count: 8
+      multi_form_concept_locality_groups: 53
+      technical_ok: true
+      decode_method: "SIL IPA93 Type3 glyph names /Gxx -> Unicode IPA"
+      decode_coverage_percent: 100.0
+      csv_path: "data/processed/berthelette/wordlist_occurrences_012_231.csv"
+      summary_path: "data/processed/berthelette/wordlist_occurrences_012_231_summary.json"
+    known_localities_from_source:
       - locality: "Toma"
         variety: "maka"
         iso_639_3: "sbd"
@@ -150,16 +173,38 @@ sources:
         variety: "maya"
         iso_639_3: "sym"
     notes:
-      - "L'entrée officielle SIL Language & Culture Archives est 8983; une publication de 2017 cite encore cette URL."
-      - "Le lien PDF exact a été retrouvé via la référence PDF de la page Wikipedia Samo, qui pointe vers le stockage SIL reapdata."
-      - "Le téléchargement automatisé SIL répond HTTP 403; le PDF a donc été téléchargé manuellement puis ingéré localement par le collecteur."
-      - "Probe local réussi : PDF valide, 4015872 octets, SHA-256 efcd06c8e235df9e7334b141aaeb123064e227fab2c05d100c4a57bba7d9f196."
-      - "Inspection structurelle locale : 73/73 pages ont du texte extractible, 176986 caractères, SHA metadata cohérent, technical_ok=true; aucun OCR requis."
-      - "Le détecteur lexical générique signale notamment la page 41; la présence répétée des huit localités sur un long bloc de pages justifie maintenant une inspection ciblée du tableau comparatif avant parsing."
-      - "Glottolog classe ce document comme overview;wordlist;socling et associe explicitement huit localités aux trois ISO sbd/stj/sym."
-      - "ASJP utilise Berthelette 2001 comme source de MAYA_SAMO; les volumes ne doivent pas être additionnés comme sources indépendantes."
-      - "La règle par défaut des SIL Language & Culture Archives est CC-BY-NC-SA-4.0 sauf mention contraire dans le fichier ou la notice; aucune mention de droits n'a été détectée automatiquement dans le texte extrait, donc le statut reste conservateur."
-      - "Étape suivante : inspecter le bloc multi-localités en mode layout, puis seulement définir le parseur lexical."
+      - "Le téléchargement automatisé SIL répond HTTP 403; le PDF a été ingéré après téléchargement manuel."
+      - "Les formes Type3 legacy ont été décodées à 100 % sans OCR."
+      - "8 formes explicitement vides dans la source sont conservées comme occurrences RAW."
+      - "ASJP MAYA_SAMO cite Berthelette 2001 : ne pas considérer les deux comme sources indépendantes dans les analyses."
+
+  maka_lexicon_2003:
+    name: "Boo nɛn sɛwɛ san-fransi, fransi-san [Lexique san–français, français–san]"
+    type: "bilingual_lexicon_book"
+    year: 2003
+    publisher: "SIL Burkina Faso"
+    place: "Ouagadougou"
+    variety: "maka"
+    iso_639_3: "sbd"
+    glottocode: "sout2844"
+    approximate_pages: 120
+    enabled: false
+    status: "bibliographic_confirmed_digital_access_not_found_yet"
+    intended_use: "primary_maka_lexical_source"
+    rights_status: "rights_review_required"
+    license: null
+    publication_approved: false
+    training_approved: false
+    commercial_use_approved: false
+    provenance:
+      asjp_wordlist: "SOUTHERN_SAMO_SAN"
+      asjp_source_label: "Burkina 2003"
+    notes:
+      - "ASJP SOUTHERN_SAMO_SAN cite explicitement ce lexique comme source de Southern Samo / sbd."
+      - "Des bibliographies secondaires décrivent une édition préliminaire d'environ 120 pages, avec sections san-français puis français-san."
+      - "Une attribution secondaire à Anne-Marie Giménez existe, mais elle n'est pas promue comme auteur confirmé sans notice primaire."
+      - "Aucun PDF ou exemplaire numérique officiel fiable n'a encore été retrouvé lors de la reconnaissance initiale."
+      - "Priorité actuelle : retrouver notice/exemplaire original et clarifier les droits; ne pas rester bloqué si l'accès numérique manque."
 
   ainsisoisje:
     name: "Ainsi sois-je — Dictionnaire Français / Samo"
@@ -198,7 +243,7 @@ sources:
     training_approved: false
     notes:
       - "Chaque repo doit être étudié séparément avant téléchargement de contenu."
-      - "Un tag de langue Hugging Face est une déclaration de métadonnées et ne garantit pas la qualité ni la pureté linguistique du dataset."
+      - "Un tag de langue Hugging Face ne garantit ni la qualité ni la pureté linguistique."
       - "La licence affichée sur le repo doit être vérifiée avec la provenance des données sources."
 
   webonary:
