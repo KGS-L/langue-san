@@ -6,8 +6,13 @@ sur les fichiers source Parquet déjà publiés dans le repo
 `HuggingFaceFW/fineweb-2`.
 
 `--probe-only` ne télécharge aucun corpus : il liste les fichiers Parquet ciblés
-et leur taille. Le mode de récolte télécharge uniquement `data/sbd_Latn/{split}`
-et convertit les lignes en JSONL sous data/raw/ en conservant la provenance.
+et leur taille. Le mode de récolte télécharge uniquement les splits réellement
+présents sous `data/sbd_Latn/` et convertit les lignes en JSONL sous data/raw/
+en conservant la provenance.
+
+Le README/config d'un dataset peut déclarer un split qui n'existe pas comme
+dossier source sur la révision courante. Ce cas est documenté comme
+`missing_on_revision` au lieu de faire échouer toute la sonde.
 
 Aucune ligne n'est validée linguistiquement et aucune approbation de publication
 ou d'entraînement n'est déduite de cette récolte.
@@ -24,6 +29,7 @@ from typing import Any
 import pyarrow.parquet as pq
 import yaml
 from huggingface_hub import HfApi, hf_hub_download
+from huggingface_hub.errors import RemoteEntryNotFoundError
 
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
@@ -75,26 +81,29 @@ def list_split_files(
     repo_id = str(target["repo_id"])
     config = str(target["config"])
     path_in_repo = f"data/{config}/{split}"
-    items = client.list_repo_tree(
-        repo_id,
-        path_in_repo=path_in_repo,
-        recursive=True,
-        revision=revision,
-        repo_type="dataset",
-    )
-    files: list[dict[str, Any]] = []
-    for item in items:
-        remote_path = getattr(item, "path", None)
-        if not remote_path or not str(remote_path).endswith(".parquet"):
-            continue
-        files.append(
-            {
-                "path": str(remote_path),
-                "size_bytes": getattr(item, "size", None),
-                "blob_id": getattr(item, "blob_id", None),
-            }
+    try:
+        items = client.list_repo_tree(
+            repo_id,
+            path_in_repo=path_in_repo,
+            recursive=True,
+            revision=revision,
+            repo_type="dataset",
         )
-    return sorted(files, key=lambda item: item["path"])
+        files: list[dict[str, Any]] = []
+        for item in items:
+            remote_path = getattr(item, "path", None)
+            if not remote_path or not str(remote_path).endswith(".parquet"):
+                continue
+            files.append(
+                {
+                    "path": str(remote_path),
+                    "size_bytes": getattr(item, "size", None),
+                    "blob_id": getattr(item, "blob_id", None),
+                }
+            )
+        return sorted(files, key=lambda item: item["path"])
+    except RemoteEntryNotFoundError:
+        return []
 
 
 def resolve_revision(repo_id: str, *, api: HfApi | None = None) -> str | None:
@@ -115,19 +124,26 @@ def probe(
     results = []
     for split in splits:
         files = list_split_files(target, split, api=client, revision=revision)
-        if not files:
-            raise FineWeb2HarvestError(
-                f"Aucun Parquet trouvé pour {target['repo_id']}/{target['config']}/{split}."
-            )
         known_sizes = [item["size_bytes"] for item in files if isinstance(item.get("size_bytes"), int)]
         results.append(
             {
                 "split": split,
+                "status": "available" if files else "missing_on_revision",
+                "available": bool(files),
                 "file_count": len(files),
-                "total_size_bytes": sum(known_sizes) if len(known_sizes) == len(files) else None,
+                "total_size_bytes": (
+                    sum(known_sizes) if files and len(known_sizes) == len(files) else None
+                ),
                 "files": files,
             }
         )
+
+    if not any(item["available"] for item in results):
+        raise FineWeb2HarvestError(
+            f"Aucun Parquet trouvé pour {target['repo_id']}/{target['config']} "
+            f"sur la révision {revision or '?'} pour les splits demandés."
+        )
+
     return {
         "repo_id": target.get("repo_id"),
         "revision": revision,
@@ -160,9 +176,14 @@ def harvest_split(
     client = api or HfApi()
     files = list_split_files(target, split, api=client, revision=revision)
     if not files:
-        raise FineWeb2HarvestError(
-            f"Aucun Parquet trouvé pour {target['repo_id']}/{target['config']}/{split}."
-        )
+        return {
+            "split": split,
+            "status": "missing_on_revision",
+            "rows_written": 0,
+            "file_count": 0,
+            "files": [],
+            "output": None,
+        }
 
     config = str(target["config"])
     output_dir = output_root / config
@@ -222,6 +243,7 @@ def harvest_split(
 
     return {
         "split": split,
+        "status": "harvested",
         "rows_written": global_row_idx,
         "file_count": len(files),
         "files": file_stats,
@@ -248,6 +270,11 @@ def harvest(
         )
         for split in splits
     ]
+    if not any(item.get("status") == "harvested" for item in results):
+        raise FineWeb2HarvestError(
+            f"Aucun split FineWeb2 disponible pour {target['config']} sur la révision {revision or '?'}"
+        )
+
     payload = {
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "repo_id": target.get("repo_id"),
@@ -291,6 +318,9 @@ def main() -> None:
         print(f"FineWeb2 : {result['repo_id']} @ {result.get('revision') or '?'}")
         print(f"Config : {result['config']}")
         for item in result["splits"]:
+            if not item["available"]:
+                print(f"- {item['split']}: absent sur cette révision (aucun Parquet source)")
+                continue
             size = item.get("total_size_bytes")
             size_text = f"{size} octets" if size is not None else "taille inconnue"
             print(f"- {item['split']}: {item['file_count']} parquet(s), {size_text}")
@@ -302,6 +332,9 @@ def main() -> None:
     result = harvest(target, splits, output_root=args.output_root)
     print(f"Récolte FineWeb2 : {result['repo_id']} @ {result.get('revision') or '?'}")
     for item in result["results"]:
+        if item.get("status") == "missing_on_revision":
+            print(f"- {result['config']}/{item['split']}: absent sur cette révision, ignoré")
+            continue
         print(
             f"- {result['config']}/{item['split']}: {item['rows_written']} lignes "
             f"depuis {item['file_count']} parquet(s)"
