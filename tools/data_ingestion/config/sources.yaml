@@ -73,8 +73,12 @@ sources:
       - "RefLex CLLD annonce des données téléchargeables et conserve les formes originales ainsi que les références de sources."
       - "La licence CC-BY-NC-SA-4.0 interdit l'usage commercial sans autorisation supplémentaire : ne pas mélanger automatiquement ces données à un futur corpus commercial."
       - "Le RAW reste local; l'attribution des sources amont doit être conservée."
-      - "Le languages.csv observé ne contient ni ID interne ni code ISO; la résolution commence par le glottocode puis peut utiliser les alias de nom uniquement pour le probe."
-      - "Si un alias de nom résout une ligne dont le glottocode diffère de la config, la récolte complète reste bloquée jusqu'à mise à jour explicite du mapping."
+      - "Le languages.csv réel contient 815 lignes et les colonnes Name, Family, Glottocode, Macroarea, Number of records in biggest source, Number of sources, Latitude, Longitude."
+      - "Observation réelle : Samo Matya / maty1235 est présent avec 2764 fiches dans sa seule source RefLex."
+      - "Observation réelle : Samo Maya / maya1281 est présent avec 2384 fiches dans sa seule source RefLex."
+      - "Observation réelle : sout2844 / Southern Samo / San Maka n'a pas été trouvé dans l'index RefLex CLLD; ne pas lui attribuer un candidat approximatif."
+      - "L'endpoint /values a répondu HTTP 406 lorsqu'on forçait Accept: application/json. Pour les langues à une seule source, le probe utilise désormais le compte exact déjà fourni par languages.csv; pour les cas multi-sources il utilise une requête XHR sans forcer Accept JSON."
+      - "La récolte complète de RefLex doit être limitée aux mappings réellement résolus, par exemple --iso stj sym tant que sbd reste absent de l'index."
 
   ainsisoisje:
     name: "Ainsi sois-je — Dictionnaire Français / Samo"
