@@ -137,20 +137,7 @@ Le décodage utilise `ipa2unicode==1.3`, qui fournit la table SIL IPA93 → Unic
 
 Important : le caractère IPA `ɡ` (U+0261) est distinct du `g` ASCII. Le décodeur conserve le caractère IPA et ne le remplace pas par une approximation graphique.
 
-Exemple réel :
-
-```text
-/G3D/G4F/G51/G05/G49/G57/G05/G4E/G51/G05/G3F
-→ [mōɡūlō]
-```
-
 ## 10. Probe global de décodage — réussi
-
-Processor :
-
-```text
-processors/decode_berthelette_ipa93.py
-```
 
 Résultat réel sur les pages `41–63` :
 
@@ -165,11 +152,9 @@ technical_ok            : True
 OCR utilisé             : non
 ```
 
-Le diagnostic précédent comptait 60 glyphes uniques sur `41–64`, tandis que le probe lexical en compte 58 sur `41–63`. Cette différence de périmètre est attendue et n'est pas une anomalie.
+Le problème de police est donc clos techniquement pour le bloc lexical. Aucun OCR n'est nécessaire.
 
-Le problème de police est donc **clos techniquement** pour le bloc lexical. Aucun OCR n'est nécessaire.
-
-## 11. Étape actuelle — extraction des occurrences 012–231
+## 11. Extraction 012–231 — exécutée, QA bloqué sur 3 anomalies
 
 Processor :
 
@@ -177,10 +162,31 @@ Processor :
 processors/extract_berthelette_wordlist.py
 ```
 
-Commande :
+Résultat provisoire observé :
 
-```bash
-python processors/extract_berthelette_wordlist.py
+```text
+concepts                         : 220 (012–231)
+concepts manquants               : 0
+occurrences extraites            : 1 796
+sbd / Maka                       : 222
+stj / Matya                      : 670
+sym / Maya                       : 904
+anomalies                        : 3
+groupes concept/localité multiples: 52
+technical_ok                     : False
+```
+
+Par localité :
+
+```text
+Bangassogo : 224
+Bounou     : 227
+Kassoum    : 222
+Kiembara   : 227
+Kouy       : 224
+Lankoué    : 226
+Toma       : 222
+Toéni      : 224
 ```
 
 Sorties locales :
@@ -190,53 +196,22 @@ data/processed/berthelette/wordlist_occurrences_012_231.csv
 data/processed/berthelette/wordlist_occurrences_012_231_summary.json
 ```
 
-Le parseur :
+Ces `1 796` occurrences sont **provisoires** et ne sont pas encore ajoutées au compteur global `14 811`, car `technical_ok=False`. L'étape immédiate est d'inspecter les 3 anomalies du résumé, corriger uniquement le parseur si nécessaire, puis relancer l'extraction et le QA.
 
-```text
-1. lit les pages PDF 41–63
-2. repère les concepts 012–231
-3. accumule les glyphes /Gxx même lorsqu'une transcription est coupée sur plusieurs fragments
-4. convertit les glyphes SIL IPA93 vers Unicode
-5. associe chaque forme aux localités indiquées dans la source
-6. réutilise une même forme quand la source la donne pour plusieurs localités sans répéter les glyphes
-7. conserve plusieurs formes pour un même concept/localité
-8. attribue variété et ISO selon la table explicitement donnée page 64
-9. conserve la séquence legacy originale et la transcription Unicode
-10. ne déduplique pas et ne valide pas linguistiquement
-```
+Commande de diagnostic rapide :
 
-Schéma principal :
-
-```text
-source
-report_id
-pdf_page
-concept_source_page
-concept_id
-concept_gloss_fr
-locality
-variety_claimed_by_source
-iso_639_3
-raw_legacy_glyphs
-decoded_transcription_source
-original_form_ipa
-transcription_system
-validation_status
-rights_status
-source_order
-```
-
-Le `summary.json` contrôle notamment :
-
-```text
-concept_count
-missing_concept_ids
-occurrence_count
-counts_by_locality
-counts_by_iso
-multi_form_concept_locality_groups
-anomalies
-technical_ok
+```bash
+python - <<'PY'
+import json
+from pathlib import Path
+p = Path('../../data/processed/berthelette/wordlist_occurrences_012_231_summary.json')
+d = json.loads(p.read_text(encoding='utf-8'))
+print('technical_ok:', d.get('technical_ok'))
+print('rows_without_form:', d.get('rows_without_form'))
+print('anomalies:')
+for i, a in enumerate(d.get('anomalies', []), 1):
+    print(i, a)
+PY
 ```
 
 ## 12. Règles de qualité
@@ -251,9 +226,9 @@ diagnostic Type3 /Gxx                   ✅
 mapping SIL IPA93                       ✅
 décodage global 100 %                   ✅
 OCR                                     non nécessaire
-extraction 012–231                      prête à exécuter
+extraction 012–231                      ✅ provisoire
+QA extraction                           ⚠ 3 anomalies / technical_ok=False
 concepts 001–011                        non retrouvés / non inventés
-QA technique lexical complet            après extraction
 comparaison ASJP / RefLex               après QA
 validation linguistique                 future
 ```
@@ -277,7 +252,7 @@ locality_variety_mapping = confirmed_in_pdf_page_64
 legacy_font_issue        = solved_without_ocr
 legacy_glyph_tokens      = 15606
 ipa93_decode_probe       = technical_ok_100_percent
-lexical_extractor        = ready_for_012_231
+lexical_extraction       = provisional_1796_occurrences
+lexical_extraction_qa    = blocked_by_3_anomalies
 ocr                      = not_required
-lexical_extraction       = ready_to_run
 ```
