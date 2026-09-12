@@ -19,6 +19,7 @@ text_subsets:
       - "Révision récoltée : af9c13333eb981300149d5ca60a8e9d659b276b9."
       - "Parquet source : data/sbd_Latn/train/000_00000.parquet (14394 octets)."
       - "Récolte réelle : 4 lignes depuis 1 Parquet."
+      - "QA technique : 4/4 JSON valides, 0 source_row manquant, 0 métadonnée incohérente, 0 doublon exact, 4 textes présents, 0 texte vide, 0 texte dupliqué, 6651 caractères, technical_ok=true."
       - "Le split test est déclaré dans les métadonnées mais data/sbd_Latn/test est absent sur cette révision."
       - "La collecte active cible donc uniquement le split train réellement présent."
 
