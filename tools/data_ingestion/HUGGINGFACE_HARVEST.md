@@ -145,25 +145,33 @@ Le repo ChiKhaPo est sous licence MIT, mais ses lexiques agrègent notamment Pan
 upstream_source_provenance_review_required
 ```
 
-## PanLex — prochaine récolte ciblée
+## PanLex — probe réussi, récolte ciblée à faire
 
 Le snapshot `lbourdois/panlex` contient environ 24,6 millions de lignes. Le projet ne télécharge pas le CSV complet de 1,28 Go.
 
-Le collecteur :
+Le probe ciblé a finalement réussi après plusieurs réponses HTTP 500 temporaires du Dataset Viewer. Le retry/backoff du collecteur a permis d'obtenir :
+
+```text
+sbd / Maka  : 11 lignes
+stj / Matya : 408 lignes
+sym / Maya  : 1 ligne
+
+partial = false pour les trois codes
+```
+
+Commande utilisée :
 
 ```bash
 python collectors/huggingface_panlex.py --probe-only
 ```
 
-utilise Dataset Viewer `/filter` sur :
+Le collecteur filtre la config `panlex`, split `train`, sur :
 
 ```text
 "639-3"='sbd'
 "639-3"='stj'
 "639-3"='sym'
 ```
-
-pour connaître les volumes exacts avant récolte.
 
 Les colonnes source conservées sont :
 
@@ -177,7 +185,7 @@ english_name_var
 
 `var_code` est conservé tel quel : il s'agit d'un identifiant de variante PanLex, pas d'un code ISO international.
 
-Après validation du probe :
+Le volume ciblé total est seulement de 420 lignes, donc la récolte complète peut être lancée sans télécharger le snapshot complet :
 
 ```bash
 python collectors/huggingface_panlex.py --request-delay 1
@@ -195,6 +203,8 @@ data/raw/huggingface/panlex/
 ```
 
 Le collecteur possède retry/backoff et reprise après interruption/rate-limit.
+
+Attention : les 408 lignes `stj` de PanLex sont très proches des 406 mots sources `stj_eng` observés dans ChiKhaPo. Comme ChiKhaPo agrège notamment PanLex, un contrôle de chevauchement sera nécessaire après récolte avant de compter ces ressources comme des apports indépendants.
 
 ## Autres sous-ensembles texte sbd
 
