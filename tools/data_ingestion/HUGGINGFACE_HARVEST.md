@@ -15,7 +15,7 @@ espnet/mms_ulab_v2
 lbourdois/panlex
   snapshot lexical CC0
   ~24,6M lignes / 6152 langues
-  → collecte ciblée sbd/stj/sym via /filter, sans télécharger le CSV complet
+  → récolté de façon ciblée pour sbd/stj/sym
 
 ec5ug/chikhapo
   fallback Hub réussi
@@ -145,50 +145,25 @@ Le repo ChiKhaPo est sous licence MIT, mais ses lexiques agrègent notamment Pan
 upstream_source_provenance_review_required
 ```
 
-## PanLex — probe réussi, récolte ciblée à faire
+## PanLex — récolté
 
-Le snapshot `lbourdois/panlex` contient environ 24,6 millions de lignes. Le projet ne télécharge pas le CSV complet de 1,28 Go.
-
-Le probe ciblé a finalement réussi après plusieurs réponses HTTP 500 temporaires du Dataset Viewer. Le retry/backoff du collecteur a permis d'obtenir :
+Le probe ciblé a trouvé :
 
 ```text
 sbd / Maka  : 11 lignes
 stj / Matya : 408 lignes
 sym / Maya  : 1 ligne
-
 partial = false pour les trois codes
 ```
 
-Commande utilisée :
+La première requête `sbd` a subi plusieurs HTTP 500 temporaires du Dataset Viewer, mais le retry/backoff a fini par réussir.
 
-```bash
-python collectors/huggingface_panlex.py --probe-only
-```
-
-Le collecteur filtre la config `panlex`, split `train`, sur :
+Récolte réelle :
 
 ```text
-"639-3"='sbd'
-"639-3"='stj'
-"639-3"='sym'
-```
-
-Les colonnes source conservées sont :
-
-```text
-vocab
-639-3
-639-3_english_name
-var_code
-english_name_var
-```
-
-`var_code` est conservé tel quel : il s'agit d'un identifiant de variante PanLex, pas d'un code ISO international.
-
-Le volume ciblé total est seulement de 420 lignes, donc la récolte complète peut être lancée sans télécharger le snapshot complet :
-
-```bash
-python collectors/huggingface_panlex.py --request-delay 1
+sbd / maka  : 11 / 11 lignes, nouvelles=11, repris=0, partial=false
+stj / matya : 408 / 408 lignes, nouvelles=408, repris=0, partial=false
+sym / maya  : 1 / 1 ligne, nouvelles=1, repris=0, partial=false
 ```
 
 Sorties :
@@ -202,9 +177,35 @@ data/raw/huggingface/panlex/
 └── panlex_harvest_summary.json
 ```
 
-Le collecteur possède retry/backoff et reprise après interruption/rate-limit.
+Les colonnes source conservées comprennent notamment :
 
-Attention : les 408 lignes `stj` de PanLex sont très proches des 406 mots sources `stj_eng` observés dans ChiKhaPo. Comme ChiKhaPo agrège notamment PanLex, un contrôle de chevauchement sera nécessaire après récolte avant de compter ces ressources comme des apports indépendants.
+```text
+vocab
+639-3
+639-3_english_name
+var_code
+english_name_var
+```
+
+`var_code` est conservé tel quel : il s'agit d'un identifiant de variante PanLex, pas d'un code ISO international.
+
+### QA technique PanLex
+
+```bash
+python processors/qa_huggingface_panlex.py
+```
+
+Le QA vérifie l'intégrité JSONL, les codes ISO, la variété, `source_row.vocab`, les `var_code`, les répétitions de vocabulaire et les doublons exacts. Il ne modifie pas le RAW.
+
+### Comparaison PanLex ↔ ChiKhaPo pour stj
+
+Les volumes `408 lignes PanLex stj` et `406 mots sources ChiKhaPo stj_eng` sont très proches, mais cela ne suffit pas à conclure qu'il s'agit des mêmes données. Comme ChiKhaPo déclare PanLex parmi ses sources amont, le chevauchement exact est mesuré avec :
+
+```bash
+python processors/compare_panlex_chikhapo.py
+```
+
+La comparaison applique uniquement NFC + casefold + espaces condensés à des fins analytiques. Elle mesure les formes Matya identiques et ne déduit ni équivalence linguistique ni identité de provenance.
 
 ## Autres sous-ensembles texte sbd
 
