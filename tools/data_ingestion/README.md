@@ -169,21 +169,29 @@ Cette source est citée par ASJP `SAMO_MATYA_2` et correspond à la source amont
 
 Une application moderne `San Matya de A-Z` de Burkina Langues est aussi confirmée : **2 576 entrées**, **685 images**, zone de Tougan. Sa licence de réutilisation n'est pas encore confirmée ; elle est traitée séparément de l'ouvrage 2011.
 
-L'installateur Windows local a maintenant été identifié sans exécution :
+Un installateur Windows local a été identifié comme **Inno Setup 5.3.10 Unicode** :
 
 ```text
-fichier    : San Matya - Lexique Pro Setup.exe
-format     : PE32 GUI Intel 80386
-installateur: Inno Setup 5.3.10 Unicode
-SHA-256    : 1c1ece4f0ad78e8b634c9ebb8c7ae8a97870fa1d6015cde12ba335584c9c467c
+San Matya - Lexique Pro Setup.exe
+SHA-256: 1c1ece4f0ad78e8b634c9ebb8c7ae8a97870fa1d6015cde12ba335584c9c467c
 ```
 
-Étape immédiate : installer `innoextract`, lister puis extraire statiquement le contenu dans un dossier local isolé, et rechercher LIFT/XML/DB/TXT/HTML ainsi que les médias. Aucun exécutable Windows n'est lancé. Ensuite, on documente la structure et on continue la recherche courte des droits / de la source primaire 2011.
+Le listing `innoextract -l` confirme que l'installateur embarque réellement un jeu de données Lexique Pro :
+
+```text
+San du Nord Matya.lpLiftEnc       ~1.8 MiB
+San du Nord Matya.lpConfigEnc     ~42.1 KiB
+San du Nord Matya.lift-ranges     ~1.15 MiB
+index San Matya / French / English
+nombreuses images lexicales
+```
+
+Le corpus principal semble donc encapsulé/protégé au format `lpLiftEnc`. On ne tente pas de contourner une protection. Étape immédiate : extraction statique avec `innoextract`, inventaire des fichiers, inspection des entêtes/formats, de `licence.txt`, et vérification de la présence éventuelle d'audio. Si une exportation standard Lexique Pro ou une source originale non protégée existe, elle sera privilégiée.
 
 ## Ordre des prochaines sources
 
 ```text
-1. Inspecter le contenu de l'installateur Matya avec innoextract
+1. Extraire statiquement San Matya - Lexique Pro Setup.exe et inventorier son contenu
 2. Morris et al. 2011 — source primaire Matya / droits
 3. Source Maya originale citée par RefLex
 4. Morse 1967 — bibliographie et droits exacts
