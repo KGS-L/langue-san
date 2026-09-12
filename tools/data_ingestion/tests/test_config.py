@@ -13,8 +13,8 @@ def test_language_iso_codes_are_distinct_and_expected():
     assert codes == {"sbd", "stj", "sym"}
 
 
-def test_asjp_is_the_only_enabled_external_source_initially():
+def test_expected_external_sources_are_enabled_for_current_ingestion_phase():
     config = yaml.safe_load((ROOT / "config" / "sources.yaml").read_text(encoding="utf-8"))
-    enabled = [name for name, item in config["sources"].items() if item["enabled"]]
+    enabled = {name for name, item in config["sources"].items() if item["enabled"]}
 
-    assert enabled == ["asjp"]
+    assert enabled == {"asjp", "reflex"}
