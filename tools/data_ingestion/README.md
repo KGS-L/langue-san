@@ -157,7 +157,7 @@ On ne reste pas bloqué dessus.
 
 ## Source active — Matya `stj`
 
-Référence primaire cible :
+Référence historique cible :
 
 ```text
 Morris, Pamela; Sama, François; Sama, Jérémie; Drabo, Jean-Pierre. 2011.
@@ -165,34 +165,47 @@ Lexique San Matya avec guide d'orthographe.
 Tougan, Burkina Faso: ANTBA.
 ```
 
-Cette source est citée par ASJP `SAMO_MATYA_2` et correspond à la source amont Matya documentée par RefLex.
+Une application moderne `San Matya de A-Z` de Burkina Langues est également confirmée et annonce **2 576 entrées** et **685 images**.
 
-Une application moderne `San Matya de A-Z` de Burkina Langues est aussi confirmée : **2 576 entrées**, **685 images**, zone de Tougan. Sa licence de réutilisation n'est pas encore confirmée ; elle est traitée séparément de l'ouvrage 2011.
-
-Un installateur Windows local a été identifié comme **Inno Setup 5.3.10 Unicode** :
+Un installateur Windows Lexique Pro a été récupéré puis extrait statiquement avec `innoextract`, sans exécuter le programme :
 
 ```text
 San Matya - Lexique Pro Setup.exe
+Inno Setup 5.3.10 Unicode
 SHA-256: 1c1ece4f0ad78e8b634c9ebb8c7ae8a97870fa1d6015cde12ba335584c9c467c
 ```
 
-Le listing `innoextract -l` confirme que l'installateur embarque réellement un jeu de données Lexique Pro :
+Inventaire réel après extraction :
 
 ```text
-San du Nord Matya.lpLiftEnc       ~1.8 MiB
-San du Nord Matya.lpConfigEnc     ~42.1 KiB
-San du Nord Matya.lift-ranges     ~1.15 MiB
-index San Matya / French / English
-nombreuses images lexicales
+734 fichiers au total
+695 images (675 jpg + 16 png + 3 jpeg + 1 jfif)
+0 audio
+3 idx
+3 db de domaines sémantiques Lexique Pro
+1 lpLiftEnc
+1 lpConfigEnc
+1 lift-ranges
 ```
 
-Le corpus principal semble donc encapsulé/protégé au format `lpLiftEnc`. On ne tente pas de contourner une protection. Étape immédiate : extraction statique avec `innoextract`, inventaire des fichiers, inspection des entêtes/formats, de `licence.txt`, et vérification de la présence éventuelle d'audio. Si une exportation standard Lexique Pro ou une source originale non protégée existe, elle sera privilégiée.
+Fichiers principaux :
+
+```text
+San du Nord Matya.lpLiftEnc
+San du Nord Matya.lpConfigEnc
+San du Nord Matya.lift-ranges
+San du Nord Matya - San Matya.idx
+San du Nord Matya - French.idx
+San du Nord Matya - English.idx
+```
+
+Le package Windows contient donc le dictionnaire et ses images, mais **aucun audio**. Le corpus principal semble être une copie de distribution Lexique Pro protégée au format `lpLiftEnc`; on ne tente pas de contourner cette protection. La prochaine inspection est limitée aux entêtes, index, ranges et licence afin de savoir si une partie des données est lisible directement. Sinon, on cherchera un LIFT/PDF original ou une exportation autorisée.
 
 ## Ordre des prochaines sources
 
 ```text
-1. Extraire statiquement San Matya - Lexique Pro Setup.exe et inventorier son contenu
-2. Morris et al. 2011 — source primaire Matya / droits
+1. Inspecter rapidement lpLiftEnc/lpConfigEnc/lift-ranges/idx/licence sans contournement
+2. Morris et al. 2011 — source primaire Matya / droits / LIFT ou PDF original
 3. Source Maya originale citée par RefLex
 4. Morse 1967 — bibliographie et droits exacts
 5. Maka moderne Webonary/app — reprendre dès clarification des droits
