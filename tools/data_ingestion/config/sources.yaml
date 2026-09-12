@@ -23,6 +23,40 @@ sources:
         iso_639_3: "sym"
         asjp_id: "MAYA_SAMO"
 
+  reflex:
+    name: "RefLex CLLD — Reference Lexicon of Africa"
+    type: "structured_lexical_database"
+    homepage: "https://reflex.clld.huma-num.fr/"
+    version: "1.0"
+    doi: "10.34847/nkl.e3cbkjzm"
+    license: "CC-BY-NC-SA-4.0"
+    enabled: true
+    status: "approved_for_noncommercial_research_ingestion"
+    intended_use: "lexical_reference_and_source_provenance"
+    publication_approved: false
+    training_approved: false
+    commercial_use_approved: false
+    endpoints:
+      languages_csv: "https://reflex.clld.huma-num.fr/languages.csv"
+      values: "https://reflex.clld.huma-num.fr/values"
+      values_csv: "https://reflex.clld.huma-num.fr/values.csv"
+      sources_csv: "https://reflex.clld.huma-num.fr/sources.csv"
+    targets:
+      - variety: "maka"
+        iso_639_3: "sbd"
+        glottocode: "sout2844"
+      - variety: "matya"
+        iso_639_3: "stj"
+        glottocode: "maty1235"
+      - variety: "maya"
+        iso_639_3: "sym"
+        glottocode: "maya1281"
+    notes:
+      - "RefLex CLLD annonce des données téléchargeables et conserve les formes originales ainsi que les références de sources."
+      - "La licence CC-BY-NC-SA-4.0 interdit l'usage commercial sans autorisation supplémentaire : ne pas mélanger automatiquement ces données à un futur corpus commercial."
+      - "Le RAW reste local; l'attribution des sources amont doit être conservée."
+      - "Le probe doit confirmer la présence et le volume de chaque variété avant toute récolte complète."
+
   ainsisoisje:
     name: "Ainsi sois-je — Dictionnaire Français / Samo"
     type: "web_dictionary"
