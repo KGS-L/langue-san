@@ -39,7 +39,7 @@ Le PDF officiel a également été identifié sur le stockage SIL :
 https://www.sil.org/system/files/reapdata/82/40/67/82406717915460712209214978734638946211/SILESR2002_005.pdf
 ```
 
-Dans l'environnement de reconnaissance automatisée utilisé pendant cette phase, cette URL a répondu HTTP 403. Cela ne signifie pas que le document est absent : le collecteur prévoit un téléchargement direct si le serveur l'accepte depuis la machine locale, et un fallback par téléchargement manuel sinon.
+Le téléchargement automatisé SIL répond HTTP 403, mais le PDF a été récupéré manuellement puis ingéré localement avec le collecteur prévu à cet effet.
 
 ## 2. Pourquoi cette source est importante
 
@@ -83,7 +83,7 @@ sym / Maya
   Lankoué
 ```
 
-Cette information est plus forte qu'un simple `locality_hint`, car elle vient de l'index bibliographique de la référence Berthelette. Elle reste néanmoins une métadonnée de provenance : pendant l'extraction du PDF, on conservera ce que le rapport indique réellement page par page.
+Cette information reste une métadonnée de provenance : pendant l'extraction du PDF, on conservera ce que le rapport indique réellement page par page.
 
 ## 4. Relation avec les données déjà récoltées
 
@@ -110,22 +110,18 @@ Les SIL Language & Culture Archives indiquent que, sauf mention contraire dans l
 CC-BY-NC-SA-4.0
 ```
 
-Cela permet notamment la copie et l'adaptation sous attribution, pour un usage non commercial, avec partage sous conditions compatibles.
-
-Mais la règle projet reste conservatrice : la licence et les mentions du **PDF Berthelette lui-même** doivent être inspectées après téléchargement. Une mention spécifique dans l'item ou le fichier peut primer sur la règle générale de l'archive.
+Mais la règle projet reste conservatrice : les mentions du **PDF Berthelette lui-même** doivent encore être inspectées. Une mention spécifique dans l'item ou le fichier peut primer sur la règle générale de l'archive.
 
 Statut actuel :
 
 ```text
-rights_status          = archive_default_noncommercial_pending_pdf_confirmation
-publication_approved   = false
-training_approved      = false
+rights_status           = archive_default_noncommercial_pending_pdf_confirmation
+publication_approved    = false
+training_approved       = false
 commercial_use_approved = false
 ```
 
-Aucune décision ML/commerciale n'est déduite du simple fait que le PDF est accessible.
-
-## 6. Collecteur ajouté
+## 6. Récolte du PDF — terminée
 
 Collecteur :
 
@@ -133,33 +129,32 @@ Collecteur :
 collectors/berthelette.py
 ```
 
-Il ne fait pour l'instant **que la récolte contrôlée du PDF original** :
+La tentative HTTP automatisée a confirmé le blocage `403`. Le fallback local a ensuite été utilisé :
 
-```text
-source SIL officielle
-    ↓
-téléchargement direct ou fichier téléchargé manuellement
-    ↓
-vérification signature %PDF-
-    ↓
-vérification taille minimale
-    ↓
-SHA-256
-    ↓
-PDF RAW + metadata
+```bash
+python collectors/berthelette.py \
+  --probe-only \
+  --input-file ../../data/raw/berthelette/SILESR2002_005.pdf
 ```
 
-Il n'effectue encore :
+Probe observé :
 
 ```text
-aucun OCR
-aucune extraction de wordlist
-aucune correction linguistique
-aucune déduplication
-aucune attribution inventée
+report_id : SILESR-2002-005
+méthode   : manual_download_then_local_ingest
+octets    : 4015872
+PDF valide: True
+SHA-256   : efcd06c8e235df9e7334b141aaeb123064e227fab2c05d100c4a57bba7d9f196
 ```
 
-Sorties prévues :
+Puis ingestion locale :
+
+```bash
+python collectors/berthelette.py \
+  --input-file ../../data/raw/berthelette/SILESR2002_005.pdf
+```
+
+Sorties présentes localement :
 
 ```text
 data/raw/berthelette/
@@ -167,78 +162,75 @@ data/raw/berthelette/
 └── metadata.json
 ```
 
-## 7. Procédure locale
+Le PDF RAW est donc maintenant récolté et fingerprinté. Aucune extraction lexicale n'a encore été réalisée.
 
-Après mise à jour de la branche :
+## 7. Étape suivante — inspection structurelle sans OCR
 
-```bash
-cd ~/Bureau/langue-san
-git pull origin feat/data-ingestion
-
-cd tools/data_ingestion
-source .venv/bin/activate
-pytest tests
-```
-
-### Probe direct
-
-```bash
-python collectors/berthelette.py --probe-only
-```
-
-Si le téléchargement SIL fonctionne, on doit obtenir notamment :
+Processor :
 
 ```text
-report_id = SILESR-2002-005
-méthode   = direct_http
-PDF valide = True
-SHA-256   = ...
+processors/inspect_berthelette_pdf.py
 ```
 
-Le probe n'écrit rien dans `data/raw/`.
-
-### Récolte directe
-
-Après probe réussi :
-
-```bash
-python collectors/berthelette.py
-```
-
-### Si SIL répond HTTP 403
-
-Télécharger manuellement le PDF officiel depuis la notice SIL ou l'URL PDF identifiée, puis lancer :
-
-```bash
-python collectors/berthelette.py --input-file ~/Téléchargements/SILESR2002_005.pdf
-```
-
-Le collecteur valide alors le fichier local et conserve dans les métadonnées :
+Dépendance ajoutée :
 
 ```text
-acquisition_method = manual_download_then_local_ingest
+pypdf
 ```
 
-On ne remplace pas le document officiel par une copie secondaire si la source SIL peut être récupérée manuellement.
-
-## 8. Étape suivante après téléchargement
-
-Une fois le PDF RAW disponible :
+Objectif :
 
 ```text
-1. vérifier le nombre réel de pages
-2. inspecter titre / auteur / report id / copyright / licence
-3. vérifier si le PDF contient du texte extractible
-4. inventorier sommaire, sections, annexes, tableaux et wordlists
-5. identifier les pages contenant les données lexicales
-6. identifier toutes les localités réellement présentes
-7. définir le schéma RAW d'extraction
-8. extraire les occurrences sans correction ni déduplication
-9. produire un QA technique
-10. comparer ensuite à ASJP / RefLex sans fusion automatique
+PDF RAW
+   ↓
+lecture standard PDF
+   ↓
+nombre réel de pages
+   ↓
+mesure du texte extractible
+   ↓
+pages candidates droits/copyright
+   ↓
+pages candidates wordlist/appendix/lexical
+   ↓
+pages contenant les localités connues
+   ↓
+rapport d'inventaire JSON
 ```
 
-L'OCR ne doit être utilisé qu'en dernier recours si le texte/tables ne sont pas extractibles normalement.
+Aucun OCR n'est lancé automatiquement. Les pages sans texte extractible sont simplement signalées afin de décider ensuite si une inspection visuelle ou un OCR ciblé est réellement nécessaire.
+
+Commande :
+
+```bash
+python processors/inspect_berthelette_pdf.py
+```
+
+Sortie :
+
+```text
+data/processed/berthelette/pdf_inventory.json
+```
+
+Le script vérifie également que le SHA-256 du PDF correspond au `metadata.json` produit pendant la récolte.
+
+## 8. Après l'inventaire PDF
+
+Une fois le rapport produit :
+
+```text
+1. confirmer le nombre réel de pages
+2. lire les pages droits/copyright détectées
+3. identifier précisément les annexes et wordlists
+4. vérifier les localités effectivement présentes page par page
+5. comprendre la structure des tableaux
+6. définir le schéma RAW lexical final
+7. extraire les occurrences sans correction ni déduplication
+8. produire un QA technique lexical
+9. comparer ensuite à ASJP / RefLex sans fusion automatique
+```
+
+L'OCR reste un dernier recours, uniquement si des pages utiles ne sont pas extractibles par les outils PDF standards.
 
 ## 9. Schéma RAW envisagé pour les données lexicales
 
@@ -263,17 +255,18 @@ Si plusieurs sites ou locuteurs donnent une forme pour le même concept, toutes 
 
 ## 10. Critères de réussite
 
-La source ne sera considérée techniquement récoltée qu'après :
+La source ne sera considérée techniquement récoltée au niveau lexical qu'après :
 
 ```text
-PDF officiel/localement vérifié
-provenance + SHA-256 conservés
-droits explicitement documentés
-sections/wordlists inventoriées
-localités/pages traçables
-aucune variété inventée
-aucune déduplication silencieuse
-QA technique produit
+PDF officiel/localement vérifié          ✅
+provenance + SHA-256 conservés           ✅
+inspection structurelle                  à faire
+droits du fichier inspectés              à faire
+sections/wordlists inventoriées          à faire
+localités/pages traçables                à faire
+aucune variété inventée                  règle active
+aucune déduplication silencieuse         règle active
+QA technique lexical                     à faire
 ```
 
 ## 11. Sources de reconnaissance
@@ -292,8 +285,6 @@ ASJP — MAYA_SAMO
 https://asjp.clld.org/languages/MAYA_SAMO
 ```
 
-Les sources secondaires utilisées pour retrouver le lien PDF ne constituent pas la base du futur dataset. Le RAW doit provenir du document SIL original.
-
 ## Statut actuel
 
 ```text
@@ -301,9 +292,11 @@ discovery               = confirmed
 bibliographic_reference = confirmed
 sil_archive_entry       = confirmed_8983
 official_pdf_url        = identified
-automated_web_access    = HTTP_403_observed_in_research_environment
-collector               = ready
+automated_web_access    = HTTP_403
+pdf_harvest             = success_manual_ingest
+pdf_bytes               = 4015872
+pdf_sha256              = efcd06c8e235df9e7334b141aaeb123064e227fab2c05d100c4a57bba7d9f196
 item_license            = archive_default_pending_pdf_confirmation
-ingestion               = download_probe_ready
+pdf_inspection          = ready
 lexical_extraction      = not_started
 ```
