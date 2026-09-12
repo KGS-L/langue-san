@@ -4,7 +4,8 @@ Ce dossier regroupe les outils utilisés pour **découvrir, récupérer, invento
 
 > Guide général : [`GUIDE_DATA_INGESTION.md`](GUIDE_DATA_INGESTION.md)  
 > État Hugging Face : [`HUGGINGFACE_HARVEST.md`](HUGGINGFACE_HARVEST.md)  
-> Reconnaissance RefLex : [`REFLEX_RECON.md`](REFLEX_RECON.md)
+> Reconnaissance RefLex : [`REFLEX_RECON.md`](REFLEX_RECON.md)  
+> Reconnaissance Berthelette : [`BERTHELETTE_RECON.md`](BERTHELETTE_RECON.md)
 
 ## Périmètre de `feat/data-ingestion`
 
@@ -266,7 +267,7 @@ Ce total est un **compteur de collecte**, pas un corpus final : il contient des 
 
 ## Source actuelle — Berthelette 2001
 
-Prochaine source à traiter :
+Reconnaissance détaillée : [`BERTHELETTE_RECON.md`](BERTHELETTE_RECON.md).
 
 ```text
 John Berthelette
