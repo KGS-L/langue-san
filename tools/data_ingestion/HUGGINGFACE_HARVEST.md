@@ -4,8 +4,6 @@ Ce document prend le relais après l'inventaire, le triage et l'inspection des r
 
 ## Résultat de l'inspection ciblée
 
-Inspection locale réussie après 59 tests :
-
 ```text
 espnet/mms_ulab_v2
   aucune config SAN dédiée détectée via Dataset Viewer
@@ -26,17 +24,16 @@ ec5ug/chikhapo
 HuggingFaceFW/fineweb-2
   sbd_Latn détecté
   splits train + test
-  taille non renvoyée par /size
-  /rows renvoie actuellement HTTP 500 sur le probe local
-  → cible texte Maka conservée, fallback à ajouter si nécessaire
+  /rows renvoie HTTP 500 sur cette config
+  → fallback dédié via les Parquet source du Hub
 
 HuggingFaceFW/finepdfs
   sbd_Latn : 7 lignes
-  → petite cible texte Maka
+  → récolté
 
 cis-lmu/GlotCC-V1
   sbd-Latn : 2 lignes
-  → petite cible texte Maka
+  → récolté
 
 cis-lmu/Taxi1500-RawData
   sbd_Latn : 7 919 lignes
@@ -242,17 +239,81 @@ data/processed/huggingface/panlex_vs_chikhapo_stj.json
 
 Conséquence pour les futurs bilans de volume : conserver les deux RAW et leurs provenances, mais éviter d'additionner naïvement `408 + 406` comme 814 mots Matya indépendants.
 
-## Autres sous-ensembles texte sbd
+## FinePDFs et GlotCC sbd — récoltés
 
-Pour sonder/récolter individuellement :
+Probes :
 
-```bash
-python collectors/huggingface_text_subsets.py --target finepdfs_sbd --probe-only
-python collectors/huggingface_text_subsets.py --target glotcc_sbd --probe-only
-python collectors/huggingface_text_subsets.py --target fineweb2_sbd --probe-only
+```text
+FinePDFs / sbd_Latn / train : 7 lignes, partial=false
+GlotCC / sbd-Latn / train   : 2 lignes, partial=false
 ```
 
-Le Dataset Viewer de FineWeb2 a renvoyé une erreur HTTP 500 sur `/rows` lors du premier probe. Cela n'invalide pas la config `sbd_Latn`; un fallback Parquet/Hub pourra être ajouté si l'erreur persiste.
+Récolte réelle :
+
+```text
+FinePDFs : 7 / 7 lignes
+GlotCC   : 2 / 2 lignes
+```
+
+Sorties :
+
+```text
+data/raw/huggingface/
+├── finepdfs/sbd_Latn/train.jsonl
+└── glotcc/sbd-Latn/train.jsonl
+```
+
+Ces 9 lignes restent `external_unverified`. Leur très faible volume en fait surtout des ressources de contrôle/provenance, pas un corpus principal.
+
+## FineWeb2 sbd — fallback Parquet du Hub
+
+La config `sbd_Latn` est bien déclarée avec les splits `train` et `test`, mais Dataset Viewer `/rows` a renvoyé HTTP 500. Le projet ne force donc plus cet endpoint.
+
+Le collecteur dédié :
+
+```text
+collectors/huggingface_fineweb2.py
+```
+
+utilise `HfApi.list_repo_tree()` uniquement sur :
+
+```text
+data/sbd_Latn/train/
+data/sbd_Latn/test/
+```
+
+puis, pour la récolte complète, télécharge seulement les Parquet trouvés via `hf_hub_download` et les convertit en JSONL avec `pyarrow`.
+
+Avant toute récolte, sonder uniquement la liste et la taille des fichiers :
+
+```bash
+python collectors/huggingface_fineweb2.py --probe-only
+```
+
+Cette sonde ne télécharge aucun Parquet. Elle doit être utilisée pour vérifier le volume exact avant la récolte complète.
+
+Si le volume est acceptable :
+
+```bash
+python collectors/huggingface_fineweb2.py
+```
+
+Sorties prévues :
+
+```text
+data/raw/huggingface/fineweb2/
+├── sbd_Latn/train.jsonl
+├── sbd_Latn/test.jsonl
+└── fineweb2_metadata.json
+```
+
+Chaque ligne conserve notamment la révision du repo, le chemin Parquet d'origine, l'index dans le fichier, les métadonnées `sbd/maka` et la ligne source complète.
+
+Dépendance supplémentaire :
+
+```text
+pyarrow>=17,<22
+```
 
 ## Sources volontairement différées
 
