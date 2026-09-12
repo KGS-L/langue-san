@@ -2,72 +2,50 @@
 
 Ce dossier regroupe les outils utilisés pour **découvrir, récupérer, inventorier et comparer des ressources linguistiques externes** destinées au projet Langue SAN.
 
-> Guide complet : [`GUIDE_DATA_INGESTION.md`](GUIDE_DATA_INGESTION.md)
+> Guide général : [`GUIDE_DATA_INGESTION.md`](GUIDE_DATA_INGESTION.md)  
+> État Hugging Face : [`HUGGINGFACE_HARVEST.md`](HUGGINGFACE_HARVEST.md)  
+> Reconnaissance RefLex et prochaines sources : [`REFLEX_RECON.md`](REFLEX_RECON.md)
 
-## Périmètre de la branche `feat/data-ingestion`
+## Périmètre de `feat/data-ingestion`
 
-Dans cette branche, le but principal est la **récolte technique des sources externes**.
+Cette branche sert à la **récolte technique des sources externes**.
 
 ```text
 source externe
     ↓
 vérification provenance / droits
     ↓
-collector ou scraper
+collector / scraper / export ciblé
     ↓
 data/raw/                        # local, non commité
     ↓
-normalisation technique minimale
-    ↓
-QA / statistiques / comparaison
+QA technique / statistiques / comparaison
     ↓
 SOURCE RÉCOLTÉE
 ```
 
 La transformation ultérieure en source linguistique officielle du projet, la validation humaine, `standard_san`, l'import applicatif et l'autorisation ML seront traités séparément.
 
-## Principes
-
-1. Ne jamais mélanger automatiquement San Maka (`sbd`), San Matya (`stj`) et San Maya (`sym`).
-2. Conserver provenance, URL, licence/droits et date d'acquisition.
-3. Une donnée accessible publiquement n'est pas automatiquement réutilisable ou publiable.
-4. Les ressources aux droits incertains restent désactivées dans `config/sources.yaml`.
-5. `data/raw/` et `data/processed/` sont des données locales de travail et ne sont pas publiées automatiquement.
-6. La notation source est conservée telle quelle.
-7. Une similarité de chaînes de caractères n'est jamais une validation linguistique.
-
-## Structure
+## Variétés — règle absolue
 
 ```text
-tools/data_ingestion/
-├── config/
-│   ├── concepts_fr.yaml
-│   ├── languages.yaml
-│   └── sources.yaml
-├── collectors/
-│   ├── __init__.py
-│   ├── ainsisoisje.py
-│   └── asjp.py
-├── processors/
-│   ├── __init__.py
-│   ├── build_review_sheet.py
-│   ├── compare_ainsisoisje_asjp.py
-│   ├── enrich_concepts.py
-│   ├── normalize.py
-│   └── qa_variants.py
-├── tests/
-│   ├── test_ainsisoisje.py
-│   ├── test_asjp.py
-│   ├── test_build_review_sheet.py
-│   ├── test_compare_ainsisoisje_asjp.py
-│   ├── test_config.py
-│   ├── test_enrich_concepts.py
-│   ├── test_normalize.py
-│   └── test_qa_variants.py
-├── GUIDE_DATA_INGESTION.md
-├── README.md
-└── requirements.txt
+San Maka / San du Sud : sbd
+San Matya             : stj
+San Maya              : sym
 ```
+
+Toma et Tougan sont uniquement des indices géographiques. Une localité ne valide jamais automatiquement une variété.
+
+## Principes
+
+1. Ne jamais fusionner automatiquement `sbd`, `stj` et `sym`.
+2. Conserver provenance, URL, licence/droits, identifiants source et date d'acquisition.
+3. Une donnée accessible publiquement n'est pas automatiquement réutilisable ou publiable.
+4. Le RAW reproduit la source : pas de déduplication silencieuse, pas de translittération, pas de correction linguistique.
+5. Les doublons, blancs et anomalies sont signalés séparément par le QA.
+6. `data/raw/` et `data/processed/` restent locaux et ne sont pas publiés automatiquement.
+7. Une similarité graphique n'est jamais une validation linguistique.
+8. `récolté` ≠ `validé linguistiquement` ≠ `approuvé pour publication` ≠ `approuvé pour entraînement`.
 
 ## Installation locale
 
@@ -79,217 +57,205 @@ source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
-Puis, à chaque session :
+À chaque session :
 
 ```bash
 source .venv/bin/activate
 pytest tests
 ```
 
-# Source 1 — ASJP v21
+## État des sources déjà travaillées
 
-ASJP est notre première source structurée.
+### ASJP v21 — récolté
 
 ```text
 licence : CC-BY-4.0
-statut  : approved_for_ingestion
+RAW     : 341 entrées
+sbd     : 37
+stj     : 129
+sym     : 175
 ```
 
-Collecte :
+La notation ASJP est conservée avec la provenance de chaque wordlist. Les processors de normalisation technique, QA des variantes et enrichissement des concepts sont disponibles.
+
+### Ainsi sois-je — récolte locale candidate
+
+```text
+copyright site              : All Rights Reserved
+variété exacte              : inconnue
+compteur annoncé            : 126
+occurrences récupérées      : 125
+paires uniques              : 124
+doublon observé             : Noir → Ti (2 occurrences)
+publication / entraînement  : non approuvés
+```
+
+Le RAW reste local. La comparaison avec ASJP est heuristique et ne permet aucune attribution automatique vers `sbd`, `stj` ou `sym`.
+
+### Hugging Face — bloc texte/lexique ciblé terminé
+
+Détails complets dans [`HUGGINGFACE_HARVEST.md`](HUGGINGFACE_HARVEST.md).
+
+```text
+Taxi1500 / sbd
+  7 919 / 7 919 lignes
+  domaine biblique
+  droits amont à clarifier
+
+ChiKhaPo / stj ↔ eng
+  872 lignes RAW
+  QA technique OK
+  406 formes Matya uniques observées
+
+PanLex / sbd stj sym
+  sbd : 11
+  stj : 408
+  sym : 1
+  QA technique OK
+
+PanLex ↔ ChiKhaPo stj
+  chevauchement : 406 formes
+  couverture ChiKhaPo par PanLex : 100 %
+  → ne pas additionner naïvement les volumes
+
+FinePDFs / sbd
+  7 / 7 lignes
+
+GlotCC / sbd
+  2 / 2 lignes
+
+FineWeb2 / sbd
+  4 lignes depuis 1 Parquet
+  6 651 caractères de texte
+  QA technique OK
+```
+
+FineWeb2 a nécessité un fallback direct vers le Parquet du Hub car Dataset Viewer `/rows` renvoyait HTTP 500. Sur la révision récoltée, `train` existe mais le `test` annoncé dans les métadonnées n'est pas présent physiquement.
+
+Restent volontairement différés :
+
+```text
+DCAD-2000 : licence `other`, rights review requis
+MMS ulab  : audio non transcrit, future phase audio/ASR
+```
+
+## Source actuelle — RefLex CLLD
+
+RefLex CLLD est la prochaine source structurée prioritaire. La base est téléchargeable et conserve les formes originales ainsi que les références de sources. Elle est sous :
+
+```text
+CC-BY-NC-SA-4.0
+```
+
+Cette licence autorise notre inventaire/recherche locale non commerciale sous ses conditions, mais **ne doit pas être interprétée comme une autorisation pour un futur usage commercial ou un entraînement commercial**.
+
+Cibles :
+
+```text
+sbd / maka  / sout2844
+stj / matya / maty1235
+sym / maya  / maya1281
+```
+
+Le collecteur est :
+
+```text
+collectors/reflex_clld.py
+```
+
+### Étape 1 — probe uniquement
+
+Après mise à jour de la branche :
 
 ```bash
-python collectors/asjp.py
+cd ~/Bureau/langue-san
+git pull origin feat/data-ingestion
+
+cd tools/data_ingestion
+source .venv/bin/activate
+pytest tests
+
+python collectors/reflex_clld.py --probe-only
 ```
 
-Résultat réel actuel :
+Le probe doit seulement :
 
 ```text
-341 entrées
-sbd : 37 entrées / 34 concepts / 36 formes
-stj : 129 entrées / 78 concepts / 111 formes
-sym : 175 entrées / 88 concepts / 150 formes
+languages.csv
+    ↓
+résolution des IDs internes RefLex par glottocode / ISO
+    ↓
+1 ligne de probe par variété
+    ↓
+volume exact sbd / stj / sym
 ```
 
-Normalisation :
+Il ne doit pas télécharger les lexiques complets.
+
+Résumé local attendu :
+
+```text
+data/raw/reflex/reflex_probe_summary.json
+```
+
+### Étape 2 — récolte complète
+
+**Ne pas la lancer avant validation du probe.**
+
+Lorsque les identifiants et volumes auront été vérifiés :
 
 ```bash
-python processors/normalize.py
+python collectors/reflex_clld.py
 ```
 
-QA variantes :
-
-```bash
-python processors/qa_variants.py
-```
-
-Résultat réel :
+Sorties prévues :
 
 ```text
-68 groupes multi-formes
-sbd : 2
-stj : 35
-sym : 31
+data/raw/reflex/
+├── sbd/
+│   ├── language.json
+│   └── values.csv
+├── stj/
+│   ├── language.json
+│   └── values.csv
+├── sym/
+│   ├── language.json
+│   └── values.csv
+└── reflex_harvest_summary.json
 ```
 
-Glosses françaises de travail :
+Le CSV RefLex est conservé brut. Les comparaisons avec ASJP, PanLex ou ChiKhaPo viendront après la récolte et ne modifieront pas le RAW.
 
-```bash
-python processors/enrich_concepts.py
-```
+## Prochaines sources après RefLex
 
-Résultat réel :
+La reconnaissance détaillée se trouve dans [`REFLEX_RECON.md`](REFLEX_RECON.md). Ordre actuel :
 
 ```text
-92 / 92 concepts glossés en français
-341 / 341 entrées enrichies
+1. RefLex CLLD
+2. Berthelette 2001 — enquête sociolinguistique + wordlists
+3. Lexiques originaux SIL / ANTBA
+4. Dictionnaires Burkina Langues — seulement après clarification des droits
+5. Textes / audio bibliques ANTBA — droits à clarifier et domaine religieux séparé
 ```
 
-La préparation de revue humaine déjà développée reste disponible, mais elle n'est pas la priorité de cette branche :
+Les applications de dictionnaire sont potentiellement très riches, notamment en audio, mais une application gratuite n'est pas une licence de réutilisation. Aucun scraping APK massif ne doit être lancé sans autorisation claire.
 
-```bash
-python processors/build_review_sheet.py
-```
-
-# Source 2 — Ainsi sois-je / Dictionnaire Français-Samo
-
-Ressource publique :
+## Règle finale de cette branche
 
 ```text
-https://ainsisoisje.com/dictionnaire-samo-francais/
-```
+accessible
+  ≠ librement réutilisable
 
-La page indique actuellement **126 noms** dans le répertoire.
+gratuit
+  ≠ open data
 
-Points importants :
+présent dans un agrégateur
+  ≠ source indépendante
 
-```text
-nom de langue affiché : Samo
-variété ISO            : inconnue
-copyright               : All Rights Reserved
-statut droits           : rights_review_required
-publication             : non approuvée
-training ML             : non approuvé
-```
-
-Cette source reste donc une **source candidate locale pour inventaire et comparaison**. Son contenu brut ne doit pas être commité ou publié tant que les droits de réutilisation ne sont pas clarifiés.
-
-## Collecte
-
-```bash
-python collectors/ainsisoisje.py
-```
-
-Le collecteur :
-
-- charge la page principale ;
-- découvre les liens par lettre du plugin WordPress Name Directory ;
-- visite les pages avec une courte pause ;
-- extrait les couples `français / samo` ;
-- conserve dans le RAW les occurrences dupliquées visibles sur le site ;
-- signale séparément les doublons et les écarts avec le compteur public ;
-- ne lui attribue aucun code ISO ;
-- écrit localement sous `data/raw/ainsisoisje/`.
-
-Sortie :
-
-```text
-<repo>/data/raw/ainsisoisje/dictionnaire_samo_francais.json
-```
-
-Résultat réel actuel :
-
-```text
-compteur annoncé par le site      : 126
-occurrences récupérées            : 125
-paires Français/Samo uniques      : 124
-groupes dupliqués                 : 1
-occurrence dupliquée supplémentaire: 1
-
-doublon observé : Noir → Ti (2 occurrences)
-```
-
-Une occurrence reste non récupérée par rapport au compteur global du site. Les compteurs par lettre analysés par le collecteur sont néanmoins cohérents avec les pages parcourues. L'écart est conservé comme anomalie de collecte documentée au lieu d'être masqué.
-
-## Comparaison avec ASJP
-
-Après la collecte :
-
-```bash
-python processors/compare_ainsisoisje_asjp.py
-```
-
-Le comparateur travaille sur les **124 paires Français/Samo uniques** afin que le doublon du site ne biaise pas les statistiques. Le RAW reste inchangé avec ses 125 occurrences.
-
-Résultat réel actuel :
-
-```text
-Occurrences RAW du site : 125
-Paires uniques comparées : 124
-Doublons exclus des statistiques : 1
-
-CONCEPT_MATCH_FORM_DIFFERENT : 15
-FORM_SIMILARITY_CANDIDATE    : 9
-SITE_ONLY_OR_UNRESOLVED      : 100
-EXACT_FORM_MATCH             : 0
-```
-
-Signal heuristique de proximité des formes pour les concepts comparables :
-
-```text
-sbd : meilleur candidat 2 fois ; similarité moyenne 0.7494
-stj : meilleur candidat 12 fois ; similarité moyenne 0.5153
-sym : meilleur candidat 10 fois ; similarité moyenne 0.5463
-```
-
-Ce signal ne permet pas d'attribuer automatiquement le dictionnaire à `sbd`, `stj` ou `sym`. Il mesure seulement une ressemblance graphique entre chaînes pour les concepts que le comparateur a réussi à rapprocher.
-
-Le comparateur classe les lignes selon :
-
-```text
-SITE_ONLY_OR_UNRESOLVED
-EXACT_FORM_MATCH
-FORM_SIMILARITY_CANDIDATE
-CONCEPT_MATCH_FORM_DIFFERENT
-```
-
-Important :
-
-```text
-FORM_SIMILARITY_CANDIDATE
-    !=
-forme linguistiquement équivalente
-```
-
-Sorties :
-
-```text
-<repo>/data/processed/comparisons/
-├── ainsisoisje_vs_asjp.json
-├── ainsisoisje_vs_asjp.csv
-└── ainsisoisje_vs_asjp_report.json
-```
-
-# État actuel des sources
-
-```text
-ASJP
-├── découverte / provenance      ✅
-├── droits                       ✅ CC-BY-4.0
-├── collecte                     ✅ 341
-├── normalisation / QA           ✅
-└── état branche ingestion       ✅ SOURCE RÉCOLTÉE
-
-Ainsi sois-je
-├── découverte                   ✅
-├── volume annoncé               ✅ 126
-├── collecte locale              ✅ 125 occurrences / 124 paires uniques
-├── écart compteur               ⚠️ 1 occurrence non récupérée, documentée
-├── doublon connu                ⚠️ Noir → Ti
-├── variété exacte               ? inconnue
-├── droits                       ⚠️ All Rights Reserved
-├── comparaison ASJP             ✅ 124 paires uniques comparées
-└── état branche ingestion       ✅ SOURCE CANDIDATE RÉCOLTÉE
-
-Hugging Face
-└── inventaire datasets          ⏳ prochaine source
+récolté
+  ≠ validé linguistiquement
+  ≠ orthographe standard
+  ≠ approuvé pour publication
+  ≠ approuvé pour entraînement
+  ≠ approuvé pour usage commercial
 ```
