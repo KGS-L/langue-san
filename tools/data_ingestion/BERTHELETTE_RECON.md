@@ -1,18 +1,18 @@
-# Berthelette 2001 — reconnaissance et préparation de la récolte
+# Berthelette 2001 — reconnaissance, récolte et inspection
 
-Cette note documente la source externe prioritaire après la clôture technique de RefLex `stj/sym`.
+Cette note documente la source Berthelette utilisée après la clôture technique de RefLex `stj/sym`.
 
-## 1. Référence bibliographique confirmée
+## 1. Référence bibliographique
 
 ```text
 Berthelette, John. 2001.
 Sociolinguistic survey report for the San (Samo) language.
 SIL Electronic Survey Reports (SILESR), 2002-005.
 Dallas, Texas: SIL International.
-75 pages.
+75 pages annoncées dans le catalogue.
 ```
 
-Identifiants / notices retrouvés :
+Identifiants :
 
 ```text
 Glottolog reference id : 102181
@@ -20,32 +20,24 @@ SIL archive entry      : 8983
 report id              : SILESR-2002-005
 ```
 
-Notices SIL :
+Notices :
 
 ```text
 https://www.sil.org/resources/archives/8983
 https://www.sil.org/resources/publications/entry/8983
 ```
 
-Ancienne notice historique :
-
-```text
-http://www.sil.org/silesr/abstract.asp?ref=2002-005
-```
-
-Le PDF officiel a également été identifié sur le stockage SIL :
+PDF officiel identifié :
 
 ```text
 https://www.sil.org/system/files/reapdata/82/40/67/82406717915460712209214978734638946211/SILESR2002_005.pdf
 ```
 
-Le téléchargement automatisé SIL répond HTTP 403, mais le PDF a été récupéré manuellement puis ingéré localement avec le collecteur prévu à cet effet.
+Le téléchargement automatisé SIL renvoie HTTP 403. Le PDF a donc été téléchargé manuellement puis ingéré localement.
 
 ## 2. Pourquoi cette source est importante
 
-Berthelette n'est pas seulement un dictionnaire. Il s'agit d'une enquête sociolinguistique sur le San/Samo comprenant aussi des données lexicales.
-
-Pour Langue SAN, cette source sert principalement à conserver :
+Le rapport est à la fois sociolinguistique et lexical. Il permet de conserver les données avec leur contexte géographique :
 
 ```text
 localité / village
@@ -57,15 +49,13 @@ glose / concept source
 comparaison entre sites
     ↓
 contexte sociolinguistique
-    ↓
-indice documenté sur les variétés
 ```
 
-Elle est donc particulièrement utile pour éviter d'inférer une variété uniquement à partir d'une ville moderne ou d'une ressemblance graphique.
+Il est particulièrement utile pour ne pas réduire une variété entière à une seule ville moderne.
 
-## 3. Localités explicitement reliées aux variétés dans l'index bibliographique
+## 3. Localités documentées par l'index bibliographique
 
-Glottolog associe cette référence aux localités suivantes :
+Glottolog relie cette référence à :
 
 ```text
 sbd / Maka
@@ -83,15 +73,11 @@ sym / Maya
   Lankoué
 ```
 
-Cette information reste une métadonnée de provenance : pendant l'extraction du PDF, on conservera ce que le rapport indique réellement page par page.
+Cette correspondance est conservée comme provenance bibliographique. Lors du parsing, on garde aussi les libellés réellement présents dans le PDF page par page.
 
-## 4. Relation avec les données déjà récoltées
+## 4. Relation avec ASJP
 
-ASJP cite `Berthelette 2001` comme source de sa wordlist :
-
-```text
-MAYA_SAMO / sym
-```
+ASJP cite Berthelette 2001 comme source de `MAYA_SAMO / sym`.
 
 Donc :
 
@@ -100,19 +86,13 @@ Berthelette + ASJP
     ≠ deux sources indépendantes à additionner naïvement
 ```
 
-Une future comparaison devra identifier le chevauchement exact et préserver la chaîne de provenance.
+Une comparaison de chevauchement sera faite après extraction.
 
-## 5. Droits et statut de réutilisation
+## 5. Droits
 
-Les SIL Language & Culture Archives indiquent que, sauf mention contraire dans le fichier ou la notice d'un item, les éléments de l'archive sont mis à disposition sous :
+La règle générale des SIL Language & Culture Archives est `CC-BY-NC-SA-4.0` sauf indication contraire de l'item/fichier.
 
-```text
-CC-BY-NC-SA-4.0
-```
-
-Mais la règle projet reste conservatrice : les mentions du **PDF Berthelette lui-même** doivent encore être inspectées. Une mention spécifique dans l'item ou le fichier peut primer sur la règle générale de l'archive.
-
-Statut actuel :
+Aucune mention explicite de droits n'a été retrouvée automatiquement dans le texte extrait du PDF. Le projet conserve donc un statut prudent :
 
 ```text
 rights_status           = archive_default_noncommercial_pending_pdf_confirmation
@@ -121,7 +101,7 @@ training_approved       = false
 commercial_use_approved = false
 ```
 
-## 6. Récolte du PDF — terminée
+## 6. Récolte PDF — réussie
 
 Collecteur :
 
@@ -129,32 +109,16 @@ Collecteur :
 collectors/berthelette.py
 ```
 
-La tentative HTTP automatisée a confirmé le blocage `403`. Le fallback local a ensuite été utilisé :
-
-```bash
-python collectors/berthelette.py \
-  --probe-only \
-  --input-file ../../data/raw/berthelette/SILESR2002_005.pdf
-```
-
-Probe observé :
+Résultat local :
 
 ```text
-report_id : SILESR-2002-005
 méthode   : manual_download_then_local_ingest
-octets    : 4015872
+octets    : 4 015 872
 PDF valide: True
 SHA-256   : efcd06c8e235df9e7334b141aaeb123064e227fab2c05d100c4a57bba7d9f196
 ```
 
-Puis ingestion locale :
-
-```bash
-python collectors/berthelette.py \
-  --input-file ../../data/raw/berthelette/SILESR2002_005.pdf
-```
-
-Sorties présentes localement :
+Sorties :
 
 ```text
 data/raw/berthelette/
@@ -162,9 +126,7 @@ data/raw/berthelette/
 └── metadata.json
 ```
 
-Le PDF RAW est donc maintenant récolté et fingerprinté. Aucune extraction lexicale n'a encore été réalisée.
-
-## 7. Étape suivante — inspection structurelle sans OCR
+## 7. Inspection structurelle — réussie
 
 Processor :
 
@@ -172,75 +134,84 @@ Processor :
 processors/inspect_berthelette_pdf.py
 ```
 
-Dépendance ajoutée :
+Résultat réel :
 
 ```text
-pypdf
+pages physiques PDF     : 73
+pages catalogue          : 75
+texte extractible        : 73 / 73 = 100 %
+caractères extraits      : 176 986
+SHA metadata             : OK
+technical_ok             : True
+OCR nécessaire           : non
+pages droits détectées   : aucune par recherche textuelle automatique
 ```
 
-Objectif :
+L'écart `75 pages annoncées → 73 pages physiques` est conservé comme observation. Il n'est pas corrigé artificiellement.
+
+Pages signalées par les mots-clés génériques `wordlist/lexical/appendix/...` :
 
 ```text
-PDF RAW
-   ↓
-lecture standard PDF
-   ↓
-nombre réel de pages
-   ↓
-mesure du texte extractible
-   ↓
-pages candidates droits/copyright
-   ↓
-pages candidates wordlist/appendix/lexical
-   ↓
-pages contenant les localités connues
-   ↓
-rapport d'inventaire JSON
+2, 3, 4, 8, 9, 10, 11, 15, 16, 19, 24, 25, 26, 32, 41
 ```
 
-Aucun OCR n'est lancé automatiquement. Les pages sans texte extractible sont simplement signalées afin de décider ensuite si une inspection visuelle ou un OCR ciblé est réellement nécessaire.
-
-Commande :
-
-```bash
-python processors/inspect_berthelette_pdf.py
-```
-
-Sortie :
+Rapport local :
 
 ```text
 data/processed/berthelette/pdf_inventory.json
 ```
 
-Le script vérifie également que le SHA-256 du PDF correspond au `metadata.json` produit pendant la récolte.
+## 8. Signal fort d'un bloc comparatif multi-localités
 
-## 8. Après l'inventaire PDF
+L'inspection a montré que les huit localités réapparaissent ensemble sur un long bloc, notamment autour des pages `41–64`.
 
-Une fois le rapport produit :
+Cela est cohérent avec le fait que Glottolog classe le document comme `overview;wordlist;socling`, mais ce signal ne suffit pas encore à définir automatiquement la structure des lignes.
+
+On ne parse donc pas encore le tableau à l'aveugle.
+
+## 9. Étape actuelle — inspection ciblée du bloc wordlist
+
+Processor ajouté :
 
 ```text
-1. confirmer le nombre réel de pages
-2. lire les pages droits/copyright détectées
-3. identifier précisément les annexes et wordlists
-4. vérifier les localités effectivement présentes page par page
-5. comprendre la structure des tableaux
-6. définir le schéma RAW lexical final
-7. extraire les occurrences sans correction ni déduplication
-8. produire un QA technique lexical
-9. comparer ensuite à ASJP / RefLex sans fusion automatique
+processors/inspect_berthelette_wordlist.py
 ```
 
-L'OCR reste un dernier recours, uniquement si des pages utiles ne sont pas extractibles par les outils PDF standards.
+Il :
 
-## 9. Schéma RAW envisagé pour les données lexicales
+```text
+- extrait le texte PDF en mode layout
+- compte les localités canoniques présentes page par page
+- repère les blocs continus où plusieurs localités apparaissent ensemble
+- conserve un aperçu du début et de la fin de chaque bloc
+- écrit le texte complet candidat avec des marqueurs de page
+- ne produit encore aucune entrée lexicale finale
+```
 
-Le schéma exact sera défini après inspection du PDF. Une occurrence devra au minimum pouvoir conserver :
+Commande :
+
+```bash
+python processors/inspect_berthelette_wordlist.py
+```
+
+Sorties :
+
+```text
+data/processed/berthelette/wordlist_section_inventory.json
+data/processed/berthelette/wordlist_candidate_text.txt
+```
+
+Le mode `layout` est important : il tente de conserver l'alignement des colonnes, ce qui nous permettra de savoir si le tableau peut être parsé proprement sans OCR ni reconstruction manuelle.
+
+## 10. Schéma lexical prévu
+
+Le schéma final sera figé après lecture du vrai bloc de tableau. Une occurrence devra conserver au minimum :
 
 ```text
 source = Berthelette 2001
 report_id = SILESR-2002-005
-page
-section / table / appendix
+pdf_page
+section / appendix / table
 locality
 variety_claimed_by_source
 iso_639_3                    # seulement si justifié
@@ -251,41 +222,24 @@ validation_status = external_unverified
 rights_status
 ```
 
-Si plusieurs sites ou locuteurs donnent une forme pour le même concept, toutes les occurrences doivent être conservées dans le RAW.
+Toutes les occurrences sont conservées, même si plusieurs localités ou formes existent pour le même concept.
 
-## 10. Critères de réussite
-
-La source ne sera considérée techniquement récoltée au niveau lexical qu'après :
+## 11. Critères de réussite lexicale
 
 ```text
-PDF officiel/localement vérifié          ✅
-provenance + SHA-256 conservés           ✅
-inspection structurelle                  à faire
-droits du fichier inspectés              à faire
-sections/wordlists inventoriées          à faire
-localités/pages traçables                à faire
-aucune variété inventée                  règle active
-aucune déduplication silencieuse         règle active
-QA technique lexical                     à faire
+PDF officiel vérifié                    ✅
+provenance + SHA-256                    ✅
+inspection structurelle                 ✅
+texte extractible sans OCR              ✅
+bloc wordlist confirmé                  en cours
+structure des colonnes confirmée        à faire
+extraction RAW lexicale                 à faire
+QA technique lexical                    à faire
+comparaison ASJP / RefLex               à faire
+validation linguistique                 future
 ```
 
-## 11. Sources de reconnaissance
-
-```text
-Glottolog — Berthelette 2001, référence 102181
-https://glottolog.org/resource/reference/id/102181
-
-SIL Language & Culture Archives — entrée 8983
-https://www.sil.org/resources/archives/8983
-
-SIL Publications — entrée 8983
-https://www.sil.org/resources/publications/entry/8983
-
-ASJP — MAYA_SAMO
-https://asjp.clld.org/languages/MAYA_SAMO
-```
-
-## Statut actuel
+## 12. Statut actuel
 
 ```text
 discovery               = confirmed
@@ -296,7 +250,10 @@ automated_web_access    = HTTP_403
 pdf_harvest             = success_manual_ingest
 pdf_bytes               = 4015872
 pdf_sha256              = efcd06c8e235df9e7334b141aaeb123064e227fab2c05d100c4a57bba7d9f196
-item_license            = archive_default_pending_pdf_confirmation
-pdf_inspection          = ready
+pdf_pages               = 73
+pdf_text_coverage       = 100_percent
+pdf_inspection          = technical_ok
+ocr_required            = false
+wordlist_block_probe    = ready
 lexical_extraction      = not_started
 ```
