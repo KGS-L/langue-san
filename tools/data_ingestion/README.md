@@ -221,6 +221,8 @@ TOTAL         14811 occurrences/lignes RAW
 
 Ce total est un **compteur de collecte**, pas un corpus final : il contient des chevauchements, des domaines spécialisés, des licences/droits différents et des données non validées linguistiquement.
 
+À ces `14 811` occurrences s'ajoute maintenant **1 document source Berthelette**, mais le PDF n'est pas compté comme des lignes lexicales tant que ses wordlists ne sont pas extraites.
+
 ## Source active — Berthelette 2001
 
 Reconnaissance détaillée : [`BERTHELETTE_RECON.md`](BERTHELETTE_RECON.md).
@@ -229,11 +231,20 @@ Reconnaissance détaillée : [`BERTHELETTE_RECON.md`](BERTHELETTE_RECON.md).
 John Berthelette
 Sociolinguistic survey report for the San (Samo) language
 SILESR 2002-005
-75 pages
+75 pages annoncées
 SIL archive entry 8983
 ```
 
-La notice SIL officielle et l'URL du PDF original ont été identifiées. Le document est intéressant à la fois pour le contexte sociolinguistique et pour ses wordlists/localités.
+Le PDF officiel a été téléchargé manuellement puis ingéré avec succès dans le RAW :
+
+```text
+fichier : data/raw/berthelette/SILESR2002_005.pdf
+méthode : manual_download_then_local_ingest
+octets  : 4015872
+SHA-256 : efcd06c8e235df9e7334b141aaeb123064e227fab2c05d100c4a57bba7d9f196
+```
+
+Le téléchargement HTTP automatisé SIL renvoie `403`; ce point est documenté et n'est plus bloquant.
 
 Glottolog associe explicitement cette référence à :
 
@@ -245,46 +256,47 @@ sym / Maya  : Bounou, Kiembara, Bangassogo, Lankoué
 
 ASJP `MAYA_SAMO` utilise Berthelette comme source amont : les futures lignes Berthelette ne devront donc pas être additionnées naïvement aux lignes ASJP.
 
-### Collecteur
+### Étape actuelle — inspection structurelle du PDF
+
+Une nouvelle dépendance a été ajoutée :
 
 ```text
-collectors/berthelette.py
+pypdf
 ```
 
-Il télécharge/ingère uniquement le **PDF original** et conserve son SHA-256 et sa provenance. L'extraction des wordlists viendra après inspection du PDF.
-
-Après `git pull` et `pytest tests` :
+Après mise à jour de la branche :
 
 ```bash
-python collectors/berthelette.py --probe-only
+pip install -r requirements.txt
+pytest tests
+python processors/inspect_berthelette_pdf.py
 ```
 
-Si le serveur SIL autorise le téléchargement depuis la machine locale, le probe valide le PDF sans écrire de RAW. On pourra ensuite lancer :
-
-```bash
-python collectors/berthelette.py
-```
-
-Si SIL répond HTTP 403, télécharger manuellement le fichier officiel `SILESR2002_005.pdf` depuis l'entrée SIL 8983 / le lien PDF, puis :
-
-```bash
-python collectors/berthelette.py --input-file ~/Téléchargements/SILESR2002_005.pdf
-```
-
-Sorties de récolte :
+Le processor produit :
 
 ```text
-data/raw/berthelette/
-├── SILESR2002_005.pdf
-└── metadata.json
+data/processed/berthelette/pdf_inventory.json
 ```
 
-Droits de travail actuels : la règle par défaut des SIL Language & Culture Archives est `CC-BY-NC-SA-4.0` sauf indication contraire de l'item/fichier. Le PDF doit donc encore être inspecté avant de figer son statut juridique précis dans le projet.
+Il vérifie :
+
+```text
+nombre réel de pages
+texte extractible par page
+SHA-256 ↔ metadata
+pages contenant droits/copyright/licence
+pages candidates wordlist/appendix/lexical
+pages contenant les localités connues
+```
+
+Aucun OCR n'est lancé à cette étape. Les pages non extractibles seront signalées et l'OCR ne sera envisagé qu'en dernier recours, de manière ciblée.
+
+Après cet inventaire, on identifiera les pages et tableaux à extraire, puis on construira le collecteur lexical Berthelette en conservant au minimum `page + localité + forme + glose + provenance`.
 
 ## Ordre des prochaines sources
 
 ```text
-1. Berthelette 2001 — PDF, inspection, wordlists/localités, QA
+1. Berthelette 2001 — inspection PDF puis extraction des wordlists/localités
 2. Lexiques originaux SIL / ANTBA
 3. Dictionnaires Burkina Langues — seulement après clarification des droits
 4. Textes / audio bibliques ANTBA — droits à clarifier et domaine religieux séparé
