@@ -30,6 +30,7 @@ GlotCC / sbd
 FineWeb2 / sbd
   train : 4 lignes depuis 1 Parquet de 14 394 octets
   test : absent physiquement sur la révision récoltée
+  QA technique OK
 
 DCAD-2000 / sbd
   3 lignes détectées
@@ -159,7 +160,7 @@ data/raw/huggingface/glotcc/sbd-Latn/train.jsonl
 
 Leur très faible volume en fait surtout des ressources de contrôle et de provenance.
 
-## FineWeb2 sbd — récolté via fallback Parquet
+## FineWeb2 sbd — récolté via fallback Parquet et QA validé
 
 Dataset Viewer `/rows` renvoyait HTTP 500 pour `sbd_Latn`. Un collecteur dédié utilise donc les Parquet source du Hub.
 
@@ -196,31 +197,47 @@ data/raw/huggingface/fineweb2/
 
 Le split `test` peut être déclaré dans les métadonnées générales de FineWeb2, mais `data/sbd_Latn/test` n'existe pas sur la révision récoltée. La configuration locale cible donc uniquement `train`.
 
-QA technique :
+QA technique réel :
 
-```bash
-python processors/qa_huggingface_fineweb2.py
+```text
+lignes                       : 4
+JSON valides                 : 4
+source_row manquants         : 0
+métadonnées incohérentes     : 0
+doublons exacts              : 0
+lignes avec champ text       : 4
+textes vides                 : 0
+textes dupliqués             : 0
+caractères texte             : 6651
+technical_ok                 : true
 ```
 
-Le QA vérifie notamment : JSON valides, métadonnées `sbd/maka`, présence de `source_row`, doublons exacts, présence/vides du champ `text` lorsqu'il existe, fichiers source et révision observés. Il ne modifie pas le RAW et ne constitue pas une validation linguistique.
-
-Rapport attendu :
+Rapport :
 
 ```text
 data/processed/huggingface/fineweb2_qa.json
 ```
 
-## Sources volontairement différées
+Ce QA est purement technique : les 4 textes restent `external_unverified` et ne sont pas automatiquement considérés comme linguistiquement corrects, représentatifs du San Maka ou approuvés pour publication/entraînement.
+
+## Statut du bloc Hugging Face texte/lexique
+
+Le bloc Hugging Face texte/lexique peut être considéré comme **récolté pour les cibles actuellement approuvées** : Taxi1500, ChiKhaPo, PanLex, FinePDFs, GlotCC et FineWeb2 ont été récupérés localement avec provenance, et les QA techniques disponibles sont positifs.
+
+Deux ressources restent volontairement hors de ce bloc :
 
 ```text
 DCAD-2000
   3 lignes sbd
   licence `other`
+  → droits à clarifier avant récolte automatique
 
 MMS ulab
   audio non transcrit
-  utile plus tard pour ASR
+  → à traiter plus tard dans la phase audio/ASR
 ```
+
+La prochaine étape de cette branche n'est donc pas de transformer ces RAW en dataset final. Il faut continuer la **recherche/récolte d'autres sources externes** utiles, en particulier les ressources lexicales/documentaires originales ou plateformes non encore exploitées, tout en conservant la même discipline de provenance et de droits.
 
 ## Règle générale
 
