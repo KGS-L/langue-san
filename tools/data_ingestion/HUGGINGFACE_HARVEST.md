@@ -145,25 +145,14 @@ Le repo ChiKhaPo est sous licence MIT, mais ses lexiques agrègent notamment Pan
 upstream_source_provenance_review_required
 ```
 
-## PanLex — récolté
-
-Le probe ciblé a trouvé :
-
-```text
-sbd / Maka  : 11 lignes
-stj / Matya : 408 lignes
-sym / Maya  : 1 ligne
-partial = false pour les trois codes
-```
-
-La première requête `sbd` a subi plusieurs HTTP 500 temporaires du Dataset Viewer, mais le retry/backoff a fini par réussir.
+## PanLex — récolté, QA validé et chevauchement mesuré
 
 Récolte réelle :
 
 ```text
-sbd / maka  : 11 / 11 lignes, nouvelles=11, repris=0, partial=false
-stj / matya : 408 / 408 lignes, nouvelles=408, repris=0, partial=false
-sym / maya  : 1 / 1 ligne, nouvelles=1, repris=0, partial=false
+sbd / maka  : 11 / 11 lignes, partial=false
+stj / matya : 408 / 408 lignes, partial=false
+sym / maya  : 1 / 1 ligne, partial=false
 ```
 
 Sorties :
@@ -189,23 +178,69 @@ english_name_var
 
 `var_code` est conservé tel quel : il s'agit d'un identifiant de variante PanLex, pas d'un code ISO international.
 
-### QA technique PanLex
+### QA technique PanLex — résultat réel
 
-```bash
-python processors/qa_huggingface_panlex.py
+```text
+sbd / maka
+  lignes          : 11
+  JSON valides    : 11
+  vocab uniques   : 11
+  var_codes       : 1
+  doublons exacts : 0
+  technical_ok    : true
+
+stj / matya
+  lignes          : 408
+  JSON valides    : 408
+  vocab uniques   : 408
+  var_codes       : 2
+  doublons exacts : 0
+  technical_ok    : true
+
+sym / maya
+  lignes          : 1
+  JSON valides    : 1
+  vocab uniques   : 1
+  var_codes       : 1
+  doublons exacts : 0
+  technical_ok    : true
+
+Total             : 420 lignes
+Tous techniquement OK : true
 ```
 
-Le QA vérifie l'intégrité JSONL, les codes ISO, la variété, `source_row.vocab`, les `var_code`, les répétitions de vocabulaire et les doublons exacts. Il ne modifie pas le RAW.
+Rapport :
 
-### Comparaison PanLex ↔ ChiKhaPo pour stj
-
-Les volumes `408 lignes PanLex stj` et `406 mots sources ChiKhaPo stj_eng` sont très proches, mais cela ne suffit pas à conclure qu'il s'agit des mêmes données. Comme ChiKhaPo déclare PanLex parmi ses sources amont, le chevauchement exact est mesuré avec :
-
-```bash
-python processors/compare_panlex_chikhapo.py
+```text
+data/processed/huggingface/panlex_qa.json
 ```
 
-La comparaison applique uniquement NFC + casefold + espaces condensés à des fins analytiques. Elle mesure les formes Matya identiques et ne déduit ni équivalence linguistique ni identité de provenance.
+### PanLex ↔ ChiKhaPo pour stj — résultat réel
+
+La comparaison des formes Matya, après uniquement NFC + casefold + espaces condensés, donne :
+
+```text
+PanLex stj                          : 408 formes uniques
+ChiKhaPo stj_eng                   : 406 formes source uniques
+ChiKhaPo eng_stj                   : 406 formes cible uniques
+Union des formes Matya ChiKhaPo    : 406
+Chevauchement PanLex ∩ ChiKhaPo    : 406
+Couverture de PanLex par ChiKhaPo  : 99,51 %
+Couverture de ChiKhaPo par PanLex  : 100,00 %
+Jaccard                             : 0,995098
+```
+
+Interprétation technique : ChiKhaPo et PanLex ne doivent pas être comptés comme deux apports lexicaux indépendants pour `stj`. Toutes les 406 formes Matya observées dans ChiKhaPo sont déjà présentes dans PanLex ; PanLex ne possède que 2 formes supplémentaires hors de l'union ChiKhaPo observée.
+
+Cela est cohérent avec la provenance déclarée de ChiKhaPo, qui agrège notamment PanLex. Cette conclusion porte uniquement sur le chevauchement des formes, pas sur l'identité exacte de toutes les entrées, traductions, sens ou sources amont.
+
+Rapport :
+
+```text
+data/processed/huggingface/panlex_vs_chikhapo_stj.json
+```
+
+Conséquence pour les futurs bilans de volume : conserver les deux RAW et leurs provenances, mais éviter d'additionner naïvement `408 + 406` comme 814 mots Matya indépendants.
 
 ## Autres sous-ensembles texte sbd
 
