@@ -5,7 +5,9 @@ Ce dossier regroupe les outils utilisés pour **découvrir, récupérer, invento
 > Guide général : [`GUIDE_DATA_INGESTION.md`](GUIDE_DATA_INGESTION.md)  
 > État Hugging Face : [`HUGGINGFACE_HARVEST.md`](HUGGINGFACE_HARVEST.md)  
 > Reconnaissance RefLex : [`REFLEX_RECON.md`](REFLEX_RECON.md)  
-> Berthelette : [`BERTHELETTE_RECON.md`](BERTHELETTE_RECON.md)
+> Berthelette : [`BERTHELETTE_RECON.md`](BERTHELETTE_RECON.md)  
+> Maka : [`MAKA_LEXICON_RECON.md`](MAKA_LEXICON_RECON.md)  
+> Matya : [`MATYA_RECON.md`](MATYA_RECON.md)
 
 ## Périmètre de `feat/data-ingestion`
 
@@ -104,32 +106,8 @@ QA          : technical_ok=True
 
 ### Berthelette 2001 — récolte lexicale techniquement clôturée
 
-PDF officiel local :
-
 ```text
-data/raw/berthelette/SILESR2002_005.pdf
-SHA-256 : efcd06c8e235df9e7334b141aaeb123064e227fab2c05d100c4a57bba7d9f196
-```
-
-Le PDF contient 73 pages physiques, avec texte extractible sur 73/73. Les formes SAN de la wordlist sont encodées en polices Type3 legacy ; le mapping SIL IPA93 → Unicode a été résolu sans OCR avec une couverture de 100 %.
-
-La page 64 confirme :
-
-```text
-Toma       → maka  → sbd
-Kouy       → matya → stj
-Kassoum    → matya → stj
-Toéni      → matya → stj
-Bounou     → maya  → sym
-Kiembara   → maya  → sym
-Bangassogo → maya  → sym
-Lankoué    → maya  → sym
-```
-
-Extraction finale des concepts visibles `012–231` :
-
-```text
-concepts                       : 220
+concepts                       : 220 (012–231)
 occurrences                    : 1 814
 sbd / Maka                     : 223
 stj / Matya                    : 679
@@ -140,9 +118,7 @@ groupes multi-formes           : 53
 technical_ok                   : True
 ```
 
-Les concepts `001–011` n'ont pas été retrouvés dans le PDF disponible. Ils sont documentés comme absents et ne bloquent plus la récolte.
-
-ASJP `MAYA_SAMO / sym` cite Berthelette 2001 comme source : les occurrences sont conservées dans le compteur brut, mais ne doivent pas être interprétées comme deux sources indépendantes.
+Les concepts `001–011` n'ont pas été retrouvés dans le PDF disponible et ne bloquent plus la récolte. Le décodage des polices Type3 SIL IPA93 a atteint 100 % sans OCR.
 
 ## Volume RAW opérationnel
 
@@ -161,31 +137,48 @@ Berthelette     1814
 TOTAL          16625 occurrences/lignes RAW
 ```
 
-Ce total est un **compteur de collecte**. Il contient des chevauchements, des licences différentes, des domaines spécialisés et des données non validées linguistiquement.
+Ce total est un **compteur de collecte** : il contient des chevauchements, des licences différentes, des domaines spécialisés et des données non validées linguistiquement.
 
-## Source active suivante — lexique San Maka / Southern Samo `sbd`
+## Maka `sbd` — reconnaissance mise en attente sur les droits
 
-Priorité :
+Le lexique historique 2003 `Boo nɛn sɛwɛ san-fransi, fransi-san` est confirmé bibliographiquement, mais aucun exemplaire numérique officiel de cette édition n'a été retrouvé rapidement.
+
+Une ressource moderne Southern San existe : Webonary `Dictionnaire San du sud`, une application `San dictionnaire` et une version Windows. L'application annonce environ **2 220 mots**, plus de **1 000 images** et plus de **2 200 fichiers audio**. Le Webonary affiche `© 2021 SIL International®`, sans licence de réutilisation explicite retrouvée à ce stade.
+
+Donc :
 
 ```text
-Boo nɛn sɛwɛ san-fransi, fransi-san
-[Lexique san–français, français–san]
-SIL Burkina Faso, 2003
-Southern Samo / San Maka / sbd
+Maka moderne = ressource confirmée
+bulk harvest = différé
+raison        = droits/licence non clarifiés
 ```
 
-ASJP `SOUTHERN_SAMO_SAN` cite cette ressource comme source. Elle est prioritaire car RefLex ne fournit actuellement pas de récolte `sbd` équivalente.
+On ne reste pas bloqué dessus.
 
-Étape immédiate : retrouver une notice/source originale ou un exemplaire numérique fiable, clarifier les droits et l'accès, puis récolter si autorisé. Si l'accès numérique original n'est pas retrouvé rapidement, documenter le blocage et passer à la source originale suivante au lieu de rester bloqué.
+## Source active — Matya `stj`
+
+Référence primaire cible :
+
+```text
+Morris, Pamela; Sama, François; Sama, Jérémie; Drabo, Jean-Pierre. 2011.
+Lexique San Matya avec guide d'orthographe.
+Tougan, Burkina Faso: ANTBA.
+```
+
+Cette source est citée par ASJP `SAMO_MATYA_2` et correspond à la source amont Matya documentée par RefLex.
+
+Une application moderne `San Matya de A-Z` de Burkina Langues est aussi confirmée : **2 576 entrées**, **685 images**, zone de Tougan. Sa licence de réutilisation n'est pas encore confirmée ; elle est traitée séparément de l'ouvrage 2011.
+
+Étape immédiate : recherche courte du PDF/notice primaire Morris et al. 2011 et de ses droits. Si l'accès original n'est pas retrouvé rapidement, documenter puis passer à la source primaire Maya.
 
 ## Ordre des prochaines sources
 
 ```text
-1. Lexique San Maka / Southern Samo 2003 — accès + droits + récolte si disponible
-2. Source Matya originale citée par RefLex (Morris et al. 2011)
-3. Source Maya originale citée par RefLex
-4. Morse 1967 — bibliographie et droits exacts
-5. Burkina Langues / ANTBA — seulement après clarification des droits
+1. Morris et al. 2011 — source primaire Matya
+2. Source Maya originale citée par RefLex
+3. Morse 1967 — bibliographie et droits exacts
+4. Maka moderne Webonary/app — reprendre dès clarification des droits
+5. Autres ressources Burkina Langues / ANTBA — droits vérifiés source par source
 ```
 
 ## Règle finale de cette branche
