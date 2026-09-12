@@ -14,7 +14,13 @@ Exemples :
 - /G3F -> 0x3F + 0x1E = 93  -> ']'
 - /G4F -> 0x4F + 0x1E = 109 -> 'm'
 - /G51 -> 0x51 + 0x1E = 111 -> 'o'
+- /G49 -> 0x49 + 0x1E = 103 -> 'ɡ' (U+0261, IPA script g)
 - /G30 -> 0x30 + 0x1E = 78  -> 'ŋ' dans SIL IPA93
+
+Les noms Type3 observés dans ce PDF ont exactement deux chiffres hexadécimaux
+après `/G`. Il faut donc impérativement borner le motif à deux chiffres : dans
+une chaîne telle que `/G3FBangassogo`, le `B` et le `a` appartiennent au nom de
+localité, pas au nom du glyphe.
 
 Ce script valide cette hypothèse sur l'ensemble du bloc lexical avant tout
 parsing final. Il ne crée aucun dataset lexical final et ne lance aucun OCR.
@@ -40,8 +46,11 @@ DEFAULT_OUTPUT = (
     REPO_ROOT / "data" / "processed" / "berthelette" / "ipa93_decode_probe.json"
 )
 
-GLYPH_RE = re.compile(r"/G[0-9A-Fa-f]{2,}")
-SEQUENCE_RE = re.compile(r"(?:/G[0-9A-Fa-f]{2,})+")
+# Important : les noms de glyphes Type3 de CE PDF sont /G + exactement 2
+# chiffres hexadécimaux. Un motif {2,} avalerait par exemple le début de
+# "Bangassogo" dans `/G3FBangassogo` puisque B et a sont aussi hexadécimaux.
+GLYPH_RE = re.compile(r"/G[0-9A-Fa-f]{2}")
+SEQUENCE_RE = re.compile(r"(?:/G[0-9A-Fa-f]{2})+")
 IPA93_GLYPH_OFFSET = 0x1E
 
 SENTINELS = {
@@ -49,7 +58,7 @@ SENTINELS = {
     "/G3F": "]",
     "/G4F": "m",
     "/G51": "o",
-    "/G49": "g",
+    "/G49": "ɡ",  # U+0261 LATIN SMALL LETTER SCRIPT G, caractère IPA
     "/G57": "u",
     "/G4E": "l",
     "/G30": "ŋ",
@@ -191,7 +200,7 @@ def probe_pdf(
         "pdf_path": str(pdf_path),
         "pages": {"start": start_page, "end": end_page},
         "decoder": {
-            "glyph_name_pattern": "/G<hex>",
+            "glyph_name_pattern": "/G<2 hex digits>",
             "access_code_formula": "int(hex, 16) + 0x1E",
             "offset_decimal": IPA93_GLYPH_OFFSET,
             "mapping_source": "ipa2unicode.sil_to_unicode_dict (SIL IPA93)",
@@ -211,6 +220,8 @@ def probe_pdf(
         "ocr_used": False,
         "notes": [
             "Le mapping /Differences du PDF contient des codes internes de sous-ensemble et n'est pas utilisé comme code IPA93.",
+            "Les noms Type3 observés sont /G suivis d'exactement deux chiffres hexadécimaux; le parseur ne doit pas absorber le début d'un libellé adjacent comme Bangassogo.",
+            "SIL IPA93 mappe le code 103 sur ɡ (U+0261, script g IPA), pas sur le g ASCII U+0067.",
             "Le décodage est une étape technique; il ne valide pas linguistiquement les formes SAN.",
             "Aucune entrée lexicale finale n'est écrite par ce probe.",
             "Les séquences brutes /Gxx et la provenance PDF doivent être conservées lors du futur parsing RAW.",
