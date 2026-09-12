@@ -9,12 +9,17 @@ text_subsets:
     repo_id: "HuggingFaceFW/fineweb-2"
     family: "fineweb2"
     config: "sbd_Latn"
-    splits: ["train", "test"]
+    splits: ["train"]
     iso_639_3: "sbd"
     variety: "maka"
     license: "odc-by"
     rights_status: "dataset_license_declared_upstream_provenance_preserved"
     enabled: true
+    notes:
+      - "Révision sondée : af9c13333eb981300149d5ca60a8e9d659b276b9."
+      - "Parquet source présent : data/sbd_Latn/train/000_00000.parquet (14394 octets)."
+      - "Le split test est déclaré dans les métadonnées mais data/sbd_Latn/test est absent sur cette révision."
+      - "La collecte active cible donc uniquement le split train réellement présent."
 
   - key: finepdfs_sbd
     repo_id: "HuggingFaceFW/finepdfs"
@@ -99,7 +104,7 @@ lexical_subsets:
       - "Récolte réelle : sbd=11, stj=408, sym=1 lignes; QA technique OK et 0 doublon exact."
       - "Pour stj, 406/408 formes PanLex chevauchent ChiKhaPo; seulement 2 formes PanLex sont absentes de l'union ChiKhaPo observée."
       - "Les lignes contiennent vocab, 639-3, nom anglais, var_code et nom de variante."
-      - "Conserver var_code : il distingue les variantes internes PanLex et n'est pas un code ISO."
+      - "Conserver var_code : il distingue les variantes internes PanLex et n'est pas un code ISO international."
       - "La licence du snapshot est CC0, mais la provenance lexicale amont doit rester documentée."
 
 blocked_or_deferred:
