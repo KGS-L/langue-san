@@ -20,8 +20,11 @@ Matya Samo,Mande,maty1235,Africa,2576,2,13.0,-3.0
 Maya Samo,Mande,maya1281,Africa,1500,1,13.1,-3.1
 """
 
+# Le nom contient volontairement une virgule sur la première ligne. Comme dans
+# tout CSV valide, la valeur est entourée de guillemets afin que DictReader ne
+# décale pas Family/Glottocode/Macroarea d'une colonne.
 LANGUAGES_CSV_CHANGED_GLOTTO = """Name,Family,Glottocode,Macroarea,Number of records in biggest source,Number of sources,Latitude,Longitude
-Samo, Southern,Mande,olds1111,Africa,2200,2,12.0,-2.0
+"Samo, Southern",Mande,olds1111,Africa,2200,2,12.0,-2.0
 Samo Matya,Mande,oldm2222,Africa,2576,2,13.0,-3.0
 Samo Mayaa,Mande,oldy3333,Africa,1500,1,13.1,-3.1
 """
