@@ -70,6 +70,10 @@ lexical_subsets:
     rights_status: "upstream_source_provenance_review_required"
     local_only: true
     enabled: true
+    notes:
+      - "QA technique : 872 lignes au total, 0 doublon exact, tous les JSON valides."
+      - "Les 406 formes Matya uniques observées sont toutes présentes dans PanLex stj."
+      - "Ne pas compter ChiKhaPo et PanLex comme deux apports lexicaux indépendants pour stj."
 
   - key: panlex_san
     repo_id: "lbourdois/panlex"
@@ -92,6 +96,8 @@ lexical_subsets:
       - "Snapshot Hugging Face de PanLex : ~24,6M lignes, 6152 langues."
       - "Le Dataset Viewer expose la config `panlex` (et non `default`) avec le split `train`."
       - "Collecte ciblée via Dataset Viewer /filter : aucun téléchargement du CSV complet de 1,28 Go."
+      - "Récolte réelle : sbd=11, stj=408, sym=1 lignes; QA technique OK et 0 doublon exact."
+      - "Pour stj, 406/408 formes PanLex chevauchent ChiKhaPo; seulement 2 formes PanLex sont absentes de l'union ChiKhaPo observée."
       - "Les lignes contiennent vocab, 639-3, nom anglais, var_code et nom de variante."
       - "Conserver var_code : il distingue les variantes internes PanLex et n'est pas un code ISO."
       - "La licence du snapshot est CC0, mais la provenance lexicale amont doit rester documentée."
