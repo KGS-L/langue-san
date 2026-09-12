@@ -1,6 +1,7 @@
 from importlib.util import module_from_spec, spec_from_file_location
 from pathlib import Path
 
+import httpx
 from huggingface_hub.errors import RemoteEntryNotFoundError
 
 
@@ -52,7 +53,12 @@ class _FakeApi:
 class _FakeApiMissingTest(_FakeApi):
     def list_repo_tree(self, repo_id, path_in_repo=None, recursive=False, revision=None, repo_type=None):
         if path_in_repo == "data/sbd_Latn/test":
-            raise RemoteEntryNotFoundError("missing test split")
+            request = httpx.Request(
+                "GET",
+                "https://huggingface.co/api/datasets/HuggingFaceFW/fineweb-2/tree/abc123/data%2Fsbd_Latn%2Ftest",
+            )
+            response = httpx.Response(404, request=request)
+            raise RemoteEntryNotFoundError("missing test split", response=response)
         return super().list_repo_tree(
             repo_id,
             path_in_repo=path_in_repo,
