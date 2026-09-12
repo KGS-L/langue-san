@@ -31,7 +31,7 @@ sources:
     doi: "10.34847/nkl.e3cbkjzm"
     license: "CC-BY-NC-SA-4.0"
     enabled: true
-    status: "harvested_noncommercial_research_pending_qa"
+    status: "harvested_qa_passed_noncommercial_research"
     intended_use: "lexical_reference_and_source_provenance"
     publication_approved: false
     training_approved: false
@@ -56,7 +56,7 @@ sources:
       - variety: "matya"
         iso_639_3: "stj"
         glottocode: "maty1235"
-        harvest_status: "harvested_units_csv"
+        harvest_status: "harvested_units_csv_qa_passed"
         harvested_units_rows: 2743
         name_aliases:
           - "Matya Samo"
@@ -65,7 +65,7 @@ sources:
       - variety: "maya"
         iso_639_3: "sym"
         glottocode: "maya1281"
-        harvest_status: "harvested_units_csv"
+        harvest_status: "harvested_units_csv_qa_passed"
         harvested_units_rows: 2378
         name_aliases:
           - "Maya Samo"
@@ -85,7 +85,61 @@ sources:
       - "sout2844 / Southern Samo / San Maka n'a pas été trouvé dans l'index RefLex CLLD; ne pas lui attribuer un candidat approximatif."
       - "La vraie récolte lexicale passe par le DataTable /units découvert depuis la page langue, puis par son export CSV officiel limité à 10000 lignes."
       - "RAW récolté localement : stj=2743 lignes, sym=2378 lignes, 9 colonnes Original Form/Translation/Comment/POS/Source/Glottocode/Family/Latitude/Longitude."
-      - "Le QA technique RefLex doit être exécuté avant de considérer cette source terminée."
+      - "QA technique exécuté sur stj et sym : les deux sont technical_ok=true."
+
+  berthelette:
+    name: "Berthelette 2001 — Sociolinguistic survey report for the San (Samo) language"
+    type: "sociolinguistic_survey_pdf"
+    report_id: "SILESR-2002-005"
+    author: "John Berthelette"
+    year: 2001
+    series_year: 2002
+    expected_pages: 75
+    publisher: "SIL International"
+    archive_entry: "https://www.sil.org/resources/archives/8983"
+    publication_entry: "https://www.sil.org/resources/publications/entry/8983"
+    historical_entry: "http://www.sil.org/silesr/abstract.asp?ref=2002-005"
+    direct_pdf: "https://www.sil.org/system/files/reapdata/82/40/67/82406717915460712209214978734638946211/SILESR2002_005.pdf"
+    license: "CC-BY-NC-SA-4.0 (SIL Language & Culture Archives default unless item/file states otherwise)"
+    rights_status: "archive_default_noncommercial_pending_pdf_confirmation"
+    enabled: false
+    status: "ready_for_download_probe"
+    intended_use: "sociolinguistic_reference_and_locality_wordlists"
+    publication_approved: false
+    training_approved: false
+    commercial_use_approved: false
+    known_localities_from_bibliographic_index:
+      - locality: "Toma"
+        variety: "maka"
+        iso_639_3: "sbd"
+      - locality: "Kassoum"
+        variety: "matya"
+        iso_639_3: "stj"
+      - locality: "Kouy"
+        variety: "matya"
+        iso_639_3: "stj"
+      - locality: "Toéni"
+        variety: "matya"
+        iso_639_3: "stj"
+      - locality: "Bounou"
+        variety: "maya"
+        iso_639_3: "sym"
+      - locality: "Kiembara"
+        variety: "maya"
+        iso_639_3: "sym"
+      - locality: "Bangassogo"
+        variety: "maya"
+        iso_639_3: "sym"
+      - locality: "Lankoué"
+        variety: "maya"
+        iso_639_3: "sym"
+    notes:
+      - "L'entrée officielle SIL Language & Culture Archives est 8983; une publication de 2017 cite encore cette URL."
+      - "Le lien PDF exact a été retrouvé via la référence PDF de la page Wikipedia Samo, qui pointe vers le stockage SIL reapdata."
+      - "Dans l'environnement de recherche actuel, le lien PDF SIL répond HTTP 403 aux clients automatisés; le collecteur prévoit donc un fallback --input-file après téléchargement manuel."
+      - "Glottolog classe ce document comme overview;wordlist;socling et associe explicitement huit localités aux trois ISO sbd/stj/sym."
+      - "ASJP utilise Berthelette 2001 comme source de MAYA_SAMO; les volumes ne doivent pas être additionnés comme sources indépendantes."
+      - "La règle par défaut des SIL Language & Culture Archives est CC-BY-NC-SA-4.0 sauf mention contraire dans le fichier ou la notice; confirmer dans le PDF une fois récupéré."
 
   ainsisoisje:
     name: "Ainsi sois-je — Dictionnaire Français / Samo"
