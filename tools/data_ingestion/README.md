@@ -250,12 +250,15 @@ ASJP utilise explicitement cette publication comme source de la wordlist `SAMO_M
 
 Première conclusion : Morse 1967 est surtout une **source historique comparative** ; le terme `Samogo` y recouvre plusieurs parlers et ne doit jamais être mappé automatiquement vers `sbd`, `stj` ou `sym` sans provenance locale explicite.
 
+Les travaux secondaires indiquent que Morse publie une **liste comparative de 573 items** pour `Sembla`, `Samogho-Gouan` et `Tougan Samogo`. Une étude ultérieure n'utilise qu'un sous-ensemble de **251 items tirés de Morse** pour ses calculs ; les deux nombres ne doivent donc pas être confondus.
+
 État actuel :
 
 ```text
 référence bibliographique      : confirmée
 pertinence Matya via ASJP      : confirmée
-listes historiques             : ~251 items signalés par une étude secondaire
+liste comparative              : 573 items signalés par une source secondaire
+sous-ensemble ultérieur        : 251 items tirés de Morse
 article primaire complet       : non retrouvé ouvertement pour l'instant
 droits de l'article            : à clarifier
 bulk harvest                   : bloqué en attendant accès primaire + droits
