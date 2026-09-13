@@ -47,19 +47,26 @@ Il faudra conserver ce niveau de provenance pendant les comparaisons et la const
 
 Les travaux secondaires décrivent Morse 1967 comme une étude comparative destinée à clarifier le terme historique `Samogo` et la classification de plusieurs parlers ainsi désignés.
 
-Une enquête linguistique ultérieure sur le samogo indique que Morse travaillait avec des listes lexicales d’environ :
+Une étude ultérieure de Robert Carlson décrit plus précisément Morse 1967 comme fournissant une **liste comparative de 573 items** pour trois ensembles :
 
 ```text
-251 items
+Sembla
+Samogho-Gouan
+Tougan Samogo
 ```
 
-et compare notamment plusieurs parlers appelés historiquement Samogo/Samo.
+Une autre enquête linguistique ultérieure utilise seulement **251 items tirés de Morse** pour certains calculs lexico-statistiques. Les deux nombres ne sont donc pas contradictoires :
+
+```text
+573 items = taille de la liste comparative décrite pour Morse 1967
+251 items = sous-ensemble de Morse utilisé dans une comparaison ultérieure
+```
 
 L’article ne doit donc pas être considéré automatiquement comme un dictionnaire San Matya moderne. Son intérêt principal est :
 
 ```text
 - vocabulaire historique comparatif ;
-- provenance ancienne pour une partie du Matya ;
+- provenance ancienne pour le parler de Tougan ;
 - classification des groupes appelés Samogo/Samo ;
 - comparaison avec des parlers qui ne correspondent pas tous à sbd/stj/sym ;
 - contrôle diachronique des formes lexicales.
@@ -82,6 +89,8 @@ une forme présente dans Morse 1967
 
 Chaque liste/localité doit être attribuée uniquement à partir de la provenance explicitement fournie par la source.
 
+La composante `Tougan Samogo` est la candidate la plus pertinente pour notre piste `stj`, mais cette attribution doit rester documentée par la structure primaire de l’article et les agrégateurs qui l’emploient.
+
 ## 5. Relation avec nos données déjà récoltées
 
 Nous possédons déjà indirectement une petite partie de Morse 1967 via ASJP.
@@ -103,11 +112,13 @@ Recherche initiale :
 ```text
 référence bibliographique : confirmée
 volume du journal          : référencé dans Google Books
-article complet ouvert     : non retrouvé lors de la première recherche
+article complet ouvert     : non retrouvé lors des premières recherches
 PDF primaire libre         : non confirmé
 ```
 
-Le volume 6 du `Journal of African Languages` est référencé dans Google Books, mais la présence d’une notice ou d’un aperçu ne constitue pas un droit de réutilisation du contenu intégral.
+Google Books référence les volumes 6–8 du `Journal of African Languages`, publiés à partir de 1967 par Macmillan, mais l’accès observé est de type notice/aperçu et ne fournit pas à ce stade une copie primaire ouverte exploitable.
+
+Des catalogues universitaires confirment également la présence physique du volume 6 dans plusieurs bibliothèques.
 
 Des PDF secondaires citent et analysent Morse 1967, mais ils ne remplacent pas le document primaire.
 
@@ -138,7 +149,9 @@ pages                      = 61-80
 
 relevance_to_stj           = confirmed_via_asjp
 asjp_wordlist              = SAMO_MATYA
-historical_wordlist_size   = approximately_251_items_from_secondary_report
+comparative_wordlist_size  = 573_items_reported_by_secondary_source
+later_subset_size          = 251_items_used_in_later_comparison
+reported_groups            = Sembla, Samogho-Gouan, Tougan Samogo
 
 primary_fulltext           = not_found_yet
 rights_status              = rights_review_required
@@ -150,7 +163,7 @@ technical_ingestion_status = reconnaissance_in_progress
 
 ```text
 1. retrouver une copie primaire légitime du Journal of African Languages 6 (1967), pages 61–80 ;
-2. vérifier si l’article contient effectivement les listes lexicales complètes ou seulement les résultats comparatifs ;
+2. vérifier directement la structure de la liste comparative de 573 items ;
 3. identifier chaque localité / parler présent dans les tableaux ;
 4. vérifier les droits de reproduction et de réutilisation ;
 5. séparer dans ASJP les données SAMO_MATYA (Morse 1967) des autres wordlists stj ;
