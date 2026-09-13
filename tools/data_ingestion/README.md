@@ -8,7 +8,8 @@ Ce dossier regroupe les outils utilisés pour **découvrir, récupérer, invento
 > Berthelette : [`BERTHELETTE_RECON.md`](BERTHELETTE_RECON.md)  
 > Maka : [`MAKA_LEXICON_RECON.md`](MAKA_LEXICON_RECON.md)  
 > Matya : [`MATYA_RECON.md`](MATYA_RECON.md)  
-> Maya : [`MAYA_RECON.md`](MAYA_RECON.md)
+> Maya : [`MAYA_RECON.md`](MAYA_RECON.md)  
+> Morse 1967 : [`MORSE_1967_RECON.md`](MORSE_1967_RECON.md)
 
 ## Périmètre de `feat/data-ingestion`
 
@@ -198,9 +199,9 @@ technical_ingestion_status     : closed
 
 La récupération technique, le QA et l'analyse de chevauchement sont terminés. La validation linguistique et la construction du dataset d'entraînement seront traitées plus tard.
 
-## Source active suivante — Maya `sym`
+## Maya `sym` — reconnaissance en attente de réponse ANTBA
 
-La reconnaissance initiale est maintenant documentée dans [`MAYA_RECON.md`](MAYA_RECON.md).
+La reconnaissance initiale est documentée dans [`MAYA_RECON.md`](MAYA_RECON.md).
 
 Source primaire confirmée :
 
@@ -223,13 +224,48 @@ Leburu                    : lexique San Mayaa en ligne repéré, droits à clari
 application ANTBA         : texte biblique, à séparer du lexique primaire
 ```
 
-Prochaine action : retrouver ou obtenir un PDF/LIFT/export du lexique 2011, inspecter la structure réelle du lexique en ligne Leburu et clarifier les droits avant toute collecte massive. Une fois l'accès primaire obtenu, on fera QA + chevauchement exactement comme pour Matya.
+Une demande a été envoyée à **ANTBA le 13 septembre 2026** afin d'obtenir, si disponible, une copie numérique du lexique 2011 (PDF/LIFT/Lexique Pro ou autre export), de clarifier la relation avec le lexique en ligne Leburu et d'obtenir une autorisation explicite pour la constitution de corpus, la recherche et l'entraînement/évaluation ML dans le cadre du projet.
+
+```text
+contact ANTBA              : mail envoyé
+réponse                    : en attente
+collecte primaire Maya     : suspendue jusqu'à réponse ou nouvelle source fiable
+```
+
+Pendant cette attente, la branche continue sur **Morse 1967** afin de ne pas bloquer `data_ingestion`.
+
+## Morse 1967 — reconnaissance en cours
+
+Voir [`MORSE_1967_RECON.md`](MORSE_1967_RECON.md).
+
+Référence confirmée :
+
+```text
+Mary Lynn Morse. 1967.
+The Question of 'Samogo'.
+Journal of African Languages 6:61–80.
+```
+
+ASJP utilise explicitement cette publication comme source de la wordlist `SAMO_MATYA` (`stj`). Elle doit être distinguée de `SAMO_MATYA_2`, reliée à Morris et al. 2011.
+
+Première conclusion : Morse 1967 est surtout une **source historique comparative** ; le terme `Samogo` y recouvre plusieurs parlers et ne doit jamais être mappé automatiquement vers `sbd`, `stj` ou `sym` sans provenance locale explicite.
+
+État actuel :
+
+```text
+référence bibliographique      : confirmée
+pertinence Matya via ASJP      : confirmée
+listes historiques             : ~251 items signalés par une étude secondaire
+article primaire complet       : non retrouvé ouvertement pour l'instant
+droits de l'article            : à clarifier
+bulk harvest                   : bloqué en attendant accès primaire + droits
+```
 
 ## Ordre des prochaines sources
 
 ```text
-1. Source primaire Maya / sym — en cours
-2. Morse 1967 — bibliographie et droits exacts
+1. Morse 1967 — en cours
+2. Maya / sym — reprendre dès réponse ANTBA
 3. Maka moderne Webonary/app — reprendre dès clarification des droits
 4. Autres ressources Burkina Langues / ANTBA — droits vérifiés source par source
 ```
