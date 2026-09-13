@@ -178,6 +178,39 @@ sources:
       - "8 formes explicitement vides dans la source sont conservées comme occurrences RAW."
       - "ASJP MAYA_SAMO cite Berthelette 2001 : ne pas considérer les deux comme sources indépendantes dans les analyses."
 
+  matya_lexique_pro:
+    name: "San Matya de A-Z / Lexique Pro"
+    type: "recovered_lift_lexicon"
+    variety: "matya"
+    iso_639_3: "stj"
+    glottocode: "maty1235"
+    enabled: false
+    status: "recovered_qa_passed_overlap_analysis_completed"
+    intended_use: "noncommercial_research_and_ml_after_validation"
+    rights_status: "written_permission_noncommercial_open_source"
+    license: null
+    publication_approved: false
+    training_approved: false
+    commercial_use_approved: false
+    recovered:
+      entry_count: 2576
+      sense_count: 2790
+      entries_without_sense: 19
+      exported_sense_rows: 2809
+      unique_lexical_forms: 2188
+      illustration_references: 685
+      audio_count: 0
+      technical_ok: true
+    overlap:
+      exact_external_overlap: 1651
+      strict_new_candidates: 537
+      near_duplicate_candidates: 125
+      remaining_new_candidates: 412
+    notes:
+      - "RAW local conservé intégralement malgré les chevauchements."
+      - "Les 412 restantes sont des candidats techniques, pas des mots linguistiquement confirmés."
+      - "Validation linguistique et approbation finale ML encore requises."
+
   maka_lexicon_2003:
     name: "Boo nɛn sɛwɛ san-fransi, fransi-san [Lexique san–français, français–san]"
     type: "bilingual_lexicon_book"
