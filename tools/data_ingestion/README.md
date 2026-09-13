@@ -7,7 +7,8 @@ Ce dossier regroupe les outils utilisés pour **découvrir, récupérer, invento
 > Reconnaissance RefLex : [`REFLEX_RECON.md`](REFLEX_RECON.md)  
 > Berthelette : [`BERTHELETTE_RECON.md`](BERTHELETTE_RECON.md)  
 > Maka : [`MAKA_LEXICON_RECON.md`](MAKA_LEXICON_RECON.md)  
-> Matya : [`MATYA_RECON.md`](MATYA_RECON.md)
+> Matya : [`MATYA_RECON.md`](MATYA_RECON.md)  
+> Maya : [`MAYA_RECON.md`](MAYA_RECON.md)
 
 ## Périmètre de `feat/data-ingestion`
 
@@ -199,22 +200,35 @@ La récupération technique, le QA et l'analyse de chevauchement sont terminés.
 
 ## Source active suivante — Maya `sym`
 
-On passe maintenant à la source originale Maya. Objectifs :
+La reconnaissance initiale est maintenant documentée dans [`MAYA_RECON.md`](MAYA_RECON.md).
+
+Source primaire confirmée :
 
 ```text
-1. identifier la référence primaire utilisée par RefLex / autres agrégateurs
-2. retrouver PDF/LIFT/catalogue ou ressource moderne fiable
-3. vérifier droits/licence
-4. récolter uniquement si accès et droits le permettent
-5. comparer ensuite avec RefLex sym=2 378 et Berthelette sym=912
+Morris, P., Koussoubé, M., Seme, P. 2011.
+Lexique San Mayaa avec guide d'orthographe.
+Tougan, Burkina Faso: ANTBA.
 ```
 
-Glottocode de travail : `maya1281`, ISO 639-3 : `sym`.
+État actuel :
+
+```text
+ISO / glottocode          : sym / maya1281
+RefLex déjà récolté       : 2 378 unités
+Berthelette déjà récolté  : 912 occurrences Maya
+PanLex déjà récolté       : 1 ligne sym
+ASJP                      : deux wordlists sym de provenance différente
+lexique primaire 2011     : référence confirmée, copie numérique non retrouvée
+Leburu                    : lexique San Mayaa en ligne repéré, droits à clarifier
+application ANTBA         : texte biblique, à séparer du lexique primaire
+```
+
+Prochaine action : retrouver ou obtenir un PDF/LIFT/export du lexique 2011, inspecter la structure réelle du lexique en ligne Leburu et clarifier les droits avant toute collecte massive. Une fois l'accès primaire obtenu, on fera QA + chevauchement exactement comme pour Matya.
 
 ## Ordre des prochaines sources
 
 ```text
-1. Source primaire Maya / sym
+1. Source primaire Maya / sym — en cours
 2. Morse 1967 — bibliographie et droits exacts
 3. Maka moderne Webonary/app — reprendre dès clarification des droits
 4. Autres ressources Burkina Langues / ANTBA — droits vérifiés source par source
