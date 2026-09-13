@@ -46,6 +46,7 @@ Une localité n'est jamais utilisée seule pour attribuer une variété, sauf lo
 5. Les doublons, blancs et anomalies sont signalés séparément par le QA.
 6. `data/raw/` et `data/processed/` restent locaux et ne sont pas publiés automatiquement.
 7. `récolté` ≠ `validé linguistiquement` ≠ `approuvé pour publication` ≠ `approuvé pour entraînement`.
+8. Le compteur RAW mesure la collecte par source, pas le nombre de formes lexicales uniques.
 
 ## Sources déjà travaillées
 
@@ -103,21 +104,33 @@ technical_ok                   : True
 
 Berthelette est techniquement clôturé. Les concepts `001–011` n'ont pas été retrouvés dans le PDF disponible et ne bloquent plus la récolte.
 
+### Lexique Pro Matya récupéré
+
+```text
+entrées LIFT                  : 2 576
+sens XML                      : 2 790
+formes lexicales uniques      : 2 188
+références d'illustrations    : 685
+fichiers audio                : 0
+technical_ok                  : True
+```
+
 ## Volume RAW opérationnel
 
 ```text
-ASJP            341
-Ainsi sois-je   125
-Taxi1500       7919
-ChiKhaPo        872
-PanLex          420
-FinePDFs          7
-GlotCC            2
-FineWeb2           4
-RefLex          5121
-Berthelette     1814
--------------------
-TOTAL          16625 occurrences/lignes RAW
+ASJP               341
+Ainsi sois-je      125
+Taxi1500          7919
+ChiKhaPo           872
+PanLex             420
+FinePDFs             7
+GlotCC               2
+FineWeb2              4
+RefLex             5121
+Berthelette        1814
+Lexique Pro Matya  2576
+----------------------
+TOTAL             19201 occurrences/lignes/entrées RAW
 ```
 
 Ce total est un compteur de collecte contenant des chevauchements, licences différentes et données non validées linguistiquement.
@@ -128,7 +141,7 @@ Le lexique historique 2003 `Boo nɛn sɛwɛ san-fransi, fransi-san` est confirm�
 
 La ressource moderne San du Sud/Webonary/app est confirmée, mais les droits de réutilisation massive restent à clarifier. On ne reste pas bloqué dessus.
 
-## Matya `stj` — inspection Lexique Pro clôturée
+## Matya `stj` — récupération et analyse clôturées
 
 Référence historique :
 
@@ -138,32 +151,51 @@ Lexique San Matya avec guide d'orthographe.
 Tougan, Burkina Faso: ANTBA.
 ```
 
-Un installateur Windows Lexique Pro a été récupéré et extrait statiquement :
+La piste Lexique Pro Matya a été rouverte après obtention d'une autorisation écrite permettant l'analyse et la récupération du corpus ainsi que son utilisation dans un cadre open source non commercial pour la recherche et l'entraînement/évaluation de modèles ML.
+
+Récupération validée :
 
 ```text
-San Matya - Lexique Pro Setup.exe
-Inno Setup 5.3.10 Unicode
-SHA-256: 1c1ece4f0ad78e8b634c9ebb8c7ae8a97870fa1d6015cde12ba335584c9c467c
+LIFT valide                    : oui
+version                        : 0.13
+producer                       : SIL.FLEx 9.1.24.1383
+entrées                        : 2 576
+sens XML                       : 2 790
+entrées sans sens              : 19
+lignes export sens             : 2 809
+formes lexicales uniques       : 2 188
+références illustrations       : 685
+audio                          : 0
 ```
 
-Résultat final :
+Analyse du chevauchement avec RefLex / ChiKhaPo / PanLex / ASJP :
 
 ```text
-734 fichiers
-695 images
-0 audio
-lpLiftEnc / lpConfigEnc : binaires protégés/opaques
-lift-ranges             : XML LIFT lisible, ranges uniquement
-English.idx             : glosses anglais → ids
-French.idx              : glosses français → ids
-San Matya.idx           : 2 576 lignes = 2 576 ids numériques uniquement
+chevauchement exact externe    : 1 651
+formes strictement absentes    :   537
+quasi-doublons techniques      :   125
+dont même gloss français       :   113
+candidats restants             :   412
 ```
 
-L'index Matya ne contient aucune forme Matya lisible : `14 346` octets, `2 576` lignes, `0` tabulation, `0` octet NUL. Les encodages UTF-8/CP1252/Latin-1 donnent seulement les IDs. Il est donc impossible de reconstruire les paires Matya ↔ français/anglais depuis les `.idx` seuls sans accéder au corpus protégé `lpLiftEnc`.
+Les `412` restantes sont des **candidats techniques** et non des nouveaux mots linguistiquement confirmés.
 
-La licence présente concerne **Lexique Pro**, pas les données lexicales. Aucun nouveau volume n'est ajouté au compteur RAW. Cette piste est fermée jusqu'à obtention d'un PDF/LIFT original ou d'une autorisation/export officielle.
+Le RAW conserve les 2 576 entrées complètes et porte le compteur opérationnel global à `19 201`.
 
-Une recherche courte confirme via ASJP la référence Morris et al. 2011, mais n'a pas retrouvé de copie numérique primaire publique ni de licence explicite. citeturn301947search4
+Droits et statut :
+
+```text
+autorisation écrite            : oui
+cadre                          : open source / non commercial
+recherche + ML                 : explicitement autorisés
+publication publique dataset   : non approuvée automatiquement
+usage commercial               : non approuvé
+training_approved pipeline     : false
+validation linguistique        : pending
+technical_ingestion_status     : closed
+```
+
+La récupération technique, le QA et l'analyse de chevauchement sont terminés. La validation linguistique et la construction du dataset d'entraînement seront traitées plus tard.
 
 ## Source active suivante — Maya `sym`
 
@@ -177,7 +209,7 @@ On passe maintenant à la source originale Maya. Objectifs :
 5. comparer ensuite avec RefLex sym=2 378 et Berthelette sym=912
 ```
 
-Glottolog confirme `Maya Samo`, ISO `sym`, Glottocode `maya1281`. citeturn350898search1
+Glottocode de travail : `maya1281`, ISO 639-3 : `sym`.
 
 ## Ordre des prochaines sources
 
@@ -185,9 +217,10 @@ Glottolog confirme `Maya Samo`, ISO `sym`, Glottocode `maya1281`. citeturn
 1. Source primaire Maya / sym
 2. Morse 1967 — bibliographie et droits exacts
 3. Maka moderne Webonary/app — reprendre dès clarification des droits
-4. Matya Morris et al. 2011 — reprendre uniquement si source primaire/permission obtenue
-5. Autres ressources Burkina Langues / ANTBA — droits vérifiés source par source
+4. Autres ressources Burkina Langues / ANTBA — droits vérifiés source par source
 ```
+
+Matya n'est plus une piste de collecte active : il ne reviendra que lors de la validation linguistique et de la construction du dataset final.
 
 ## Règle finale de cette branche
 
