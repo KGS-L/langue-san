@@ -42,3 +42,11 @@ venv/
 .vscode/
 .DS_Store
 Thumbs.db
+
+tools/data_ingestion/private/
+
+data/raw/san_matya_lexique_pro/recovery_archive/
+
+data/raw/san_matya_lexique_pro/recovered/
+
+data/processed/san_matya_lexique_pro/recovery/
