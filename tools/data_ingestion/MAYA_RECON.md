@@ -163,7 +163,45 @@ catégorie future : text/media religious corpus
 
 Elle pourra être inventoriée lors de la phase texte/audio, avec les mêmes règles de droits et de provenance que les autres ressources religieuses.
 
-## 9. Contexte institutionnel actuel
+## 9. Droits et contact ANTBA
+
+La page officielle des droits d’auteur ANTBA indique que, sauf précision contraire, les droits sur les documents de son site sont détenus par ANTBA.
+
+```text
+page droits : https://antba.org/fr/impressum
+contact     : info@antba.org
+téléphone   : +226 50 36 61 15
+```
+
+Un bulletin ANTBA 2024 donne également :
+
+```text
+adresse      : Wayalguin, en face du camp CRS, Ouagadougou
+secrétariat  : secretary@antba.org
+```
+
+Ces mentions ne suffisent pas à attribuer automatiquement une licence au lexique 2011. Elles confirment cependant qu’ANTBA est le contact prioritaire pour clarifier :
+
+```text
+accès à une copie numérique
+existence d’un export LIFT / Lexique Pro
+réutilisation pour corpus linguistique
+recherche
+entraînement / évaluation ML
+redistribution éventuelle
+usage commercial éventuel
+```
+
+Statut actuel :
+
+```text
+rights_status          = rights_review_required
+publication_approved   = false
+training_approved      = false
+commercial_use_approved = false
+```
+
+## 10. Contexte institutionnel actuel
 
 ANTBA reste active sur San Mayaa. Un bulletin ANTBA de 2024 indique notamment la dédicace des Nouveaux Testaments San Mayaa et Matyaa le 4 mai 2024.
 
@@ -176,7 +214,7 @@ Cette continuité institutionnelle rend ANTBA prioritaire pour :
 4. demander si le lexique en ligne Leburu correspond directement au corpus 2011.
 ```
 
-## 10. Statut actuel
+## 11. Statut actuel
 
 ```text
 discovery_historical       = confirmed
@@ -188,6 +226,7 @@ primary_lexicon_publisher  = ANTBA
 primary_lexicon_reference  = confirmed
 primary_pdf_or_lift        = not_found_yet
 rights_status              = rights_review_required
+primary_rights_contact     = ANTBA
 
 reflex_units_harvested     = 2378
 berthelette_occurrences    = 912
@@ -200,15 +239,15 @@ bulk_harvest               = blocked_pending_primary_access_or_permission
 technical_ingestion_status = in_progress
 ```
 
-## 11. Prochaine action
+## 12. Prochaine action
 
 Ordre immédiat :
 
 ```text
-1. retrouver un PDF/LIFT/export du Lexique San Mayaa 2011 ;
-2. inspecter la structure réelle du lexique en ligne Leburu ;
-3. identifier clairement le détenteur des droits / contact ANTBA ;
-4. demander une autorisation comparable à celle obtenue pour Matya si nécessaire ;
+1. contacter ANTBA pour obtenir le Lexique San Mayaa 2011 en PDF/LIFT/export ;
+2. demander explicitement le périmètre d’autorisation recherche/corpus/ML ;
+3. demander si le lexique Leburu correspond au corpus 2011 ;
+4. inspecter la structure réelle du lexique en ligne ;
 5. seulement ensuite récolter la source primaire ;
 6. QA technique ;
 7. comparaison avec RefLex, Berthelette, ASJP et PanLex ;
