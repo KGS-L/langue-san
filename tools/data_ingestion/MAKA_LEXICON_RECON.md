@@ -117,7 +117,7 @@ n'est pas encore démontré.
 
 Le volume moderne d'environ 2 220 mots et sa présentation comme lexique de référence rendent une continuité documentaire plausible, mais le projet ne doit pas l'affirmer sans source primaire ou confirmation du détenteur des données.
 
-## 7. Droits
+## 7. Droits et demande envoyée
 
 État actuel :
 
@@ -130,13 +130,13 @@ commercial_use_approved        = false
 bulk_harvest_approved          = false
 ```
 
-Le contact technique/public le plus direct actuellement identifié est :
+Le contact technique/public identifié est :
 
 ```text
 burkinalangues@gmail.com
 ```
 
-La demande devra explicitement couvrir :
+Une demande écrite a été envoyée le **14 septembre 2026** afin de clarifier :
 
 ```text
 - relation avec le lexique 2003 ;
@@ -148,6 +148,13 @@ La demande devra explicitement couvrir :
 - entraînement/évaluation traduction ;
 - entraînement/évaluation ASR et autres modèles ML ;
 - droit ou non de redistribution publique du corpus récupéré.
+```
+
+Statut :
+
+```text
+contact_status = mail_sent
+response       = pending
 ```
 
 Si Burkina Langues n'est pas détenteur des droits, le projet demandera le contact SIL/ayant droit approprié.
@@ -198,13 +205,17 @@ modern_image_count_announced    = more_than_1000
 modern_audio_count_announced    = more_than_2200
 
 modern_explicit_license         = not_confirmed
-rights_status                   = authorization_required
+rights_status                   = authorization_requested
+contact_status                  = mail_sent_2026_09_14
+response_status                 = pending
 bulk_harvest                    = blocked_pending_authorization
 technical_ingestion_status      = waiting_for_rights
 ```
 
 ## 10. Prochaine action
 
-La prochaine action est d'obtenir une autorisation écrite avant toute récupération massive du Lexique Pro ou des fichiers audio.
+La reconnaissance Maka est maintenant suspendue proprement dans l'attente de la réponse du détenteur ou du contact technique.
 
-Pendant cette attente, la branche peut continuer vers les autres ressources encore ouvertes.
+Aucune extraction massive du Lexique Pro, du Webonary ou des fichiers audio ne sera effectuée avant clarification des droits.
+
+Pendant cette attente, `data_ingestion` poursuit l'inventaire des autres sources externes et prépare la future phase média/audio.
