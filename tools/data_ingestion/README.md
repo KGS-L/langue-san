@@ -146,11 +146,42 @@ TOTAL             19201 occurrences/lignes/entrées RAW
 
 Ce total est un compteur de collecte contenant des chevauchements, licences différentes et données non validées linguistiquement.
 
-## Maka `sbd`
+## Maka `sbd` — source moderne active, droits à obtenir
 
-Le lexique historique 2003 `Boo nɛn sɛwɛ san-fransi, fransi-san` est confirmé bibliographiquement, mais aucun exemplaire numérique officiel n'a été retrouvé rapidement.
+Le lexique historique 2003 `Boo nɛn sɛwɛ san-fransi, fransi-san` reste bibliographiquement confirmé via ASJP, mais aucune copie numérique primaire officielle n'a encore été retrouvée.
 
-La ressource moderne San du Sud/Webonary/app est confirmée, mais les droits de réutilisation massive restent à clarifier. On ne reste pas bloqué dessus.
+La reconnaissance moderne est maintenant plus précise :
+
+```text
+Webonary                   : Dictionnaire San du sud
+ISO                        : sbd
+variété                    : Toma / Makaa
+copyright visible          : © 2021 SIL International®
+
+Android                    : San dictionnaire
+package                    : com.dict.toma.san
+éditeur                    : Burkina Langues
+volume annoncé             : ~2 220 mots
+images annoncées           : >1 000
+audio annoncé              : >2 200 fichiers
+support                    : burkinalangues@gmail.com
+
+Windows                    : San du sud - Lexique Pro Setup.exe
+volume affiché             : 36.65 MB
+contenu annoncé            : San–français–anglais + audio + images
+```
+
+Cette source est potentiellement très importante parce qu'elle pourrait apporter à la fois du lexique `sbd` et plus de 2 200 prononciations audio. Cependant, le Webonary affiche un copyright SIL et aucune licence explicite de corpus/ML n'a été confirmée.
+
+```text
+relation avec lexique 2003 : non démontrée
+bulk lexical extraction    : bloquée en attente d'autorisation
+bulk audio extraction      : bloquée en attente d'autorisation
+publication dataset        : non approuvée
+training_approved          : false
+```
+
+La prochaine action est de demander à Burkina Langues si le détenteur des données autorise l'analyse du Lexique Pro, la récupération du lexique et des fichiers audio, la constitution d'un corpus open source non commercial et l'entraînement/évaluation de modèles de traduction, ASR et autres modèles ML. Si Burkina Langues n'a pas l'autorité nécessaire, on demandera le contact SIL/ayant droit approprié.
 
 ## Matya `stj` — récupération et analyse clôturées
 
@@ -281,7 +312,7 @@ La piste sera rouverte uniquement si une copie primaire légitime ou une autoris
 ## Ordre des prochaines sources
 
 ```text
-1. Maka moderne Webonary/app — reconnaissance + droits
+1. Maka moderne Webonary/app — autorisation à demander
 2. Maya / sym — reprendre dès réponse ANTBA
 3. Autres ressources Burkina Langues / ANTBA — droits vérifiés source par source
 4. Morse 1967 — uniquement si accès primaire/autorisation apparaît
