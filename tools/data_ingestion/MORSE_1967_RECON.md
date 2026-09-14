@@ -1,6 +1,6 @@
 # Morse 1967 — reconnaissance de la source historique
 
-Cette note ouvre l’analyse de la source **Mary Lynn Morse (1967)** après l’envoi de la demande d’accès au lexique San Mayaa 2011 à ANTBA.
+Cette note documente l’analyse de la source **Mary Lynn Morse (1967)** après l’envoi de la demande d’accès au lexique San Mayaa 2011 à ANTBA.
 
 ## 1. Référence bibliographique
 
@@ -32,22 +32,20 @@ ASJP id      : SAMO_MATYA_2
 source       : Morris et al. 2011
 ```
 
-Donc les données ASJP `stj` ne représentent pas nécessairement une seule provenance historique.
-
-Conséquence pour notre pipeline :
+Conséquence permanente pour le pipeline :
 
 ```text
 ASJP / SAMO_MATYA    -> dérivé de Morse 1967
 ASJP / SAMO_MATYA_2  -> dérivé de Morris et al. 2011
 ```
 
-Il faudra conserver ce niveau de provenance pendant les comparaisons et la construction du dataset final.
+Les données `stj` d’ASJP ne doivent donc jamais être traitées comme une seule provenance documentaire.
 
 ## 3. Nature de l’article
 
 Les travaux secondaires décrivent Morse 1967 comme une étude comparative destinée à clarifier le terme historique `Samogo` et la classification de plusieurs parlers ainsi désignés.
 
-Une étude ultérieure de Robert Carlson décrit plus précisément Morse 1967 comme fournissant une **liste comparative de 573 items** pour trois ensembles :
+Une étude ultérieure de Robert Carlson décrit Morse 1967 comme fournissant une **liste comparative de 573 items** pour trois ensembles :
 
 ```text
 Sembla
@@ -55,28 +53,18 @@ Samogho-Gouan
 Tougan Samogo
 ```
 
-Une autre enquête linguistique ultérieure utilise seulement **251 items tirés de Morse** pour certains calculs lexico-statistiques. Les deux nombres ne sont donc pas contradictoires :
+Une autre enquête linguistique ultérieure utilise seulement **251 items tirés de Morse** pour certains calculs lexico-statistiques. Ces deux nombres ne désignent donc pas la même chose :
 
 ```text
 573 items = taille de la liste comparative décrite pour Morse 1967
 251 items = sous-ensemble de Morse utilisé dans une comparaison ultérieure
 ```
 
-L’article ne doit donc pas être considéré automatiquement comme un dictionnaire San Matya moderne. Son intérêt principal est :
-
-```text
-- vocabulaire historique comparatif ;
-- provenance ancienne pour le parler de Tougan ;
-- classification des groupes appelés Samogo/Samo ;
-- comparaison avec des parlers qui ne correspondent pas tous à sbd/stj/sym ;
-- contrôle diachronique des formes lexicales.
-```
+L’article ne doit pas être assimilé à un dictionnaire San Matya moderne. Son intérêt principal reste historique et comparatif.
 
 ## 4. Attention au terme « Samogo »
 
-Morse 1967 est justement important parce que le terme `Samogo` a historiquement recouvert plusieurs langues/groupes différents.
-
-Des travaux ultérieurs soulignent notamment que le Samo parlé autour de Tougan n’appartient pas au même groupe que le dzùùngoo / samogho de l’ouest du Burkina Faso, malgré l’usage historique de noms proches.
+Le terme `Samogo` a historiquement recouvert plusieurs langues/groupes différents.
 
 Règle du projet :
 
@@ -89,42 +77,100 @@ une forme présente dans Morse 1967
 
 Chaque liste/localité doit être attribuée uniquement à partir de la provenance explicitement fournie par la source.
 
-La composante `Tougan Samogo` est la candidate la plus pertinente pour notre piste `stj`, mais cette attribution doit rester documentée par la structure primaire de l’article et les agrégateurs qui l’emploient.
+La composante `Tougan Samogo` est la plus pertinente pour notre piste `stj`, mais cela ne permet pas d’attribuer les autres ensembles au San moderne.
 
-## 5. Relation avec nos données déjà récoltées
+## 5. Audit réel de provenance ASJP v21
 
-Nous possédons déjà indirectement une petite partie de Morse 1967 via ASJP.
-
-Le corpus ASJP v21 récolté contient au total :
+Le processeur :
 
 ```text
-stj : 129 occurrences
+tools/data_ingestion/processors/analyze_asjp_provenance.py
 ```
 
-mais ce volume peut agréger plusieurs wordlists `stj` de provenance différente. Il ne faut donc pas utiliser le simple compteur ISO pour conclure que les 129 lignes proviennent toutes de Morse 1967.
+a été exécuté sur le RAW ASJP local.
 
-Avant toute ingestion supplémentaire de Morse, il faudra séparer les entrées ASJP par `language_id` et source bibliographique.
+Résultat global :
 
-## 6. Accès numérique actuel
+```text
+Entrées ASJP SAN : 341
+sbd              : 37
+stj              : 129
+sym              : 175
+```
 
-Recherche initiale :
+Répartition exacte par wordlist/provenance :
+
+```text
+SAMO_MATYA
+  source            : Morse 1967 — The Question of 'Samogo'
+  occurrences       : 34
+  formes uniques    : 33
+  concepts          : 32
+
+SAMO_MATYA_2
+  source            : Morris et al. 2011 — Lexique San Matya avec guide d'orthographe
+  occurrences       : 95
+  formes uniques    : 87
+  concepts          : 73
+
+SAMO_MAYA
+  source            : Morris, Koussoubé & Seme 2011 — Lexique San Mayaa avec guide d'orthographe
+  occurrences       : 102
+  formes uniques    : 93
+  concepts          : 87
+
+MAYA_SAMO
+  source            : Berthelette 2001 — Sociolinguistic survey report for the San language
+  occurrences       : 73
+  formes uniques    : 70
+  concepts          : 25
+```
+
+Sorties locales :
+
+```text
+data/processed/asjp/provenance/asjp_san_provenance_summary.json
+data/processed/asjp/provenance/asjp_san_provenance_by_language_id.csv
+```
+
+## 6. Ce que l’audit change pour Morse
+
+Nous savons maintenant exactement ce que Morse apporte déjà via ASJP :
+
+```text
+34 occurrences
+33 formes uniques
+32 concepts
+```
+
+Ce sous-ensemble est faible par rapport aux **573 items comparatifs** signalés par la littérature secondaire. Il ne faut donc pas conclure que l’intégralité de Morse 1967 est déjà représentée dans ASJP.
+
+Cependant, la source primaire complète n’est pas actuellement accessible sous une forme ouverte exploitable et ses droits de réutilisation ne sont pas clarifiés.
+
+Décision de projet :
+
+```text
+conserver les 34 occurrences ASJP déjà récoltées
+conserver explicitement la provenance Morse 1967
+ne pas tenter d’inventer/reconstruire les centaines d’items absents
+ne pas bloquer data_ingestion sur la recherche du document primaire
+reprendre la piste uniquement si une copie légitime ou une autorisation devient disponible
+```
+
+## 7. Accès numérique et droits
+
+État observé :
 
 ```text
 référence bibliographique : confirmée
-volume du journal          : référencé dans Google Books
-article complet ouvert     : non retrouvé lors des premières recherches
+volume du journal          : catalogué / numérisé avec accès limité
+article primaire ouvert    : non retrouvé
 PDF primaire libre         : non confirmé
 ```
 
-Google Books référence les volumes 6–8 du `Journal of African Languages`, publiés à partir de 1967 par Macmillan, mais l’accès observé est de type notice/aperçu et ne fournit pas à ce stade une copie primaire ouverte exploitable.
+Les documents secondaires ne remplacent pas la source primaire.
 
-Des catalogues universitaires confirment également la présence physique du volume 6 dans plusieurs bibliothèques.
-
-Des PDF secondaires citent et analysent Morse 1967, mais ils ne remplacent pas le document primaire.
-
-## 7. Droits
-
-À ce stade :
+Droits :
 
 ```text
 article_publication_year   = 1967
@@ -134,40 +180,48 @@ training_approved          = false
 commercial_use_approved    = false
 ```
 
-La licence CC-BY-4.0 d’ASJP couvre les données distribuées par ASJP sous ses conditions ; elle ne doit pas être interprétée comme une licence CC-BY sur l’article original de Morse.
+La licence CC-BY-4.0 d’ASJP couvre les données distribuées par ASJP sous ses conditions ; elle ne transforme pas l’article original de Morse en ressource CC-BY.
 
-## 8. Statut actuel
-
-```text
-source_reference           = confirmed
-author                     = Mary Lynn Morse
-year                       = 1967
-title                      = The Question of 'Samogo'
-journal                    = Journal of African Languages
-volume                     = 6
-pages                      = 61-80
-
-relevance_to_stj           = confirmed_via_asjp
-asjp_wordlist              = SAMO_MATYA
-comparative_wordlist_size  = 573_items_reported_by_secondary_source
-later_subset_size          = 251_items_used_in_later_comparison
-reported_groups            = Sembla, Samogho-Gouan, Tougan Samogo
-
-primary_fulltext           = not_found_yet
-rights_status              = rights_review_required
-bulk_harvest               = blocked_pending_primary_access_and_rights_review
-technical_ingestion_status = reconnaissance_in_progress
-```
-
-## 9. Prochaine action
+## 8. Statut final de la reconnaissance Morse
 
 ```text
-1. retrouver une copie primaire légitime du Journal of African Languages 6 (1967), pages 61–80 ;
-2. vérifier directement la structure de la liste comparative de 573 items ;
-3. identifier chaque localité / parler présent dans les tableaux ;
-4. vérifier les droits de reproduction et de réutilisation ;
-5. séparer dans ASJP les données SAMO_MATYA (Morse 1967) des autres wordlists stj ;
-6. seulement ensuite décider si une nouvelle ingestion apporte des données non déjà présentes dans ASJP.
+source_reference             = confirmed
+author                       = Mary Lynn Morse
+year                         = 1967
+title                        = The Question of 'Samogo'
+journal                      = Journal of African Languages
+volume                       = 6
+pages                        = 61-80
+
+relevance_to_stj             = confirmed_via_asjp
+asjp_wordlist                = SAMO_MATYA
+asjp_occurrences             = 34
+asjp_unique_forms            = 33
+asjp_concepts                = 32
+
+comparative_wordlist_size    = 573_items_reported_by_secondary_source
+later_subset_size            = 251_items_used_in_later_comparison
+reported_groups              = Sembla, Samogho-Gouan, Tougan Samogo
+
+primary_fulltext             = not_found_openly
+rights_status                = rights_review_required
+new_primary_ingestion        = deferred
+technical_recon_status       = closed_for_now
 ```
 
-Le but n’est pas de dupliquer ASJP, mais de récupérer la provenance primaire et, si le document le permet, des formes ou métadonnées que l’agrégateur n’a pas conservées.
+## 9. Décision
+
+La reconnaissance Morse 1967 est **clôturée pour cette phase**.
+
+Aucun nouveau compteur RAW n’est ajouté : les 34 occurrences Morse sont déjà incluses dans les 341 occurrences ASJP existantes.
+
+La piste ne sera rouverte que si l’un des événements suivants se produit :
+
+```text
+- copie primaire légitime obtenue ;
+- accès bibliothèque / archive permettant inspection directe ;
+- autorisation explicite de réutilisation ;
+- nouvelle édition ou transcription fiable avec provenance démontrée.
+```
+
+Le projet passe donc à la prochaine piste sans rester bloqué sur Morse 1967.
