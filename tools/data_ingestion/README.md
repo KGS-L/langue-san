@@ -62,6 +62,15 @@ sym : 175
 licence : CC-BY-4.0
 ```
 
+Audit de provenance des wordlists SAN :
+
+```text
+SAMO_MATYA   : 34 occurrences | Morse 1967
+SAMO_MATYA_2 : 95 occurrences | Morris et al. 2011
+SAMO_MAYA    : 102 occurrences | Morris, Koussoubé & Seme 2011
+MAYA_SAMO    : 73 occurrences | Berthelette 2001
+```
+
 ### Ainsi sois-je
 
 ```text
@@ -218,7 +227,8 @@ ISO / glottocode          : sym / maya1281
 RefLex déjà récolté       : 2 378 unités
 Berthelette déjà récolté  : 912 occurrences Maya
 PanLex déjà récolté       : 1 ligne sym
-ASJP                      : deux wordlists sym de provenance différente
+ASJP SAMO_MAYA            : 102 occurrences issues de Morris et al. 2011
+ASJP MAYA_SAMO            : 73 occurrences issues de Berthelette 2001
 lexique primaire 2011     : référence confirmée, copie numérique non retrouvée
 Leburu                    : lexique San Mayaa en ligne repéré, droits à clarifier
 application ANTBA         : texte biblique, à séparer du lexique primaire
@@ -232,13 +242,13 @@ réponse                    : en attente
 collecte primaire Maya     : suspendue jusqu'à réponse ou nouvelle source fiable
 ```
 
-Pendant cette attente, la branche continue sur **Morse 1967** afin de ne pas bloquer `data_ingestion`.
+La branche continue sur d'autres pistes pendant l'attente afin de ne pas bloquer `data_ingestion`.
 
-## Morse 1967 — reconnaissance en cours
+## Morse 1967 — reconnaissance clôturée pour cette phase
 
 Voir [`MORSE_1967_RECON.md`](MORSE_1967_RECON.md).
 
-Référence confirmée :
+Référence :
 
 ```text
 Mary Lynn Morse. 1967.
@@ -246,31 +256,35 @@ The Question of 'Samogo'.
 Journal of African Languages 6:61–80.
 ```
 
-ASJP utilise explicitement cette publication comme source de la wordlist `SAMO_MATYA` (`stj`). Elle doit être distinguée de `SAMO_MATYA_2`, reliée à Morris et al. 2011.
-
-Première conclusion : Morse 1967 est surtout une **source historique comparative** ; le terme `Samogo` y recouvre plusieurs parlers et ne doit jamais être mappé automatiquement vers `sbd`, `stj` ou `sym` sans provenance locale explicite.
-
-Les travaux secondaires indiquent que Morse publie une **liste comparative de 573 items** pour `Sembla`, `Samogho-Gouan` et `Tougan Samogo`. Une étude ultérieure n'utilise qu'un sous-ensemble de **251 items tirés de Morse** pour ses calculs ; les deux nombres ne doivent donc pas être confondus.
-
-État actuel :
+L’audit ASJP a confirmé précisément :
 
 ```text
-référence bibliographique      : confirmée
-pertinence Matya via ASJP      : confirmée
-liste comparative              : 573 items signalés par une source secondaire
-sous-ensemble ultérieur        : 251 items tirés de Morse
-article primaire complet       : non retrouvé ouvertement pour l'instant
-droits de l'article            : à clarifier
-bulk harvest                   : bloqué en attendant accès primaire + droits
+SAMO_MATYA / Morse 1967
+occurrences    : 34
+formes uniques : 33
+concepts       : 32
 ```
+
+Les travaux secondaires signalent une liste comparative beaucoup plus large de **573 items** couvrant `Sembla`, `Samogho-Gouan` et `Tougan Samogo`. ASJP n’en représente donc qu’un petit sous-ensemble lié à `stj`.
+
+Cependant, l’article primaire complet n’a pas été retrouvé ouvertement et ses droits ne sont pas clarifiés. On conserve donc les 34 occurrences déjà présentes dans ASJP avec leur provenance explicite, sans ajouter de nouveau volume RAW et sans bloquer la branche.
+
+```text
+source historique           : confirmée
+proxy ASJP                  : disponible
+nouvelle ingestion primaire : différée
+reconnaissance              : closed_for_now
+```
+
+La piste sera rouverte uniquement si une copie primaire légitime ou une autorisation devient disponible.
 
 ## Ordre des prochaines sources
 
 ```text
-1. Morse 1967 — en cours
+1. Maka moderne Webonary/app — reconnaissance + droits
 2. Maya / sym — reprendre dès réponse ANTBA
-3. Maka moderne Webonary/app — reprendre dès clarification des droits
-4. Autres ressources Burkina Langues / ANTBA — droits vérifiés source par source
+3. Autres ressources Burkina Langues / ANTBA — droits vérifiés source par source
+4. Morse 1967 — uniquement si accès primaire/autorisation apparaît
 ```
 
 Matya n'est plus une piste de collecte active : il ne reviendra que lors de la validation linguistique et de la construction du dataset final.
