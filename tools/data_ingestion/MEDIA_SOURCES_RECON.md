@@ -24,6 +24,7 @@ B. parole spécialisée
    chants
    poésie chantée
    prononciations lexicales isolées
+   alphabet / matériel pédagogique
 ```
 
 Ces catégories ne doivent pas être mélangées sans étiquette de domaine.
@@ -99,6 +100,29 @@ San Bible app
 
 Cette plateforme est surtout utile comme annuaire de provenance vers les fournisseurs réels.
 
+### Clip alphabet San du Sud
+
+Le **14 septembre 2026**, Urs Niggli / Burkina Langues a signalé directement au projet un petit clip d'alphabet au format MP4 disponible sur Mooré Burkina Faso :
+
+```text
+page     : Alphabet en langues nationales
+ressource: numéro 27
+format   : MP4
+variété  : San du Sud / sbd
+```
+
+Cette ressource est classée comme :
+
+```text
+speech_type   = pedagogical_alphabet
+media_type    = video_mp4
+source_status = directly_reported_by_burkina_langues
+rights_review = required
+harvest       = deferred
+```
+
+Elle peut être utile pour la prononciation de l'alphabet et certaines unités phonographiques, mais elle ne doit pas être utilisée comme substitut à la parole naturelle.
+
 ## 3. San Matya — `stj`
 
 Scripture Earth possède une page dédiée à `Samo, Matya` (`stj`) avec des liens vers :
@@ -147,15 +171,19 @@ L'application moderne `San dictionnaire` / Maka annonce :
 >1 000 images
 ```
 
+La réponse reçue le 14 septembre 2026 précise la provenance de ces enregistrements : **Mme Zan Awa** a prononcé les mots directement dans **FieldWorks / FLEx**. Urs Niggli ne dispose pas de fichiers audio séparés.
+
 Ces audios sont des prononciations lexicales et doivent être classés séparément de la parole naturelle.
 
 Catégorie prévue :
 
 ```text
 speech_type = isolated_lexical_pronunciation
+speaker     = Zan_Awa
+recording_tool = FieldWorks_FLEx
 ```
 
-Ils pourraient être utiles pour phonétique, lexique audio, adaptation ASR et évaluation de prononciation si les droits sont obtenus.
+Ils pourraient être utiles pour phonétique, lexique audio, adaptation ASR et évaluation de prononciation si les droits sont obtenus auprès du détenteur approprié.
 
 ## 6. Collecte future de parole naturelle
 
