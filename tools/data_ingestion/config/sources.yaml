@@ -16,12 +16,26 @@ sources:
       - variety: "maka"
         iso_639_3: "sbd"
         asjp_id: "SOUTHERN_SAMO_SAN"
+        upstream_reference: "Burkina 2003 — Boo nɛn sɛwɛ san-fransi, fransi-san"
+      - variety: "matya"
+        iso_639_3: "stj"
+        asjp_id: "SAMO_MATYA"
+        upstream_reference: "Morse 1967 — The Question of 'Samogo'"
       - variety: "matya"
         iso_639_3: "stj"
         asjp_id: "SAMO_MATYA_2"
+        upstream_reference: "Morris et al. 2011 — Lexique San Matya avec guide d'orthographe"
+      - variety: "maya"
+        iso_639_3: "sym"
+        asjp_id: "SAMO_MAYA"
+        upstream_reference: "Morris, Koussoubé & Seme 2011 — Lexique San Mayaa avec guide d'orthographe"
       - variety: "maya"
         iso_639_3: "sym"
         asjp_id: "MAYA_SAMO"
+        upstream_reference: "Berthelette 2001 — Sociolinguistic survey report for the San language"
+    notes:
+      - "Un même code ISO ASJP peut agréger plusieurs wordlists de provenance différente."
+      - "Toujours conserver `language_id` pour éviter de confondre les sources historiques."
 
   reflex:
     name: "RefLex CLLD — Reference Lexicon of Africa"
@@ -210,6 +224,42 @@ sources:
       - "RAW local conservé intégralement malgré les chevauchements."
       - "Les 412 restantes sont des candidats techniques, pas des mots linguistiquement confirmés."
       - "Validation linguistique et approbation finale ML encore requises."
+
+  morse_1967:
+    name: "Morse 1967 — The Question of 'Samogo'"
+    type: "historical_comparative_wordlist_article"
+    author: "Mary Lynn Morse"
+    year: 1967
+    journal: "Journal of African Languages"
+    volume: 6
+    pages: "61-80"
+    enabled: false
+    status: "bibliographic_confirmed_primary_fulltext_not_openly_found"
+    intended_use: "historical_provenance_and_comparative_lexicon"
+    rights_status: "rights_review_required"
+    license: null
+    publication_approved: false
+    training_approved: false
+    commercial_use_approved: false
+    provenance:
+      asjp_wordlist: "SAMO_MATYA"
+      asjp_iso_639_3: "stj"
+      asjp_glottocode: "maty1235"
+    secondary_description:
+      comparative_item_count: 573
+      groups:
+        - "Sembla"
+        - "Samogho-Gouan"
+        - "Tougan Samogo"
+      note: "Carlson décrit une liste comparative Morse de 573 items; 251 correspond à un sous-ensemble utilisé dans une étude ultérieure, pas à la taille totale rapportée."
+    digital_access:
+      google_books_volume: "Journal of African Languages, Volumes 6-8"
+      google_books_status: "digitized_from_university_of_michigan_but_full_article_not_openly_available_in_observed_view"
+      primary_pdf_found: false
+    notes:
+      - "Tougan Samogo est la composante pertinente pour la piste San/Matya, mais les autres groupes ne doivent pas être assimilés à sbd/stj/sym."
+      - "La licence CC-BY-4.0 d'ASJP ne transfère pas automatiquement une licence CC-BY à l'article original de 1967."
+      - "Ne pas ingérer massivement l'article sans accès primaire légitime et revue des droits."
 
   maka_lexicon_2003:
     name: "Boo nɛn sɛwɛ san-fransi, fransi-san [Lexique san–français, français–san]"
