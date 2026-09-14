@@ -147,47 +147,57 @@ TOTAL             19201 occurrences/lignes/entrées RAW
 
 Ce total est un compteur de collecte contenant des chevauchements, licences différentes et données non validées linguistiquement.
 
-## Maka `sbd` — reconnaissance en attente de réponse Burkina Langues
+## Maka `sbd` — source primaire reçue, droits SIL à clarifier
 
-Le lexique historique 2003 `Boo nɛn sɛwɛ san-fransi, fransi-san` reste bibliographiquement confirmé via ASJP, mais aucune copie numérique primaire officielle n'a encore été retrouvée.
+La situation Maka a changé le **14 septembre 2026** après réponse de **Urs Niggli / Burkina Langues**.
 
-La reconnaissance moderne est maintenant plus précise :
-
-```text
-Webonary                   : Dictionnaire San du sud
-ISO                        : sbd
-variété                    : Toma / Makaa
-copyright visible          : © 2021 SIL International®
-
-Android                    : San dictionnaire
-package                    : com.dict.toma.san
-éditeur                    : Burkina Langues
-volume annoncé             : ~2 220 mots
-images annoncées           : >1 000
-audio annoncé              : >2 200 fichiers
-support                    : burkinalangues@gmail.com
-
-Windows                    : San du sud - Lexique Pro Setup.exe
-volume affiché             : 36.65 MB
-contenu annoncé            : San–français–anglais + audio + images
-```
-
-Cette source est potentiellement très importante parce qu'elle pourrait apporter à la fois du lexique `sbd` et plus de 2 200 prononciations audio. Cependant, le Webonary affiche un copyright SIL et aucune licence explicite de corpus/ML n'a été confirmée.
-
-Une demande d'autorisation a été envoyée à **Burkina Langues le 14 septembre 2026**. Elle couvre l'analyse du Lexique Pro, la récupération lexicale et audio, la recherche, l'entraînement/évaluation traduction/ASR/ML, la relation avec le lexique 2003 et la question de la redistribution publique.
+Il confirme que l'application moderne `San dictionnaire` est bien issue du lexique SIL 2003 et transmet directement une copie numérique du lexique ainsi que les index français et anglais.
 
 ```text
-contact                     : burkinalangues@gmail.com
-mail envoyé                 : 2026-09-14
-réponse                     : en attente
-relation avec lexique 2003  : à confirmer
-bulk lexical extraction     : suspendue
-bulk audio extraction       : suspendue
-publication dataset         : non approuvée
-training_approved           : false
+source primaire 2003          : reçue
+volume annoncé dans le livre  : ~2 200 mots
+application moderne           : ~2 220 entrées
+relation 2003 → application   : confirmée
 ```
 
-La piste Maka reste donc ouverte mais ne bloque plus le reste de `data_ingestion`.
+Fichiers transmis :
+
+```text
+San-dic1-64 fev 2021.doc
+San du sud - Index (français).rtf
+San du sud - Index (anglais).rtf
+```
+
+Le document primaire indique :
+
+```text
+édition                     : préliminaire
+première impression         : 1er trimestre 2003
+variété                     : san du Sud / mà kaa
+zone de référence           : Toma et Yaba
+copyright                   : TOUS DROITS RESERVES
+ayant droit affiché         : Société Internationale de Linguistique (SIL)
+```
+
+La préface confirme également les trois dialectes `mà kaa`, `mà tiaa`, `mà yaa` et précise que le lexique repose principalement sur les données de M. Phillips (1985–1997) et Kathryn Woodham (2000–2001).
+
+Pour l'audio, Urs Niggli précise que **Mme Zan Awa** a enregistré les mots directement dans **FieldWorks / FLEx** et qu'il ne dispose pas de fichiers audio séparés.
+
+Sa réponse est favorable au projet, mais il indique explicitement qu'il ne pense pas disposer lui-même de l'autorité juridique sur le dictionnaire. Sa phrase favorable à la redistribution publique est donc conservée comme **avis personnel**, pas comme licence SIL.
+
+```text
+réponse Burkina Langues       : reçue 2026-09-14
+source primaire               : récupérée
+provenance application        : clarifiée
+provenance audio              : clarifiée
+ayant droit affiché           : SIL
+permission formelle SIL       : en attente
+publication dataset           : non approuvée
+training_approved             : false
+bulk lexical/audio extraction : suspendue pour droits
+```
+
+Un second message signale également un **clip MP4 de l'alphabet San du Sud**, numéro 27 sur la page `Alphabet en langues nationales` de Mooré Burkina Faso. Cette ressource est classée dans l'inventaire média et non dans le corpus lexical.
 
 ## Matya `stj` — récupération et analyse clôturées
 
@@ -323,6 +333,8 @@ Des annuaires et plateformes structurées confirment déjà l'existence de resso
 
 Pour `sbd`, Réseau Faso Bibles expose notamment du texte, de l'audio et des vidéos avec des crédits distincts pour le texte, l'enregistrement audio et les films. Ces ressources sont donc intéressantes pour la future phase ASR/multimédia mais ne sont pas ajoutées automatiquement au corpus d'entraînement.
 
+Une nouvelle ressource a été signalée directement par Urs Niggli : un **clip MP4 de l'alphabet San du Sud**, numéro 27 sur Mooré Burkina Faso. Elle est conservée comme candidate média avec revue des droits séparée.
+
 La future collecte média distinguera strictement :
 
 ```text
@@ -339,8 +351,8 @@ chants / parole spécialisée
 ## Ordre des prochaines actions
 
 ```text
-1. Maya / sym — attendre la réponse ANTBA puis reprendre immédiatement
-2. Maka / sbd — attendre la réponse Burkina Langues puis inspecter/récupérer si autorisé
+1. Maka / sbd — demander l'autorisation formelle au détenteur SIL
+2. Maya / sym — reprendre dès réponse ANTBA
 3. terminer l'inventaire externe résiduel sans bloquer sur les sources fermées
 4. clôturer le bloc lexical externe
 5. ouvrir la phase média/audio naturelle + collecte terrain
