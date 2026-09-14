@@ -1,10 +1,21 @@
 # San Maka / Southern Samo `sbd` — reconnaissance
 
-Cette note suit la priorité Maka ouverte après la clôture technique de Berthelette 2001.
+Cette note suit la piste Maka / San du Sud dans `data_ingestion`.
 
-## 1. Lexique historique cible
+## 1. Identité de la variété
 
-Référence bibliographique confirmée par ASJP et plusieurs bibliographies linguistiques :
+```text
+nom principal : San Maka / San du Sud / Southern Samo
+ISO 639-3     : sbd
+Glottocode    : sout2844
+dialecte      : Toma / Makaa / Nyaana
+```
+
+La variété reste strictement séparée de `stj` (Matya) et `sym` (Maya).
+
+## 2. Lexique historique 2003
+
+Référence bibliographique confirmée par ASJP :
 
 ```text
 SIL Burkina Faso. 2003.
@@ -13,138 +24,187 @@ Boo nɛn sɛwɛ san-fransi, fransi-san
 Ouagadougou: SIL Burkina Faso.
 ```
 
-Variété :
+ASJP `SOUTHERN_SAMO_SAN` cite explicitement `Burkina 2003` comme source.
+
+Des bibliographies secondaires décrivent une édition préliminaire d'environ 120 pages. Une attribution secondaire à Anne-Marie Giménez existe, mais elle n'est pas considérée comme auteur confirmé tant qu'une notice primaire n'a pas été retrouvée.
+
+État :
 
 ```text
-Southern Samo / San Maka / San du Sud
-ISO 639-3 : sbd
-Glottocode : sout2844
+référence bibliographique : confirmée
+copie numérique primaire  : non retrouvée
+licence                    : non confirmée
 ```
 
-ASJP `SOUTHERN_SAMO_SAN` cite explicitement `Burkina 2003` et ce lexique comme sa source.
+## 3. Webonary moderne — source importante
 
-## 2. Informations bibliographiques secondaires
-
-Des bibliographies secondaires décrivent :
+Une ressource moderne directement dédiée à `sbd` existe :
 
 ```text
+nom       : Dictionnaire San du sud
+plateforme: Webonary
+URL       : https://www.webonary.work/san-sud/
+ISO       : sbd
+variété   : Toma / Makaa
+copyright : © 2021 SIL International®
+```
+
+L'introduction Webonary confirme explicitement le code ISO `sbd` et le dialecte Toma/Makaa. Le site permet de parcourir les entrées en Southern San, français et anglais.
+
+Le copyright visible ne fournit pas à lui seul une autorisation de bulk harvest, redistribution ou entraînement ML.
+
+## 4. Application Android moderne
+
+Application actuelle :
+
+```text
+nom        : San dictionnaire
+éditeur    : Burkina Langues
+package    : com.dict.toma.san
+support    : burkinalangues@gmail.com
+développeur: Urs Niggli
+```
+
+La fiche Google Play décrit explicitement le lexique comme basé sur le san du Sud `mà kaa` et annonce :
+
+```text
+environ 2 220 mots
+plus de 1 000 images
+plus de 2 200 fichiers audio
+français + anglais
+prononciation audio
 édition préliminaire
-première impression : premier trimestre 2003
-Ouagadougou
-SIL
-environ 120 pages
-San → français : environ pages 29–78
-français → San : environ pages 79–120
 ```
 
-Une attribution à `Anne-Marie Giménez` apparaît dans une bibliographie secondaire, tandis que d'autres références traitent l'ouvrage comme anonyme/SIL Burkina. Elle n'est donc pas promue comme auteur/compilateur confirmé sans notice primaire.
+Cette ressource est particulièrement intéressante pour Langue_SAN parce qu'elle pourrait fournir à la fois des données lexicales et un corpus de prononciations isolées.
 
-Le PDF officiel ou une notice SIL primaire de l'édition 2003 n'ont pas été retrouvés dans la recherche initiale.
+## 5. Version Windows Lexique Pro
 
-## 3. Découverte importante : dictionnaire San du Sud actuel
-
-Une ressource actuelle existe sur Webonary :
+Le site Mooré Burkina Faso propose publiquement :
 
 ```text
-Dictionnaire San du sud
-https://www.webonary.work/san-sud/
-ISO : sbd
-Toma / Makaa
-Copyright affiché : © 2021 SIL International®
+San du sud - Lexique Pro Setup.exe
+volume affiché : 36.65 MB
+contenu annoncé : dictionnaire San–français–anglais avec audio et images
 ```
 
-Le site permet de parcourir les entrées Southern San, English et French et affiche également un menu `Download`. Son introduction confirme `sbd` et le dialecte Toma/Makaa.
+Cette distribution est donc une candidate forte pour une inspection technique locale comparable à Matya.
 
-Une application Android actuelle publiée par **Burkina Langues** existe également :
+Cependant, contrairement au cas Matya, aucune autorisation explicite n'a encore été obtenue pour analyser/récupérer les fichiers de cette distribution au-delà d'un inventaire de surface.
+
+Décision actuelle :
 
 ```text
-nom : San dictionnaire
-package : com.dict.toma.san
-variété : San du sud / mà kaa
-volume annoncé : environ 2 220 mots
-contenu annoncé : >1 000 images et >2 200 fichiers audio
+download_publicly_offered       = confirmed
+static_inventory_candidate      = yes
+protected_data_recovery         = not_authorized_yet
+bulk_lexical_extraction         = not_authorized_yet
+bulk_audio_extraction           = not_authorized_yet
 ```
 
-Une version Windows `San du sud - Lexique Pro Setup.exe` est aussi proposée publiquement sur le site Mooré Burkina Faso.
+## 6. Relation entre 2003 et la ressource moderne
 
-Ces ressources modernes sont très prometteuses pour le projet, notamment pour l'audio, mais **elles ne sont pas automatiquement assimilées à l'édition 2003** : le lien généalogique exact entre les bases doit être documenté.
-
-## 4. Droits : point bloquant actuel
-
-Le Webonary Southern San affiche :
+Le lien exact entre :
 
 ```text
-Dictionnaire San du sud © 2021 SIL International®
+lexique SIL Burkina Faso 2003
+Webonary 2021
+application Burkina Langues
+Lexique Pro Windows
 ```
 
-Aucune mention Creative Commons n'a été retrouvée lors du premier contrôle automatique de la page d'introduction. Webonary permet à chaque dictionnaire de définir sa propre politique de copyright/licence ; on ne peut donc pas déduire une licence à partir de la plateforme seule.
+n'est pas encore démontré.
 
-Pour l'instant :
+Le volume moderne d'environ 2 220 mots et sa présentation comme lexique de référence rendent une continuité documentaire plausible, mais le projet ne doit pas l'affirmer sans source primaire ou confirmation du détenteur des données.
+
+## 7. Droits
+
+État actuel :
 
 ```text
-rights_status           = copyright_visible_license_not_confirmed
-publication_approved    = false
-training_approved       = false
-commercial_use_approved = false
-bulk_harvest_approved   = false
+Webonary copyright             = SIL International 2021
+licence explicite corpus       = not_confirmed
+publication_approved           = false
+training_approved              = false
+commercial_use_approved        = false
+bulk_harvest_approved          = false
 ```
 
-Contact public associé aux applications Burkina Langues :
+Le contact technique/public le plus direct actuellement identifié est :
 
 ```text
 burkinalangues@gmail.com
 ```
 
-Avant une récolte massive du Webonary, de l'application ou des fichiers audio, il faut retrouver la page Copyright exacte ou obtenir une autorisation explicite.
-
-## 5. Stratégie de vitesse
-
-Cette source ne doit pas devenir un nouveau Berthelette de plusieurs cycles.
+La demande devra explicitement couvrir :
 
 ```text
-1. édition 2003 : bibliographie confirmée, accès numérique original non retrouvé
-2. ressource moderne sbd : Webonary + application + version Windows confirmées
-3. droits modernes : non suffisamment explicites pour bulk harvest
-4. documenter et contacter si nécessaire
-5. continuer immédiatement sur la source primaire suivante pendant l'attente
+- relation avec le lexique 2003 ;
+- autorité sur les données lexicales et audio ;
+- analyse des fichiers Lexique Pro ;
+- récupération du lexique et des fichiers audio ;
+- constitution d'un corpus open source non commercial ;
+- recherche ;
+- entraînement/évaluation traduction ;
+- entraînement/évaluation ASR et autres modèles ML ;
+- droit ou non de redistribution publique du corpus récupéré.
 ```
 
-Donc la reconnaissance Maka n'est pas abandonnée, mais elle passe en **rights/access pending** pendant que l'ingestion continue ailleurs.
+Si Burkina Langues n'est pas détenteur des droits, le projet demandera le contact SIL/ayant droit approprié.
 
-## 6. Source suivante
+## 8. Valeur potentielle pour le futur modèle
 
-Priorité suivante :
+Si les droits sont obtenus, cette source pourrait être l'une des plus utiles du projet :
 
 ```text
-Morris et al. 2011
-Lexique San Matya avec guide d'orthographe
-Tougan, Burkina Faso
-ANTBA
-ISO : stj
+~2 220 entrées lexicales
+>2 200 fichiers audio de prononciation
+>1 000 images
+FR / EN / sbd
 ```
 
-ASJP `SAMO_MATYA_2` cite explicitement cette source. Une application actuelle `San Matya de A-Z` de Burkina Langues annonce environ 2 576 entrées et 685 images ; elle sera traitée comme ressource moderne distincte tant que sa provenance/licence exacte n'est pas clarifiée.
-
-## 7. Statut actuel
+Les fichiers audio ne remplacent pas la parole naturelle, mais ils sont potentiellement très utiles pour :
 
 ```text
-discovery_2003               = confirmed
-variety                       = maka
-iso_639_3                     = sbd
-glottocode                    = sout2844
-bibliographic_year            = 2003
-publisher                     = SIL Burkina Faso
-approximate_pages             = 120
-primary_2003_catalog_record   = not_found_yet
-official_2003_digital_copy    = not_found_yet
-modern_webonary               = confirmed
-modern_android_app            = confirmed
-modern_windows_dictionary     = confirmed
-modern_volume_announced       = about_2220_words
-modern_audio_announced        = more_than_2200_files
-modern_copyright              = SIL_International_2021
-modern_explicit_license       = not_confirmed
-rights_status                 = copyright_visible_license_not_confirmed
-lexical_bulk_harvest          = deferred_pending_rights
-next_source                   = Morris_et_al_2011_Matya
+prononciation lexicale
+alignement mot ↔ audio
+phonétique / lexique audio
+pré-entraînement ou adaptation ASR
+évaluation de prononciation
 ```
+
+Ils devront rester séparés des futurs corpus de conversations, reportages et récits naturels.
+
+## 9. Statut actuel
+
+```text
+discovery_2003                  = confirmed
+variety                         = maka
+iso_639_3                       = sbd
+glottocode                      = sout2844
+bibliographic_year              = 2003
+historical_publisher            = SIL Burkina Faso
+primary_2003_digital_copy       = not_found_yet
+
+modern_webonary                 = confirmed
+modern_webonary_copyright       = SIL_International_2021
+modern_android_app              = confirmed
+modern_android_package          = com.dict.toma.san
+modern_android_developer        = Burkina_Langues
+modern_windows_lexique_pro      = confirmed
+modern_windows_size_mb          = 36.65
+modern_volume_announced         = about_2220_words
+modern_image_count_announced    = more_than_1000
+modern_audio_count_announced    = more_than_2200
+
+modern_explicit_license         = not_confirmed
+rights_status                   = authorization_required
+bulk_harvest                    = blocked_pending_authorization
+technical_ingestion_status      = waiting_for_rights
+```
+
+## 10. Prochaine action
+
+La prochaine action est d'obtenir une autorisation écrite avant toute récupération massive du Lexique Pro ou des fichiers audio.
+
+Pendant cette attente, la branche peut continuer vers les autres ressources encore ouvertes.
