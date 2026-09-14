@@ -9,7 +9,8 @@ Ce dossier regroupe les outils utilisés pour **découvrir, récupérer, invento
 > Maka : [`MAKA_LEXICON_RECON.md`](MAKA_LEXICON_RECON.md)  
 > Matya : [`MATYA_RECON.md`](MATYA_RECON.md)  
 > Maya : [`MAYA_RECON.md`](MAYA_RECON.md)  
-> Morse 1967 : [`MORSE_1967_RECON.md`](MORSE_1967_RECON.md)
+> Morse 1967 : [`MORSE_1967_RECON.md`](MORSE_1967_RECON.md)  
+> Médias / audio : [`MEDIA_SOURCES_RECON.md`](MEDIA_SOURCES_RECON.md)
 
 ## Périmètre de `feat/data-ingestion`
 
@@ -146,7 +147,7 @@ TOTAL             19201 occurrences/lignes/entrées RAW
 
 Ce total est un compteur de collecte contenant des chevauchements, licences différentes et données non validées linguistiquement.
 
-## Maka `sbd` — source moderne active, droits à obtenir
+## Maka `sbd` — reconnaissance en attente de réponse Burkina Langues
 
 Le lexique historique 2003 `Boo nɛn sɛwɛ san-fransi, fransi-san` reste bibliographiquement confirmé via ASJP, mais aucune copie numérique primaire officielle n'a encore été retrouvée.
 
@@ -173,15 +174,20 @@ contenu annoncé            : San–français–anglais + audio + images
 
 Cette source est potentiellement très importante parce qu'elle pourrait apporter à la fois du lexique `sbd` et plus de 2 200 prononciations audio. Cependant, le Webonary affiche un copyright SIL et aucune licence explicite de corpus/ML n'a été confirmée.
 
+Une demande d'autorisation a été envoyée à **Burkina Langues le 14 septembre 2026**. Elle couvre l'analyse du Lexique Pro, la récupération lexicale et audio, la recherche, l'entraînement/évaluation traduction/ASR/ML, la relation avec le lexique 2003 et la question de la redistribution publique.
+
 ```text
-relation avec lexique 2003 : non démontrée
-bulk lexical extraction    : bloquée en attente d'autorisation
-bulk audio extraction      : bloquée en attente d'autorisation
-publication dataset        : non approuvée
-training_approved          : false
+contact                     : burkinalangues@gmail.com
+mail envoyé                 : 2026-09-14
+réponse                     : en attente
+relation avec lexique 2003  : à confirmer
+bulk lexical extraction     : suspendue
+bulk audio extraction       : suspendue
+publication dataset         : non approuvée
+training_approved           : false
 ```
 
-La prochaine action est de demander à Burkina Langues si le détenteur des données autorise l'analyse du Lexique Pro, la récupération du lexique et des fichiers audio, la constitution d'un corpus open source non commercial et l'entraînement/évaluation de modèles de traduction, ASR et autres modèles ML. Si Burkina Langues n'a pas l'autorité nécessaire, on demandera le contact SIL/ayant droit approprié.
+La piste Maka reste donc ouverte mais ne bloque plus le reste de `data_ingestion`.
 
 ## Matya `stj` — récupération et analyse clôturées
 
@@ -309,13 +315,36 @@ reconnaissance              : closed_for_now
 
 La piste sera rouverte uniquement si une copie primaire légitime ou une autorisation devient disponible.
 
-## Ordre des prochaines sources
+## Média / audio — inventaire initial ouvert
+
+La reconnaissance média est désormais documentée séparément dans [`MEDIA_SOURCES_RECON.md`](MEDIA_SOURCES_RECON.md).
+
+Des annuaires et plateformes structurées confirment déjà l'existence de ressources SAN en texte, audio et vidéo, notamment pour `sbd` et `stj`, avec des pistes comme Scripture Earth, Bible.is, Global Recordings Network, Find.Bible et Réseau Faso Bibles.
+
+Pour `sbd`, Réseau Faso Bibles expose notamment du texte, de l'audio et des vidéos avec des crédits distincts pour le texte, l'enregistrement audio et les films. Ces ressources sont donc intéressantes pour la future phase ASR/multimédia mais ne sont pas ajoutées automatiquement au corpus d'entraînement.
+
+La future collecte média distinguera strictement :
 
 ```text
-1. Maka moderne Webonary/app — autorisation à demander
-2. Maya / sym — reprendre dès réponse ANTBA
-3. Autres ressources Burkina Langues / ANTBA — droits vérifiés source par source
-4. Morse 1967 — uniquement si accès primaire/autorisation apparaît
+prononciations lexicales isolées
+lectures / contenus religieux
+films doublés
+reportages / interviews / radios
+conversations / récits naturels
+chants / parole spécialisée
+```
+
+`bulk_media_harvest` reste `false` pour l'instant.
+
+## Ordre des prochaines actions
+
+```text
+1. Maya / sym — attendre la réponse ANTBA puis reprendre immédiatement
+2. Maka / sbd — attendre la réponse Burkina Langues puis inspecter/récupérer si autorisé
+3. terminer l'inventaire externe résiduel sans bloquer sur les sources fermées
+4. clôturer le bloc lexical externe
+5. ouvrir la phase média/audio naturelle + collecte terrain
+6. Morse 1967 — rouvrir uniquement si accès primaire/autorisation apparaît
 ```
 
 Matya n'est plus une piste de collecte active : il ne reviendra que lors de la validation linguistique et de la construction du dataset final.
